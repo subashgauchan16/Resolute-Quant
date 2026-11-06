@@ -195,6 +195,13 @@ def health():
             }}
 
 
+def split_watch(raw, valid):
+    """Keep valid symbols up to the limit, and name the rest so the page can say so."""
+    wanted = [s for s in raw if s]
+    kept = [s for s in wanted if valid.match(s)][:MAX_WATCH]
+    return kept, [s for s in wanted if s not in kept]
+
+
 def fast_quote(symbol):
     info = yf.Ticker(symbol).fast_info
 
@@ -418,7 +425,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(dict(data, stale=stale))
             if url.path == "/api/crypto/watch":
                 raw = (query.get("symbols") or [""])[0].upper().split(",")
-                return self.send_json({"watch": coinbase.set_watch(raw[:MAX_WATCH]), "status": coinbase.status()})
+                kept, dropped = split_watch(raw, PAIR)
+                return self.send_json({"watch": coinbase.set_watch(kept), "dropped": dropped, "status": coinbase.status()})
             if url.path == "/api/crypto/book":  # one book at a time; an empty symbol stops it
                 value = (query.get("symbol") or [""])[0].upper()
                 if value and not PAIR.match(value):
@@ -443,10 +451,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"bars": bars, "stale": stale})
             if url.path == "/api/watch":
                 raw = (query.get("symbols") or [""])[0].upper().split(",")
-                hub.set_watch([s for s in raw if SYMBOL.match(s)][:40])
+                kept, dropped = split_watch(raw, SYMBOL)
+                hub.set_watch(kept)
                 with hub.lock:
                     quotes = [dict(hub.quotes[s], type="q") for s in hub.watch]
-                return self.send_json({"quotes": quotes, "status": hub.status()})
+                return self.send_json({"quotes": quotes, "dropped": dropped, "status": hub.status()})
             symbol = self.symbol(query)
             if not symbol:
                 return self.send_json({"error": "That is not a valid symbol."}, 400)
@@ -584,13 +593,19 @@ def bind_server(port, source):
     raise SystemExit(f"\nPorts {candidates[0]} to {candidates[-1]} are all busy. Set a free port with RESOLUTE_QUANT_PORT or terminal.config.json.")
 
 
-def open_when_confirmed(url, port):
-    """Open the browser only after confirming that the port answers as this very instance."""
-    is_terminal, description, body = identify(port)
-    if is_terminal and body.get("instance") == instance["id"]:
-        webbrowser.open(url)
-    else:
-        print(f"Not opening the browser: port {port} did not answer as this terminal ({description}).")
+def open_when_confirmed(url, port, attempts=10, wait=1.0):
+    """Open the browser once the port answers as this very instance. A busy PC can be slow to answer."""
+    description = "it did not answer"
+    for attempt in range(attempts):
+        is_terminal, description, body = identify(port)
+        if is_terminal and body.get("instance") == instance["id"]:
+            webbrowser.open(url)
+            return True
+        if attempt < attempts - 1:
+            time.sleep(wait)
+    print(f"Not opening the browser: port {port} did not answer as this terminal ({description}).")
+    print(f"If the terminal is running, open {url} yourself.")
+    return False
 
 
 def main():

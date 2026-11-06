@@ -11,7 +11,7 @@ const param = (value) => encodeURIComponent(value);
 export const fetchStats = (p) => api(`/api/crypto/stats?symbol=${param(p)}`);
 
 export async function fetchCandles(p, gran) {
-  return (await api(`/api/crypto/candles?symbol=${param(p)}&granularity=${gran}`)).bars;
+  return api(`/api/crypto/candles?symbol=${param(p)}&granularity=${gran}`);
 }
 
 export async function seed(p) {
@@ -26,7 +26,7 @@ export async function seed(p) {
     q.dirty = true;
   } catch { /* the live ticker fills this in */ }
   try {
-    q.spark = (await fetchCandles(p, SPARK_GRANULARITY)).slice(-24).map((bar) => bar.close);
+    q.spark = (await fetchCandles(p, SPARK_GRANULARITY)).bars.slice(-24).map((bar) => bar.close);
     q.dirty = true;
     q.sparkDirty = true;
   } catch { /* the sparkline stays empty until the next seed */ }
@@ -39,7 +39,8 @@ export async function seedAll() {
 /* Tell the data program what this page follows. Safe to repeat. */
 export async function pushCryptoWatch() {
   try {
-    await api(`/api/crypto/watch?symbols=${param(S.list.join(","))}`);
+    const r = await api(`/api/crypto/watch?symbols=${param(S.list.join(","))}`);
+    if (r.dropped?.length) emit("watch-dropped", r.dropped);
   } catch { /* the stream's onerror already shows the program as offline */ }
 }
 

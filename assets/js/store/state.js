@@ -12,6 +12,7 @@ export const granLabel = (name) => name.replace(/^(\d+)M$/, "$1m");
 
 export const FRIENDLY = { "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^FTSE": "FTSE 100", "^DJI": "DOW", "GBPUSD=X": "GBP/USD", "EURUSD=X": "EUR/USD", "GC=F": "GOLD", "CL=F": "OIL" };
 export const LEVELS = 10;
+export const MAX_WATCH = 40; /* per group; the data program enforces the same limit */
 export const BIG_TRADE_USD = 50000;
 
 export const validY = (p) => /^[A-Z0-9.^=\-]{1,15}$/.test(p);

@@ -11,7 +11,7 @@ export const fetchNews = (symbol) => api(`/api/news?symbol=${param(symbol)}`);
 export const resolveSymbol = (symbol) => api(`/api/resolve?symbol=${param(symbol)}`);
 
 export async function fetchCandles(symbol, interval) {
-  return (await api(`/api/candles?symbol=${param(symbol)}&interval=${interval}`)).bars;
+  return api(`/api/candles?symbol=${param(symbol)}&interval=${interval}`);
 }
 
 function onQuote(m) {
@@ -57,6 +57,7 @@ export async function pushWatch() {
     const r = await api(`/api/watch?symbols=${param(S.mlist.join(","))}`);
     onStatus(r.status);
     r.quotes.forEach(onQuote);
+    if (r.dropped?.length) emit("watch-dropped", r.dropped);
   } catch { /* the stream's onerror already shows the program as offline */ }
 }
 

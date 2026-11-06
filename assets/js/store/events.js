@@ -1,5 +1,5 @@
 /* Synchronous event bus. It lets the data layer report news without knowing about the UI.
-   Events: trade, price, feed-restored, markets-link, select. */
+   Events: trade, price, feed-restored, markets-link, select, watch-dropped. */
 const listeners = new Map();
 
 export function on(name, listener) {

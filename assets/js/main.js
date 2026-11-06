@@ -6,7 +6,7 @@ import { checkFeed, seedAll } from "./data/crypto.js";
 import { connectMarkets } from "./data/markets.js";
 import { on } from "./store/events.js";
 import { isY, S } from "./store/state.js";
-import { checkAlerts, initAlerts } from "./ui/alert.js";
+import { checkAlerts, initAlerts, showWatchDropped } from "./ui/alert.js";
 import { initBrand } from "./ui/brand.js";
 import { initCommands } from "./ui/command.js";
 import { loadDetails } from "./ui/details.js";
@@ -42,6 +42,7 @@ function boot() {
   on("price", checkAlerts);
   on("feed-restored", loadChart);
   on("select", select);
+  on("watch-dropped", showWatchDropped);
 
   initBrand();
   initPriceChart();

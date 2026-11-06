@@ -2,7 +2,7 @@
 import { drawLines } from "../chart/ohlc.js";
 import { $, hms, px } from "../chart/helper.js";
 import { store } from "../store/localStorage.js";
-import { S } from "../store/state.js";
+import { MAX_WATCH, S } from "../store/state.js";
 
 function saveAndDraw() {
   store.set("alerts", S.alerts);
@@ -26,6 +26,11 @@ export function checkAlerts(p, before, after) {
   S.alerts = S.alerts.filter((x) => !hit.includes(x));
   saveAndDraw();
   $("alerttext").textContent = `${p} crossed ${px(hit[0].px)} at ${hms(Date.now())}. Last ${px(after)}.`;
+  $("alertbar").hidden = false;
+}
+
+export function showWatchDropped(symbols) {
+  $("alerttext").textContent = `These symbols are getting no data, because they are invalid or over the limit of ${MAX_WATCH}: ${symbols.join(", ")}.`;
   $("alertbar").hidden = false;
 }
 

@@ -9,7 +9,7 @@ import * as markets from "../data/markets.js";
 const REFRESH_MS = 60000;
 const RETRY_MS = 15000;
 
-export const C = { token: 0, loading: true, last: null, pending: [], fetchedAt: 0, emaPrev: null, emaCur: null, lines: [], nextRefresh: 0, dirty: false, flushes: 0 };
+export const C = { token: 0, loading: true, last: null, pending: [], fetchedAt: 0, emaPrev: null, emaCur: null, lines: [], nextRefresh: 0, dirty: false, flushes: 0, key: null };
 let sCandle;
 let sEma;
 let sVol;
@@ -38,22 +38,44 @@ export function initPriceChart() {
   });
 }
 
+/* Answers { bars, stale }. stale means the provider refused and this is the last good copy. */
 async function fetchBars(p) {
   if (!isY(p)) return crypto.fetchCandles(p, S.gran);
   const name = grans().find((g) => g[1] === S.gran)[0];
-  const bars = await markets.fetchCandles(p, name);
+  const answer = await markets.fetchCandles(p, name);
   C.nextRefresh = Date.now() + REFRESH_MS;
-  return bars;
+  return answer;
+}
+
+function showMessage(text) {
+  const m = $("chartmsg");
+  m.textContent = text;
+  m.hidden = false;
+}
+
+/* A symbol's candles must never stay on screen under another symbol's name. */
+function clearChart() {
+  sCandle.setData([]);
+  sVol.setData([]);
+  sEma.setData([]);
+  C.last = null;
+  C.dirty = false;
+  $("legend").innerHTML = "";
+  $("chartmsg").hidden = true;
 }
 
 export async function loadChart() {
   const token = ++C.token;
   const p = S.sel;
+  const key = `${p}|${S.gran}`;
+  if (key !== C.key) {
+    C.key = key;
+    clearChart();
+  }
   C.loading = true;
   C.pending = [];
-  $("chartmsg").hidden = true;
   try {
-    const bars = await fetchBars(p);
+    const { bars, stale } = await fetchBars(p);
     if (token !== C.token) return;
     if (!bars.length) throw new Error("empty");
     const d = dpFor(p, bars.at(-1).close);
@@ -72,11 +94,17 @@ export async function loadChart() {
     C.pending = [];
     drawLines();
     legend();
+    if (stale) {
+      showMessage(`Saved copy of ${p}: the provider did not answer, so these bars may be out of date. Retrying in 60 seconds.`);
+      setTimeout(() => { if (token === C.token) loadChart(); }, REFRESH_MS);
+    } else {
+      $("chartmsg").hidden = true;
+    }
   } catch {
     if (token !== C.token) return;
-    const m = $("chartmsg");
-    m.textContent = "Chart history did not load. Retrying in 15 seconds.";
-    m.hidden = false;
+    showMessage(C.last
+      ? `Could not update ${p}. Showing the last bars loaded, which may be out of date. Retrying in 15 seconds.`
+      : `Chart history for ${p} did not load. Retrying in 15 seconds.`);
     setTimeout(() => { if (token === C.token) loadChart(); }, RETRY_MS);
   }
 }
