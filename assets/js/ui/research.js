@@ -67,7 +67,7 @@ function paint(result, stale) {
   el("rq-validation").textContent = `${result.validation_rows} holdout rows · ${result.bar_count} bars`;
   el("rq-disclaimer").textContent = result.disclaimer || "Research estimate only.";
   drawFan(result.simulation?.fan || []);
-  status(stale ? "READY · SOURCE DATA STALE" : "LIVE DATA · MODEL READY", stale ? "wait" : "live");
+  status(stale ? "READY · SOURCE DATA STALE" : "DATA FRESH · MODEL READY", stale ? "wait" : "live");
   lastKey = `${S.sel}|${S.gran}`;
 }
 
@@ -93,9 +93,11 @@ export async function refreshResearch(force = false) {
     if (`${S.sel}|${S.gran}` !== key) return;
     paint(result, result.data_stale === true);
   } catch (error) {
-    lastKey = "";
-    status("MODEL UNAVAILABLE", "down");
-    el("rq-validation").textContent = error.message || "Forecast request failed.";
+    if (`${S.sel}|${S.gran}` === key) {
+      lastKey = "";
+      status("MODEL UNAVAILABLE", "down");
+      el("rq-validation").textContent = error.message || "Forecast request failed.";
+    }
   } finally {
     pending = false;
   }
