@@ -487,8 +487,9 @@ class Handler(BaseHTTPRequestHandler):
                 name = (query.get("interval") or ["1D"])[0].upper()
                 if name not in INTERVALS:
                     return self.send_json({"error": "Unknown interval."}, 400)
-                bars, stale = cache.get(("bars", symbol, name), INTERVALS[name][2],
-                                        lambda: yahoo.call(lambda: candles(symbol, name)))
+                market_data, stale = cache.get(("bars", symbol, name), INTERVALS[name][2],
+                                               lambda: yahoo.call(lambda: candles(symbol, name)))
+                bars = market_data.get("bars", []) if isinstance(market_data, dict) else []
                 try:
                     model, _ = cache.get(("research", symbol, name, bars[-1]["time"] if bars else 0), 60,
                                          lambda: research_models.run_research(bars))
