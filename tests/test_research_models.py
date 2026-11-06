@@ -24,6 +24,13 @@ class ResearchModelTests(unittest.TestCase):
         self.assertGreater(result["validation_rows"], 0)
         self.assertIn("ridge", result["validation"])
         self.assertIn("sgd", result["validation"])
+        for model_name in ("zero_return", "ridge", "sgd"):
+            for metric_name in ("mae_pct", "rmse_pct", "directional_accuracy_pct"):
+                value = result["validation"][model_name][metric_name]
+                self.assertIsNotNone(value)
+                self.assertTrue(math.isfinite(value), (model_name, metric_name, value))
+        for value in result["next_bar"].values():
+            self.assertTrue(math.isfinite(value), value)
         self.assertEqual(len(result["simulation"]["fan"]), 24)
         self.assertEqual(result["simulation"]["paths"], 500)
         for point in result["simulation"]["fan"]:
