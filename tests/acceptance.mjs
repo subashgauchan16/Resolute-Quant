@@ -184,6 +184,31 @@ async function regression(page) {
   check("layout store saves and rejects damage (no panel controls use it yet)", layout.saved.sizes.watch === 300 && Array.isArray(layout.bad.hidden), layout.saved);
 }
 
+/* A provider failure must never show one symbol's candles under another's name, or old bars as current. */
+async function dataHonesty(page) {
+  const failed = await page.eval(`${HELPERS}
+    const real=window.fetch,{C}=await import('/assets/js/chart/ohlc.js');
+    await cmd('BTC',3000);const before=!!C.last;
+    window.fetch=(u,o)=>String(u).includes('/api/crypto/candles')&&String(u).includes('ETH-USD')?Promise.resolve(new Response('{"error":"fixture"}',{status:502})):real(u,o);
+    await cmd('ETH',2000);
+    const during={pair:t('pair'),before,hasBars:!!C.last,legend:t('legend'),msg:el('chartmsg').hidden?null:t('chartmsg')};
+    window.fetch=real;await sleep(16500);
+    return {...during,recovered:!!C.last&&C.key.startsWith('ETH-USD'),msgAfter:el('chartmsg').hidden}`);
+  check("failed load clears the previous symbol's candles and names the symbol", failed.before && failed.pair === "ETH-USD" && !failed.hasBars && failed.legend === "" && failed.msg?.includes("ETH-USD"), failed.msg);
+  check("chart recovers by itself after a failed load", failed.recovered && failed.msgAfter, failed.recovered);
+  const stale = await page.eval(`${HELPERS}
+    const real=window.fetch;
+    window.fetch=async(u,o)=>{const r=await real(u,o);if(!String(u).includes('/api/crypto/candles')||!String(u).includes('SOL-USD'))return r;const j=await r.json();j.stale=true;return new Response(JSON.stringify(j),{status:200,headers:{'Content-Type':'application/json'}})};
+    await cmd('SOL',3000);const shown=el('chartmsg').hidden?null:t('chartmsg'),legend=t('legend');window.fetch=real;
+    await cmd('BTC',3000);return {shown,hasLegend:legend!=='',clearedOnNext:el('chartmsg').hidden}`);
+  check("a saved copy of candles is labelled as possibly out of date", stale.shown?.startsWith("Saved copy of SOL-USD") && stale.hasLegend && stale.clearedOnNext, stale.shown);
+  const limit = await page.eval(`${HELPERS}
+    const {S}=await import('/assets/js/store/state.js'),saved=S.mlist;
+    S.mlist=[...saved,...Array.from({length:40-saved.length},(_,i)=>'ZZ'+i)];
+    await cmd('STK NEWSYM',800);const text=el('cmd').placeholder,added=S.mlist.includes('NEWSYM');S.mlist=saved;await sleep(3600);return {text,added}`);
+  check("a full watchlist refuses a new symbol and says why", limit.text.includes("full at 40") && !limit.added, limit.text);
+}
+
 /* Browser storage belongs to the exact address, so a different port starts with no saved settings. */
 async function storagePerPort(page) {
   const other = spawn(PYTHON, ["-m", "http.server", String(PORT + 1), "--bind", "127.0.0.1", "--directory", join(PROJECT, "assets", "img-none-" + Date.now())], { stdio: "ignore" });
@@ -315,6 +340,7 @@ async function main() {
     await brand(page);
 
     await regression(page);
+    await dataHonesty(page);
     await storagePerPort(page);
     const beforeRestartConsole = result.console.length;
     await restart(page);
@@ -343,7 +369,7 @@ async function main() {
   result.summary = { pass: result.checks.filter((c) => c.pass).length, fail: result.checks.filter((c) => !c.pass).length };
   save();
   console.log(JSON.stringify(result.summary));
-  process.exit(0);
+  process.exit(result.summary.fail ? 1 : 0);
 }
 
 main().catch((error) => {

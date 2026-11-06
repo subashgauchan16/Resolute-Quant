@@ -3,7 +3,7 @@ import { $, css, px } from "../chart/helper.js";
 import { fetchStats, pushCryptoWatch, seed } from "../data/crypto.js";
 import { pushWatch, resolveSymbol } from "../data/markets.js";
 import { store } from "../store/localStorage.js";
-import { FRIENDLY, grans, isY, S, validPair, validY } from "../store/state.js";
+import { FRIENDLY, grans, isY, MAX_WATCH, S, validPair, validY } from "../store/state.js";
 import { addAlert, clearAlerts } from "./alert.js";
 import { select, setGran } from "./selection.js";
 import { addRow, removeRow } from "./watchlist.js";
@@ -23,6 +23,12 @@ function toast(message, bad) {
   }, 3500);
 }
 
+function refuseWhenFull(list, group) {
+  if (list.length < MAX_WATCH) return false;
+  toast(`The ${group} watchlist is full at ${MAX_WATCH} symbols. Remove one with DEL first.`, true);
+  return true;
+}
+
 async function addMarket(p, quiet) {
   if (!validY(p)) {
     if (!quiet) toast(`${p} is not a symbol.`, true);
@@ -32,6 +38,7 @@ async function addMarket(p, quiet) {
     select(p);
     return true;
   }
+  if (refuseWhenFull(S.mlist, "markets")) return true; /* already explained, so no second message */
   try {
     await resolveSymbol(p);
   } catch (e) {
@@ -49,6 +56,7 @@ async function addMarket(p, quiet) {
 async function addPair(p) {
   if (!validPair(p)) return toast(`${p} is not a pair name. Try ADD PEPE or ADD BTC-GBP.`, true);
   if (S.list.includes(p)) return select(p);
+  if (refuseWhenFull(S.list, "crypto")) return undefined;
   try {
     await fetchStats(p);
   } catch (e) {

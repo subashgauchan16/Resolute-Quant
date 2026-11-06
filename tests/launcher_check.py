@@ -1,6 +1,10 @@
 """Launcher and port-conflict test using the real Start Terminal.bat on a fresh copy of the project.
 
-    python tests/launcher_check.py <empty-work-folder> <output.json> [busy_port]
+    python tests/launcher_check.py <empty-work-folder> <output.json> [spare_port]
+
+With a spare port, the test blocks that port with a small web server and makes it the default in
+its own copy of the project, so a terminal you already have running is not disturbed. Without one,
+it uses the default port, which must already be held by another program, and the next port free.
 
 Each scenario starts a new cmd.exe session. The BROWSER variable points at a small logger, so no
 window opens and the exact URL the launcher chose is recorded. The first scenario builds .venv
@@ -17,7 +21,8 @@ from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent.parent
 work, out = Path(sys.argv[1]), Path(sys.argv[2])
-BUSY = int(sys.argv[3]) if len(sys.argv) > 3 else 8765
+DEFAULT_PORT = 8765
+BUSY = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_PORT
 copy = work / "Subash Terminal"
 log = work / "browser.log"
 results = []
@@ -75,6 +80,16 @@ def browser_urls(seconds=4):
     return log.read_text(encoding="utf-8").split() if log.exists() else []
 
 
+def wait_browser(limit=30):
+    """Poll for the browser call: a busy PC can take several seconds to make it."""
+    deadline = time.time() + limit
+    while time.time() < deadline:
+        if log.exists() and log.stat().st_size:
+            return browser_urls(1)
+        time.sleep(0.25)
+    return []
+
+
 def console():
     return (work / "console.txt").read_text(encoding="utf-8", errors="replace")
 
@@ -89,6 +104,25 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     shutil.copytree(PROJECT, copy, ignore=shutil.ignore_patterns(".venv", "__pycache__", "docs", "research"))
     (work / "log_browser.py").write_text("import sys\nopen(sys.argv[0].replace('log_browser.py','browser.log'),'a').write(sys.argv[1]+'\\n')\n", encoding="utf-8")
+    blocker = None
+    if BUSY != DEFAULT_PORT:
+        server_file = copy / "server.py"
+        source = server_file.read_text(encoding="utf-8", newline="")
+        assert f'"127.0.0.1", {DEFAULT_PORT}' in source
+        server_file.write_text(source.replace(f'"127.0.0.1", {DEFAULT_PORT}', f'"127.0.0.1", {BUSY}'), encoding="utf-8", newline="")
+        blocker = subprocess.Popen([sys.executable, "-m", "http.server", str(BUSY), "--bind", "127.0.0.1", "--directory", str(work)],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(1.5)
+    if health(BUSY + 1):
+        raise SystemExit(f"A terminal is already running on port {BUSY + 1}, which would invalidate this test. Pass a spare port, for example 8801.")
+    try:
+        scenarios()
+    finally:
+        if blocker:
+            blocker.kill()
+
+
+def scenarios():
     before = http_status(BUSY)
     fallback = BUSY + 1
 
@@ -96,7 +130,7 @@ def main():
     process, output = launch()
     started = time.time()
     body = wait_port(fallback, 300)
-    urls = browser_urls()
+    urls = wait_browser()
     text = console()
     record("fresh install; default port busy; deterministic fallback", body and body["port"] == fallback and body["fallback"]
            and urls == [f"http://127.0.0.1:{fallback}"] and "has not been touched" in text and f"USING PORT {fallback}" in text,
@@ -106,7 +140,7 @@ def main():
     first_instance = body and body["instance"]
     second, second_output = launch()
     time.sleep(8)
-    urls = browser_urls(2)
+    urls = wait_browser()
     again = health(fallback)
     second_code = second.poll()
     stop(second, second_output)
@@ -126,20 +160,20 @@ def main():
     # 4. RESOLUTE_QUANT_PORT, config file and --port, in priority order.
     process, output = launch(env={"RESOLUTE_QUANT_PORT": str(BUSY + 7)})
     body = wait_port(BUSY + 7, 40)
-    urls = browser_urls()
+    urls = wait_browser()
     stop(process, output)
     record("RESOLUTE_QUANT_PORT honoured", body and body["portSource"] == "RESOLUTE_QUANT_PORT" and urls == [f"http://127.0.0.1:{BUSY + 7}"], browser=urls)
 
     (copy / "terminal.config.json").write_text(json.dumps({"port": BUSY + 8}), encoding="utf-8")
     process, output = launch()
     body = wait_port(BUSY + 8, 40)
-    urls = browser_urls()
+    urls = wait_browser()
     stop(process, output)
     record("terminal.config.json honoured", body and body["portSource"] == "terminal.config.json" and urls == [f"http://127.0.0.1:{BUSY + 8}"], browser=urls)
 
     process, output = launch(args=f"--port {BUSY + 9}", env={"RESOLUTE_QUANT_PORT": str(BUSY + 7)})
     body = wait_port(BUSY + 9, 40)
-    urls = browser_urls()
+    urls = wait_browser()
     stop(process, output)
     record("--port beats RESOLUTE_QUANT_PORT and config", body and body["portSource"] == "--port" and urls == [f"http://127.0.0.1:{BUSY + 9}"], browser=urls)
     (copy / "terminal.config.json").unlink()
@@ -158,3 +192,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sys.exit(0 if all(r["pass"] for r in results) else 1)

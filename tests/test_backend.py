@@ -253,6 +253,33 @@ class FeedReconnect(unittest.TestCase):
         self.assertIn(False, states)
 
 
+class BrowserOpening(unittest.TestCase):
+    def test_retries_until_this_instance_answers(self):
+        answers = [(False, "slow", None), (False, "slow", None), (True, "this terminal", {"instance": srv.instance["id"]})]
+        with mock.patch.object(srv, "identify", side_effect=answers) as identify, mock.patch.object(srv.webbrowser, "open") as opened:
+            self.assertTrue(srv.open_when_confirmed("http://x", 1, wait=0))
+        self.assertEqual(identify.call_count, 3)
+        opened.assert_called_once_with("http://x")
+
+    def test_never_opens_another_instance_and_explains(self):
+        other = (True, "this terminal", {"instance": "someone-else"})
+        with mock.patch.object(srv, "identify", return_value=other), mock.patch.object(srv.webbrowser, "open") as opened, mock.patch("builtins.print") as printed:
+            self.assertFalse(srv.open_when_confirmed("http://x", 1, attempts=3, wait=0))
+        opened.assert_not_called()
+        self.assertIn("open http://x yourself", printed.call_args_list[-1].args[0])
+
+
+class WatchLimit(unittest.TestCase):
+    def test_keeps_up_to_the_limit_and_names_the_rest(self):
+        symbols = [f"S{i}-USD" for i in range(srv.MAX_WATCH + 2)]
+        kept, dropped = srv.split_watch(symbols + ["bad!", ""], srv.PAIR)
+        self.assertEqual(kept, symbols[:srv.MAX_WATCH])
+        self.assertEqual(dropped, symbols[srv.MAX_WATCH:] + ["bad!"])
+
+    def test_nothing_dropped_when_all_fit(self):
+        self.assertEqual(srv.split_watch(["AAPL", "MSFT"], srv.SYMBOL), (["AAPL", "MSFT"], []))
+
+
 class Routes(unittest.TestCase):
     """The real HTTP handler on a spare port, with the provider layer stubbed by fixtures."""
 
@@ -325,6 +352,7 @@ class Routes(unittest.TestCase):
     def test_watch_and_book_set_the_feed(self):
         status, body = self.get("/api/crypto/watch?symbols=BTC-USD,bad!,ETH-USD")
         self.assertEqual(body["watch"], ["BTC-USD", "ETH-USD"])
+        self.assertEqual(body["dropped"], ["BAD!"])
         self.assertEqual(self.get("/api/crypto/book?symbol=ETH-USD")[1], {"symbol": "ETH-USD"})
         self.assertEqual(srv.coinbase.book_symbol, "ETH-USD")
         self.assertEqual(self.get("/api/crypto/book?symbol=")[1], {"symbol": None})

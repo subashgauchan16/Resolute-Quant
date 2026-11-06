@@ -83,10 +83,12 @@ node tests/acceptance.mjs --python .venv/Scripts/python.exe --port 8771 --idle-m
 ```
 
 ```bash
-python tests/launcher_check.py <empty-folder> <output.json>
+python tests/launcher_check.py <empty-folder> <output.json> 8801
 ```
 
-The last two use live providers. They need Edge and an internet connection.
+The last two use live providers. They need Edge and an internet connection, and they exit with a failure code if any check fails. The port `8801` keeps the launcher test away from a terminal you already have running.
+
+Dependencies are pinned in `requirements.txt` for repeatable installs, tested on Python 3.13. The packages the project uses directly are listed in `requirements.in`. To update, install from `requirements.in` into a clean environment, retest, then freeze the versions into `requirements.txt`.
 
 ## Saved in the browser
 
@@ -96,6 +98,7 @@ The last two use live providers. They need Edge and an internet connection.
 ## Known limits
 
 - One watchlist and one followed book per data program, so two tabs on different symbols compete.
+- Each watchlist group holds up to 40 symbols. Adding more is refused with a message.
 - Coinbase's newest candle can lag by minutes, so a page load can show a short gap before the live bars.
   A live bar opens at the first trade seen, so its open may differ from the exchange's.
 - Yahoo's history is cut to the newest 320 bars per request, and Yahoo data is for personal use and may be delayed.
