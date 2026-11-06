@@ -58,6 +58,8 @@ function clearView() {
 
 function readableError(error) {
   if (error.status === 429) return `${error.message} Try again in a minute.`;
+  /* Only an unknown route answers exactly this: providers name the symbol in their 404s. */
+  if (error.status === 404 && error.message === "Not found.") return "The data program is out of date. Close the black window, then start the terminal again.";
   if (error.status) return String(error.message);
   return "Data program offline. Start Start Terminal.bat.";
 }

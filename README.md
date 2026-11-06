@@ -32,6 +32,7 @@ The first of these that is set wins:
   says which port it chose in the black window and the page footer.
 - **Another program on the port is never touched.** The program reports it and suggests how to identify it.
 - **A terminal already running is reused**, not duplicated. `/api/health` confirms its identity.
+- **An out-of-date terminal is not reused.** After an update, the launcher asks you to close the old black window and start again, and the page shows the same instruction.
 - **Saved settings belong to the exact address.** Watchlists and alerts on one port do not appear
   on another. Keep to one port to keep your settings. They are not migrated automatically.
 
@@ -58,7 +59,7 @@ Lightweight Charts 4.2.0 is vendored in `assets/lib/`. It is Apache 2.0, copyrig
 
 | Route | Answer |
 | --- | --- |
-| `/api/health` | `{service, status, timestamp, instance, started, port, preferredPort, portSource, fallback, clients, providers}` |
+| `/api/health` | `{service, status, timestamp, instance, started, codeId, restartNeeded, port, preferredPort, portSource, fallback, clients, providers}` |
 | `/api/stream` | Server-Sent Events: `s` Yahoo status, `q` Yahoo quote, `ct` crypto tick, `cb` top of book, `cs` crypto feed status |
 | `/api/watch?symbols=` | Set the Yahoo watchlist. `{quotes, status}` |
 | `/api/candles?symbol=&interval=` | Yahoo bars. `1M 5M 15M 1H 4H 1D 1W 1MO`, where `1M` is one minute and `1MO` one month. `{bars, stale}` |
