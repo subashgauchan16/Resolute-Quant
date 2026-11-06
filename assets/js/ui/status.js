@@ -60,8 +60,6 @@ export async function paintPortNotice() {
 }
 
 const RESTART_TEXT = "The data program is out of date. Close the black window, then start the terminal again.";
-let restartShown = false;
-
 /* A backend from before an update has no restartNeeded field, so a missing answer also means restart. */
 export async function checkBackend() {
   let health;
@@ -70,14 +68,15 @@ export async function checkBackend() {
   } catch {
     return; /* the offline note already covers this */
   }
+  const showing = $("alerttext").textContent === RESTART_TEXT;
   const needed = health.restartNeeded !== false;
-  if (needed && !restartShown) {
+  if (needed && $("alertbar").hidden) {
+    /* Comes back after being dismissed, or once an alert that replaced it is dismissed. A visible alert is left alone. */
     $("alerttext").textContent = RESTART_TEXT;
     $("alertbar").hidden = false;
-  } else if (!needed && restartShown && $("alerttext").textContent === RESTART_TEXT) {
+  } else if (!needed && showing) {
     $("alertbar").hidden = true;
   }
-  restartShown = needed;
 }
 
 export function paintMeter() {

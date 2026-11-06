@@ -6,8 +6,22 @@ const query = ({ symbol, interval, source, start, end }) => new URLSearchParams(
 export const fetchHistory = (request) => api(`/api/history?${query(request)}`);
 export const fetchHistoryCsv = (request) => apiText(`/api/history?${query(request)}&format=csv`);
 
-/* Data rows in CSV text from this program: fields never contain line breaks, so each line is a row. */
-export const csvRowCount = (text) => Math.max(0, text.trim().split(/\r?\n/).length - 1);
+const isoTime = (seconds) => new Date(seconds * 1000).toISOString().replace(".000Z", "Z");
+const sameNumber = (field, value) => (value == null ? field === "" : field !== "" && Number(field) === value);
+
+/* Compares every row of CSV text from this program with the rows on screen. Its fields never
+   contain commas or line breaks, because symbols are validated. Answers null, or what differs. */
+export function csvDifference(text, view) {
+  const rows = text.trim().split(/\r?\n/).slice(1).filter(Boolean);
+  if (rows.length !== view.bars.length) return `${rows.length} rows now, ${view.bars.length} shown`;
+  for (const [i, bar] of view.bars.entries()) {
+    const [time, , , open, high, low, close, volume] = rows[i].split(",");
+    const same = time === isoTime(bar.time) && sameNumber(open, bar.open) && sameNumber(high, bar.high)
+      && sameNumber(low, bar.low) && sameNumber(close, bar.close) && sameNumber(volume, bar.volume);
+    if (!same) return `the row for ${isoTime(bar.time)} differs`;
+  }
+  return null;
+}
 
 /* Writes the file. Answers "saved", "cancelled" or "download-started", and throws if writing fails. */
 export async function saveCsv(fileName, getText) {

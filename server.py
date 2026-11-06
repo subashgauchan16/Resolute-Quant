@@ -186,7 +186,7 @@ instance = {"id": uuid.uuid4().hex, "started": int(time.time() * 1000), "port": 
             "preferred": DEFAULT_PORT, "source": "default"}
 
 
-BACKEND_FILES = ("server.py", "crypto_feed.py", "history.py")
+BACKEND_FILES = ("server.py", "crypto_feed.py", "history.py", "requirements.txt")
 
 
 def code_id():
@@ -373,9 +373,11 @@ def yahoo_history(symbol, name, start, end):
     frame = yf.Ticker(symbol).history(start=begin, end=finish, interval=INTERVALS[name][0], auto_adjust=False)
     rows = [[int(stamp.timestamp()), clean(row["Low"]), clean(row["High"]), clean(row["Open"]), clean(row["Close"]), clean(row.get("Volume"))]
             for stamp, row in frame.iterrows()]
-    bars, rejected = normalise_candles(rows)
-    return {"bars": bars[-history.MAX_BARS:], "rejected": rejected, "truncated": len(bars) > history.MAX_BARS,
-            "downloaded_at": int(time.time())}
+    day_of = {int(stamp.timestamp()): stamp.strftime("%Y-%m-%d") for stamp in frame.index}  # Yahoo's index is exchange time
+    bars, rejected = normalise_candles(rows, market=True)
+    kept = bars[-history.MAX_BARS:]
+    return {"bars": kept, "rejected": rejected, "truncated": len(bars) > history.MAX_BARS, "downloaded_at": int(time.time()),
+            "gaps": history.session_gaps(kept, history.YAHOO_STEPS[name], day_of)}
 
 
 def profile(symbol):

@@ -1,6 +1,6 @@
 /* The history panel: choose a timeframe and dates, read the bars newest first, and export them. */
 import { $, esc, num } from "../chart/helper.js";
-import { csvRowCount, fetchHistory, fetchHistoryCsv, saveCsv } from "../data/history.js";
+import { csvDifference, fetchHistory, fetchHistoryCsv, saveCsv } from "../data/history.js";
 import { dpFor, granLabel, grans, isY, S } from "../store/state.js";
 
 const DEFAULT_DAYS = 30;
@@ -28,7 +28,12 @@ function coverage(v) {
   const notes = [];
   if (v.stale) notes.push("This is a saved copy, because the provider did not answer. It may be out of date.");
   if (v.truncated) notes.push(`Only the newest ${num(v.limit, 0)} bars are shown, so the start of your range is not covered. Choose a shorter range to see older bars.`);
-  if (v.gaps.count) notes.push(`${num(v.gaps.count, 0)} gaps, about ${num(v.gaps.missing_bars, 0)} bars with no data. They are not filled in. ${isY(v.symbol) ? "Market closures are expected." : "Exchanges publish no bar when nothing traded."}`);
+  if (v.gaps.scope === "within_trading_days") {
+    if (v.gaps.count) notes.push(`${num(v.gaps.count, 0)} gaps inside trading days, about ${num(v.gaps.missing_bars, 0)} bars with no data. They are not filled in. Closures between days are not counted, so a whole missing day would not show here.`);
+  } else if (v.gaps.count) {
+    notes.push(`${num(v.gaps.count, 0)} gaps, about ${num(v.gaps.missing_bars, 0)} bars with no data. They are not filled in. Exchanges publish no bar when nothing traded.`);
+  }
+  if (v.bars.some((b) => b.volume == null)) notes.push("Volume is blank where the provider gave none. It is not set to zero.");
   if (v.rejected) notes.push(`${num(v.rejected, 0)} invalid rows from the provider were left out, not repaired.`);
   if (v.unfinished_excluded) notes.push("The bar still in progress is left out, because its values can change.");
   return notes.join(" ");
@@ -94,8 +99,8 @@ async function exportCsv() {
   try {
     const outcome = await saveCsv(name, async () => {
       const text = await fetchHistoryCsv(request);
-      const rows = csvRowCount(text);
-      if (rows !== shown) throw new Error(`the data changed (${rows} rows now, ${shown} shown). Load the history again, then export`);
+      const difference = csvDifference(text, view);
+      if (difference) throw new Error(`the data changed since it was loaded (${difference}). Load the history again, then export`);
       return text;
     });
     if (outcome === "saved") show("hresult", `Saved ${name} with ${num(shown, 0)} rows.`, "good");

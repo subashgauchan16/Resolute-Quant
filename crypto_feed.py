@@ -94,11 +94,13 @@ def normalise_ticker(raw, now=None):
     return message
 
 
-def normalise_candles(rows, now=None):
-    """Coinbase [time, low, high, open, close, volume] rows to ascending bars.
+def normalise_candles(rows, now=None, market=False):
+    """[time, low, high, open, close, volume] rows to ascending bars.
 
     Returns (bars, rejected). Rows failing a check are dropped, and duplicates keep the first.
+    market=True is for Yahoo: futures can trade below zero, and a missing volume stays None.
     """
+    price = finite if market else positive
     now = time.time() if now is None else now
     bars, seen, rejected = [], set(), 0
     for row in rows if isinstance(rows, list) else []:
@@ -108,10 +110,12 @@ def normalise_candles(rows, now=None):
             rejected += 1
             continue
         stamp = finite(stamp)
-        low, high, opened, close = positive(low), positive(high), positive(opened), positive(close)
+        low, high, opened, close = price(low), price(high), price(opened), price(close)
         volume = finite(volume)
+        volume_ok = (volume is None and market) or (volume is not None and volume >= 0)
         valid = (stamp is not None and stamp <= now + MAX_FUTURE_SECONDS and None not in (low, high, opened, close)
-                 and volume is not None and volume >= 0 and high >= max(opened, close) and low <= min(opened, close))
+                 and 0 not in (low, high, opened, close)
+                 and volume_ok and high >= max(opened, close) and low <= min(opened, close))
         if not valid or stamp in seen:
             rejected += 1
             continue

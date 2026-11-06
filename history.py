@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 MAX_BARS = 5000
 COINBASE_PAGE = 300  # the documented maximum candles per request
 DAY = 86400
+WIDEST_UTC_OFFSET = 14 * 3600  # a month bar starts at local midnight, up to 14 hours before UTC midnight
 
 # Seconds per bar. None marks a calendar month, which has no fixed length.
 COINBASE_STEPS = {"1M": 60, "5M": 300, "15M": 900, "1H": 3600, "6H": 21600, "1D": DAY}
@@ -66,7 +67,7 @@ def complete_only(bars, step, now=None):
     now = int(time.time() if now is None else now)
     if step is None:
         current = datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m")
-        done = [b for b in bars if datetime.fromtimestamp(b["time"], timezone.utc).strftime("%Y-%m") < current]
+        done = [b for b in bars if datetime.fromtimestamp(b["time"] + WIDEST_UTC_OFFSET, timezone.utc).strftime("%Y-%m") < current]
     else:
         done = [b for b in bars if b["time"] + step <= now]
     return done, len(bars) - len(done)
@@ -75,14 +76,26 @@ def complete_only(bars, step, now=None):
 def gap_summary(bars, step):
     """Count missing steps between ascending bars. Monthly bars have no fixed step, so are not counted."""
     if step is None:
-        return {"count": 0, "missing_bars": 0, "largest_seconds": 0}
+        return {"count": 0, "missing_bars": 0, "largest_seconds": 0, "scope": "all"}
     gaps = [b["time"] - a["time"] for a, b in zip(bars, bars[1:]) if b["time"] - a["time"] > step]
-    return {"count": len(gaps), "missing_bars": sum(g // step - 1 for g in gaps), "largest_seconds": max(gaps, default=0)}
+    return {"count": len(gaps), "missing_bars": sum(g // step - 1 for g in gaps), "largest_seconds": max(gaps, default=0), "scope": "all"}
+
+
+def session_gaps(bars, step, day_of):
+    """Gaps inside one exchange-local day only, because closures between days are normal.
+
+    Trading calendars are not known here, so a whole missing day is not detected.
+    day_of maps a bar's time to its exchange-local date.
+    """
+    if step is None or step >= DAY:
+        return {"count": 0, "missing_bars": 0, "largest_seconds": 0, "scope": "within_trading_days"}
+    gaps = [b["time"] - a["time"] for a, b in zip(bars, bars[1:]) if b["time"] - a["time"] > step and day_of.get(a["time"]) == day_of.get(b["time"])]
+    return {"count": len(gaps), "missing_bars": sum(g // step - 1 for g in gaps), "largest_seconds": max(gaps, default=0), "scope": "within_trading_days"}
 
 
 def number(value):
-    """The shortest text that reads back as exactly the same number."""
-    return repr(float(value))
+    """The shortest text that reads back as exactly the same number. Missing stays blank."""
+    return "" if value is None else repr(float(value))
 
 
 def build_view(fetched, symbol, interval, source, step, start_text, end_text, stale=False, now=None):
@@ -94,7 +107,7 @@ def build_view(fetched, symbol, interval, source, step, start_text, end_text, st
         "bars": list(reversed(done)), "count": len(done),
         "first_utc": iso_utc(done[0]["time"]) if done else None,
         "last_utc": iso_utc(done[-1]["time"]) if done else None,
-        "gaps": gap_summary(done, step), "rejected": fetched["rejected"], "unfinished_excluded": unfinished,
+        "gaps": fetched.get("gaps") or gap_summary(done, step), "rejected": fetched["rejected"], "unfinished_excluded": unfinished,
         "truncated": fetched["truncated"], "limit": MAX_BARS, "stale": stale,
         "downloaded_at_utc": iso_utc(fetched["downloaded_at"]),
     }

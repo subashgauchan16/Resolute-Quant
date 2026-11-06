@@ -251,6 +251,23 @@ async function historyPanel(page) {
   check("Esc closes history", states.closed, states.closed);
 }
 
+/* A CSV with the right number of rows but different values must not be saved as "the rows shown". */
+async function exportGuard(page) {
+  const r = await page.eval(`${HELPERS}
+    const wait=async(f,ms=30000)=>{const s=Date.now();while(Date.now()-s<ms&&!f())await sleep(150)};
+    await cmd('BTC',1500);await cmd('HISTORY',200);await wait(()=>el('hsummary').textContent||el('hstatus').dataset.kind==='bad');
+    const rows=el('hbody').children.length,real=window.fetch;let written=false;
+    window.showSaveFilePicker=async()=>({createWritable:async()=>({write:async()=>{written=true},close:async()=>{},abort:async()=>{}})});
+    window.fetch=async(u,o)=>{const x=await real(u,o);if(!String(u).includes('format=csv'))return x;const lines=(await x.text()).split(String.fromCharCode(10)),f=lines[1].split(',');f[6]=String(Number(f[6])+1);lines[1]=f.join(',');return new Response(lines.join(String.fromCharCode(10)),{status:200})};
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='bad',15000);
+    const changed=el('hresult').textContent;window.fetch=real;written=false;
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='good',15000);
+    const clean=el('hresult').textContent,wroteClean=written;window.showSaveFilePicker=undefined;key('Escape');await sleep(200);
+    return {rows,changed,clean,wroteClean}`);
+  check("export refuses when a row's values differ from the table, even with the same row count", r.rows > 0 && r.changed.startsWith("Export failed") && r.changed.includes("differs"), r.changed);
+  check("export still saves when the rows match the table", r.clean.startsWith("Saved") && r.wroteClean, r.clean);
+}
+
 /* After an update, the page must say to restart. Old-backend answers are simulated inside the page. */
 async function restartNotice(page) {
   const r = await page.eval(`${HELPERS}
@@ -261,13 +278,16 @@ async function restartNotice(page) {
     await checkBackend();const older=bar();
     window.fetch=(u,o)=>String(u).includes('/api/health')?real(u,o).then(async x=>{const j=await x.json();j.restartNeeded=true;return new Response(JSON.stringify(j),{status:200})}):real(u,o);
     await checkBackend();const changed=bar();
+    const alertText='A price alert fired.';el('alerttext').textContent=alertText;await checkBackend();const alertKept=bar();
+    el('alertclose').click();await checkBackend();const cameBack=bar();
     window.fetch=real;await checkBackend();const restarted=bar();
     window.fetch=(u,o)=>String(u).includes('/api/history')?Promise.resolve(new Response('{"error":"Not found."}',{status:404})):real(u,o);
     await cmd('HISTORY',1500);const historyMessage=t('hstatus');window.fetch=real;key('Escape');await sleep(200);
-    return {current,older,changed,restarted,historyMessage}`);
+    return {current,older,changed,alertKept,cameBack,restarted,historyMessage}`);
   check("the page says nothing when the backend is current", r.current === null, r.current);
   check("the page says to restart for a backend from before this check", r.older?.includes("Close the black window"), r.older);
   check("the page says to restart when files changed after startup", r.changed?.includes("Close the black window"), r.changed);
+  check("a visible alert is not overwritten, and the restart message returns after it is dismissed", r.alertKept === "A price alert fired." && r.cameBack?.includes("Close the black window"), { alertKept: r.alertKept, cameBack: r.cameBack });
   check("the restart message clears after a restart", r.restarted === null, r.restarted);
   check("history explains an out-of-date backend instead of saying not found", r.historyMessage.includes("Close the black window") && !r.historyMessage.includes("Not found"), r.historyMessage);
 }
@@ -405,6 +425,7 @@ async function main() {
     await regression(page);
     await dataHonesty(page);
     await historyPanel(page);
+    await exportGuard(page);
     await restartNotice(page);
     await storagePerPort(page);
     const beforeRestartConsole = result.console.length;
