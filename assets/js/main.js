@@ -13,13 +13,14 @@ import { loadDetails } from "./ui/details.js";
 import { initHistory } from "./ui/history.js";
 import { applyMode, paintHeader, select } from "./ui/selection.js";
 import { paintCryptoStats, paintFearGreed, paintMarketStats, paintQuote } from "./ui/stats.js";
-import { paintMeter, paintPortNotice, paintStatus } from "./ui/status.js";
+import { checkBackend, paintMeter, paintPortNotice, paintStatus } from "./ui/status.js";
 import { highlight, initWatchlist, paintWatchlist } from "./ui/watchlist.js";
 
 const RENDER_MS = 200;
 const METER_MS = 1000;
 const SEED_MS = 300000;
 const FEAR_GREED_MS = 3600000;
+const BACKEND_CHECK_MS = 60000;
 
 function render() {
   const now = Date.now();
@@ -63,11 +64,13 @@ function boot() {
   seedAll();
   paintFearGreed();
   paintPortNotice();
+  checkBackend();
 
   setInterval(render, RENDER_MS);
   setInterval(paintMeter, METER_MS);
   setInterval(seedAll, SEED_MS);
   setInterval(paintFearGreed, FEAR_GREED_MS);
+  setInterval(checkBackend, BACKEND_CHECK_MS);
 }
 
 boot();

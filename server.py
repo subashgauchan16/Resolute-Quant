@@ -9,6 +9,7 @@ working without notice. This program never places orders.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import math
@@ -185,6 +186,27 @@ instance = {"id": uuid.uuid4().hex, "started": int(time.time() * 1000), "port": 
             "preferred": DEFAULT_PORT, "source": "default"}
 
 
+BACKEND_FILES = ("server.py", "crypto_feed.py", "history.py")
+
+
+def code_id():
+    """A fingerprint of the backend code on disk, to detect a terminal older than its files."""
+    digest = hashlib.sha256()
+    for name in BACKEND_FILES:
+        digest.update(Path(__file__).with_name(name).read_bytes())
+    return digest.hexdigest()[:16]
+
+
+RUNNING_CODE = code_id()
+
+
+def restart_needed():
+    try:
+        return code_id() != RUNNING_CODE
+    except OSError:  # a file being replaced right now: decide on the next check
+        return False
+
+
 def health():
     """Contract for GET /api/health. The launcher uses `service` and `instance` to confirm that
     a port is really this terminal, and the page uses the port fields to report a fallback."""
@@ -192,6 +214,7 @@ def health():
     fine = feed["connected"] and not yahoo.limited
     return {"service": SERVICE, "status": "ok" if fine else "degraded",
             "timestamp": int(time.time() * 1000), "instance": instance["id"], "started": instance["started"],
+            "codeId": RUNNING_CODE, "restartNeeded": restart_needed(),
             "port": instance["port"], "preferredPort": instance["preferred"], "portSource": instance["source"],
             "fallback": instance["port"] != instance["preferred"], "clients": len(hub.clients),
             "providers": {
@@ -636,8 +659,11 @@ def bind_server(port, source):
         try:
             return Server((HOST, candidate), Handler), None
         except OSError:
-            is_terminal, description, _ = identify(candidate)
+            is_terminal, description, body = identify(candidate)
             if is_terminal:
+                if body.get("codeId") != RUNNING_CODE:
+                    raise SystemExit(f"A different version of the terminal is already running on port {candidate}.\n"
+                                     "Close its black window, then start the terminal again. It has not been touched.")
                 return None, f"http://{HOST}:{candidate}"
             print(busy_message(candidate, description))
     if source != "default":
