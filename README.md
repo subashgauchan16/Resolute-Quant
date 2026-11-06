@@ -4,6 +4,8 @@
 
 © 2026 RESOLUTE QUANT | SG | subashgauchan16. See [LICENSE](LICENSE). This is proprietary, restricted-use software: public visibility grants no right to use it.
 
+**Project site:** https://subashgauchan16.github.io/Resolute-Quant/ is a summary page. The terminal itself runs on your own computer, and the site shows no market data.
+
 > **Prototype.** A working single-chart research terminal with backend-only market data. The multi-chart dashboard, indicators and resizable panels are not built yet, and no predictive model exists. It places no orders. The logo's word "trade" is branding; this program has no execution layer.
 
 A local research and monitoring terminal for crypto, stocks, indices, FX and gold.
@@ -100,4 +102,4 @@ The last two use live providers. They need Edge and an internet connection.
 
 Saved settings keep the internal `subash.` key prefix from the project's earlier name, so existing watchlists survive the rename.
 
-Stage 1.1 evidence and the research specification are in `docs/sprint-1.1/`.
+Stage 1.1 evidence and the research specification are in `docs/sprint-1.1/`. The project site's source is in `site/`, and only that folder is published.
