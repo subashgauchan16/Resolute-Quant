@@ -5,6 +5,7 @@ import { emaSeries, emaStep } from "./indicators.js";
 import { dpFor, grans, isY, pxs, S } from "../store/state.js";
 import * as crypto from "../data/crypto.js";
 import * as markets from "../data/markets.js";
+import { refreshResearch } from "../ui/research.js";
 
 const REFRESH_MS = 60000;
 const RETRY_MS = 15000;
@@ -96,6 +97,7 @@ export async function loadChart() {
     C.pending = [];
     drawLines();
     legend();
+    refreshResearch(true);
     if (stale) {
       showMessage(`Saved copy of ${p}: the provider did not answer, so these bars may be out of date. Retrying in 60 seconds.`);
       setTimeout(() => { if (token === C.token) loadChart(); }, REFRESH_MS);
