@@ -68,6 +68,31 @@ qt_add_resources(ResoluteQuant "assets"
 # Keep the Python sources beside the exe, and point the build-tree exe at the development runtime.
 # tools/deploy.ps1 does not copy this file, so a deployed app can only use its own runtime.
 file(WRITE "${CMAKE_BINARY_DIR}/dev_runtime_path.txt" "${RQ_PYTHON_DIR}")
-add_custom_command(TARGET ResoluteQuant POST_BUILD
+add_custom_target(rq_python_files ALL
   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/rq_engine" "${CMAKE_BINARY_DIR}/python/rq_engine"
+  COMMENT "Copying the rq_engine Python package"
 )
+add_dependencies(ResoluteQuant rq_python_files)
+
+enable_testing()
+function(rq_add_test name)
+  qt_add_executable(${name} tests/${name}.cpp)
+  target_link_libraries(${name} PRIVATE rq_core Qt6::Test)
+  set_target_properties(${name} PROPERTIES WIN32_EXECUTABLE OFF)
+  add_dependencies(${name} ResoluteQuant)
+  add_test(NAME ${name} COMMAND ${name})
+  set_tests_properties(${name} PROPERTIES
+    TIMEOUT 180
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${QT6_INSTALL_PREFIX}/bin"
+  )
+endfunction()
+rq_add_test(test_bridge)
+rq_add_test(test_ui)
+
+set(RQ_POWERSHELL powershell -NoProfile -ExecutionPolicy Bypass -File)
+add_test(NAME process_tests COMMAND ${RQ_POWERSHELL} "${CMAKE_CURRENT_SOURCE_DIR}/tests/process_tests.ps1"
+  -Exe "$<TARGET_FILE:ResoluteQuant>" -QtBin "${QT6_INSTALL_PREFIX}/bin")
+add_test(NAME clean_folder_test COMMAND ${RQ_POWERSHELL} "${CMAKE_CURRENT_SOURCE_DIR}/tests/clean_folder_test.ps1"
+  -Deploy "${CMAKE_CURRENT_SOURCE_DIR}/tools/deploy.ps1")
+set_tests_properties(process_tests clean_folder_test PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE)

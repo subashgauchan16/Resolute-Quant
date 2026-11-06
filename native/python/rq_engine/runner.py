@@ -4,7 +4,7 @@ import json
 
 import _rq_host
 
-from . import health
+from . import calculations, health
 
 
 class JobCancelled(Exception):
@@ -24,6 +24,10 @@ class Host:
 
 JOBS = {
     "health": health.check,
+    "summary_statistics": calculations.summary_statistics,
+    "long_demo": calculations.long_demo,
+    "_stuck_for_test": calculations.stuck_for_test,
+    "_exit_for_test": calculations.exit_for_test,
 }
 
 

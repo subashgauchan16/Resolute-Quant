@@ -11,7 +11,6 @@ QString applicationStyleSheet() {
     QLabel#brand { background: #101114; color: #e3c374; font-size: 12pt; font-weight: 600; padding: 12px 16px 6px 16px; }
     QLabel#pageTitle { color: #e3c374; font-size: 15pt; font-weight: 600; }
     QLabel#muted { color: #9a9ea6; }
-    QLabel#errorText { color: #ef9a8f; }
     QGroupBox { border: 1px solid #33363c; border-radius: 4px; margin-top: 14px; padding: 10px; }
     QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 4px; color: #c7cad0; }
     QPushButton { background: #2a2c32; border: 1px solid #4a4d55; border-radius: 3px; padding: 6px 14px; }

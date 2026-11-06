@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QScrollArea>
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QVBoxLayout>
@@ -65,7 +66,11 @@ MainWindow::MainWindow(PythonEngine& engine, QWidget* parent)
 
   auto* healthPanel = new HealthPanel(engine);
   addPage(QStringLiteral("Home"), makeHomePage());
-  addPage(QStringLiteral("Python Health"), healthPanel);
+  auto* healthScroll = new QScrollArea;
+  healthScroll->setWidget(healthPanel);
+  healthScroll->setWidgetResizable(true);
+  healthScroll->setFrameShape(QFrame::NoFrame);
+  addPage(QStringLiteral("Python Health"), healthScroll);
   navigation_->setCurrentRow(0);
 
   pythonState_->setObjectName(QStringLiteral("pythonState"));
