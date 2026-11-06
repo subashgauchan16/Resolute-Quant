@@ -268,6 +268,30 @@ async function exportGuard(page) {
   check("export still saves when the rows match the table", r.clean.startsWith("Saved") && r.wroteClean, r.clean);
 }
 
+/* After an update, the page must say to restart. Old-backend answers are simulated inside the page. */
+async function restartNotice(page) {
+  const r = await page.eval(`${HELPERS}
+    const {checkBackend}=await import('/assets/js/ui/status.js'),real=window.fetch;
+    const bar=()=>el('alertbar').hidden?null:t('alerttext');
+    await checkBackend();const current=bar();
+    window.fetch=(u,o)=>String(u).includes('/api/health')?Promise.resolve(new Response('{"service":"resolute-quant"}',{status:200})):real(u,o);
+    await checkBackend();const older=bar();
+    window.fetch=(u,o)=>String(u).includes('/api/health')?real(u,o).then(async x=>{const j=await x.json();j.restartNeeded=true;return new Response(JSON.stringify(j),{status:200})}):real(u,o);
+    await checkBackend();const changed=bar();
+    const alertText='A price alert fired.';el('alerttext').textContent=alertText;await checkBackend();const alertKept=bar();
+    el('alertclose').click();await checkBackend();const cameBack=bar();
+    window.fetch=real;await checkBackend();const restarted=bar();
+    window.fetch=(u,o)=>String(u).includes('/api/history')?Promise.resolve(new Response('{"error":"Not found."}',{status:404})):real(u,o);
+    await cmd('HISTORY',1500);const historyMessage=t('hstatus');window.fetch=real;key('Escape');await sleep(200);
+    return {current,older,changed,alertKept,cameBack,restarted,historyMessage}`);
+  check("the page says nothing when the backend is current", r.current === null, r.current);
+  check("the page says to restart for a backend from before this check", r.older?.includes("Close the black window"), r.older);
+  check("the page says to restart when files changed after startup", r.changed?.includes("Close the black window"), r.changed);
+  check("a visible alert is not overwritten, and the restart message returns after it is dismissed", r.alertKept === "A price alert fired." && r.cameBack?.includes("Close the black window"), { alertKept: r.alertKept, cameBack: r.cameBack });
+  check("the restart message clears after a restart", r.restarted === null, r.restarted);
+  check("history explains an out-of-date backend instead of saying not found", r.historyMessage.includes("Close the black window") && !r.historyMessage.includes("Not found"), r.historyMessage);
+}
+
 /* Browser storage belongs to the exact address, so a different port starts with no saved settings. */
 async function storagePerPort(page) {
   const other = spawn(PYTHON, ["-m", "http.server", String(PORT + 1), "--bind", "127.0.0.1", "--directory", join(PROJECT, "assets", "img-none-" + Date.now())], { stdio: "ignore" });
@@ -402,6 +426,7 @@ async function main() {
     await dataHonesty(page);
     await historyPanel(page);
     await exportGuard(page);
+    await restartNotice(page);
     await storagePerPort(page);
     const beforeRestartConsole = result.console.length;
     await restart(page);

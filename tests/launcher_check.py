@@ -146,7 +146,23 @@ def scenarios():
     stop(second, second_output)
     record("second launch reuses the running terminal", urls == [f"http://127.0.0.1:{fallback}"] and again and again["instance"] == first_instance,
            browser=urls, same_instance=bool(again and again["instance"] == first_instance), bat_exit=second_code)
+
+    # 2b. After an update on disk: the running terminal says so, and a new launch refuses to reuse it.
+    backend_file = copy / "history.py"
+    original = backend_file.read_bytes()
+    backend_file.write_bytes(original + b"\n# simulated update\n")
+    flagged = health(fallback)
+    third, third_output = launch()
+    deadline = time.time() + 60
+    while time.time() < deadline and "Close its black window" not in console():
+        time.sleep(0.5)
+    text = console()
+    urls = browser_urls(1)
+    stop(third, third_output)
+    record("after an update, a new launch refuses the out-of-date terminal", flagged and flagged["restartNeeded"] and "Close its black window" in text and not urls,
+           restart_needed=bool(flagged and flagged["restartNeeded"]), browser=urls)
     stop(process, output)
+    backend_file.write_bytes(original)
 
     # 3. Configured busy port: no fallback, clear message, nothing opened.
     process, output = launch(env={"RESOLUTE_QUANT_PORT": str(BUSY)})

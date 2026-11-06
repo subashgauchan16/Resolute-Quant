@@ -217,8 +217,35 @@ class Ports(unittest.TestCase):
             blocker.bind(("127.0.0.1", 0))
             blocker.listen(1)
             port = blocker.getsockname()[1]
-            with mock.patch.object(srv, "identify", return_value=(True, "this terminal", {})):
+            with mock.patch.object(srv, "identify", return_value=(True, "this terminal", {"codeId": srv.RUNNING_CODE})):
                 self.assertEqual(srv.bind_server(port, "default"), (None, f"http://127.0.0.1:{port}"))
+
+    def test_different_version_is_refused_with_instructions(self):
+        for body in ({}, {"codeId": "something-older"}):  # {} is a terminal from before this check existed
+            with socket.socket() as blocker:
+                blocker.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+                blocker.bind(("127.0.0.1", 0))
+                blocker.listen(1)
+                with mock.patch.object(srv, "identify", return_value=(True, "this terminal", body)), self.assertRaises(SystemExit) as stopped:
+                    srv.bind_server(blocker.getsockname()[1], "default")
+                self.assertIn("Close its black window", str(stopped.exception))
+
+
+class CodeFingerprint(unittest.TestCase):
+    def test_same_files_mean_no_restart(self):
+        self.assertEqual(srv.code_id(), srv.RUNNING_CODE)
+        self.assertFalse(srv.restart_needed())
+
+    def test_dependency_changes_count_as_an_update(self):
+        self.assertIn("requirements.txt", srv.BACKEND_FILES)
+
+    def test_changed_files_need_a_restart(self):
+        with mock.patch.object(srv, "RUNNING_CODE", "older"):
+            self.assertTrue(srv.restart_needed())
+
+    def test_unreadable_file_waits_for_the_next_check(self):
+        with mock.patch.object(srv, "code_id", side_effect=OSError("being replaced")):
+            self.assertFalse(srv.restart_needed())
 
 
 class FeedReconnect(unittest.TestCase):
@@ -479,6 +506,7 @@ class Routes(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body["service"], "resolute-quant")
         self.assertEqual(body["instance"], srv.instance["id"])
+        self.assertEqual((body["codeId"], body["restartNeeded"]), (srv.RUNNING_CODE, False))
         for field in ("status", "timestamp", "port", "preferredPort", "portSource", "fallback", "clients", "providers"):
             self.assertIn(field, body)
         self.assertEqual(set(body["providers"]), {"yahoo", "coinbase"})
