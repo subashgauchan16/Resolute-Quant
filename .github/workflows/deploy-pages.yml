@@ -1,0 +1,47 @@
+# Publishes the site/ folder to https://subashgauchan16.github.io/Resolute-Quant/ and nothing else.
+# The terminal's code, the tests, docs/ and research/ are never part of the website.
+# The site must stay free of market data and anything derived from it: see the provider terms.
+#
+# Requires: Settings > Pages > Build and deployment > Source = "GitHub Actions".
+name: Deploy project site to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["site/**", ".github/workflows/deploy-pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check that only public website files are published
+        run: |
+          test -f site/index.html
+          if find site -type f | grep -Ev '\.(html|css|js|webp|png)$|\.nojekyll$'; then
+            echo "Unexpected file type in site/" >&2
+            exit 1
+          fi
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

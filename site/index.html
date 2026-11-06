@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resolute Quant, a market research terminal in progress</title>
+<meta name="description" content="Resolute Quant is a personal market research terminal, built in the open by Subash Gauchan. A work in progress. It places no orders.">
+<meta property="og:title" content="Resolute Quant">
+<meta property="og:description" content="A personal market research terminal, built in the open. A work in progress.">
+<meta property="og:image" content="https://subashgauchan16.github.io/Resolute-Quant/assets/resolute-quant-logo.webp">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Marcellus&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="hero" id="hero">
+  <div class="stage" id="stage">
+    <img class="logo" src="assets/resolute-quant-logo.webp" width="1672" height="941" alt="Resolute Quant logo: the letters R and Q with rising candlesticks and the words analyse, model, trade.">
+    <div class="shine" aria-hidden="true"></div>
+    <div class="shine second" aria-hidden="true"></div>
+    <svg class="orbit" viewBox="0 0 1672 941" aria-hidden="true"><path pathLength="1000" d="M838 238C960 170 1180 110 1245 140C1262 150 1266 180 1262 205C1262 290 1040 400 760 480C590 530 440 565 437 525C436 495 490 430 555 398"/></svg>
+    <div class="ember" aria-hidden="true"></div>
+  </div>
+  <div class="intro">
+    <h1>A market research terminal, being built in the open.</h1>
+    <p>Work in progress. It displays markets and places no orders.</p>
+    <a class="button" href="https://github.com/subashgauchan16/Resolute-Quant" rel="noopener noreferrer">View the source on GitHub</a>
+  </div>
+</header>
+
+<main>
+  <section class="prose">
+    <h2>What it is</h2>
+    <p>Resolute Quant is a terminal for studying markets. It runs on your own computer and brings crypto, stocks, indices, currencies and gold into one screen, with a watchlist, a price chart, an order book, a live trade tape and price alerts.</p>
+    <p>I am building it to learn how a dependable market data system works, then how to test forecasts honestly. Getting reliable answers matters more here than getting attractive ones, so every stage has written acceptance checks, and failures are recorded with the results.</p>
+    <p class="note">This page is a project summary. The terminal itself runs locally and shows no market data here, because the data sources allow personal and research use, not public display.</p>
+  </section>
+
+  <section class="ledger" aria-label="Current state of the project">
+    <div>
+      <h2>Working now</h2>
+      <ul>
+        <li>One command starts the terminal, and it reports clearly if its port is taken.</li>
+        <li>All market data passes through a local backend that validates it. The page connects to no provider directly.</li>
+        <li>Bad provider values are dropped and counted, never repaired or invented.</li>
+        <li>Timeframes from one minute to one month, where the provider really supplies them.</li>
+        <li>If the backend stops, the page says so and recovers by itself when it returns.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Not done yet</h2>
+      <ul>
+        <li>The multi-chart dashboard, indicators and resizable panels.</li>
+        <li>Any predictive model. None exists, and no backtest has been run.</li>
+        <li>A historical dataset whose terms allow model research.</li>
+        <li>Two acceptance checks are still open: frame smoothness under load, and a memory growth limit.</li>
+        <li>Testing on other computers and against a real provider outage.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="road">
+    <h2>Where it is heading</h2>
+    <ol class="candles">
+      <li class="done" style="--h:22%"><span class="candle" aria-hidden="true"></span><b>A working terminal</b><small>Done</small></li>
+      <li class="done" style="--h:32%"><span class="candle" aria-hidden="true"></span><b>All data through the backend</b><small>Done</small></li>
+      <li class="done" style="--h:42%"><span class="candle" aria-hidden="true"></span><b>Research plan written</b><small>Done</small></li>
+      <li class="now" style="--h:53%"><span class="candle" aria-hidden="true"></span><b>A permitted data source</b><small>In progress</small></li>
+      <li class="later" style="--h:64%"><span class="candle" aria-hidden="true"></span><b>Multi-chart dashboard</b><small>Next</small></li>
+      <li class="later" style="--h:76%"><span class="candle" aria-hidden="true"></span><b>Volatility benchmarks</b><small>Not started</small></li>
+      <li class="later" style="--h:90%"><span class="candle" aria-hidden="true"></span><b>Paper observation</b><small>Only if research passes</small></li>
+    </ol>
+    <p class="note">The candles show project stages, not prices. Live trading is not on this roadmap. It would need separate approval, risk limits, monitoring and a tested kill switch.</p>
+  </section>
+
+  <section class="prose">
+    <h2>How the research will work</h2>
+    <p>The first question is deliberately modest: how volatile will Bitcoin be over the next 24 hours? It tests the whole pipeline without being mistaken for a trading edge, and any later strategy would need that estimate to size its risk.</p>
+    <p>Models must earn their complexity. A simple historical benchmark comes first, then a transparent rule, then an interpretable statistical model. Anything more complex has to beat those on data it has never seen, using walk-forward tests in time order and pass marks fixed before the results exist.</p>
+    <p>Strategy tests must also survive fees, spread and slippage, because exchange fees can be large next to short-term price moves. The most likely outcome is that no tradable edge is found, and that would be a valid result.</p>
+  </section>
+
+  <section class="prose">
+    <h2>How it is built</h2>
+    <p>The backend is Python, with Coinbase Exchange and Yahoo Finance as its sources. The page is plain JavaScript modules with TradingView Lightweight Charts. Tests cover the backend, the launcher and the whole terminal in a real browser.</p>
+    <p>I build it with AI assistance and stay responsible for the result: I set the goals, review the changes and decide what ships. The reports in the repository record what passed, what failed and what was not tested.</p>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 RESOLUTE QUANT | SG | subashgauchan16</p>
+  <p>The source is publicly viewable, but it is proprietary and no licence to use it is granted. See the <a href="https://github.com/subashgauchan16/Resolute-Quant/blob/main/LICENSE" rel="noopener noreferrer">licence</a>. Nothing here is financial advice, and no profitability is claimed.</p>
+  <p><a href="https://subashgauchan16.github.io/SubashGauchan-Data-Analytics-Portfolio/">Subash Gauchan's portfolio</a></p>
+</footer>
+<script src="assets/site.js" defer></script>
+</body>
+</html>
