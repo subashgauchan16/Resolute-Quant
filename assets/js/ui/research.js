@@ -100,6 +100,7 @@ export async function refreshResearch(force = false) {
     }
   } finally {
     pending = false;
+    if (`${S.sel}|${S.gran}` !== key) refreshResearch(true);
   }
 }
 
