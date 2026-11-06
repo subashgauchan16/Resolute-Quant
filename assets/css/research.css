@@ -1,0 +1,25 @@
+/* Compact live model panel beneath the price chart. */
+.research-panel{flex:0 0 148px;min-height:148px;border-top:1px solid var(--line);background:var(--panel);display:grid;grid-template-columns:minmax(240px,1.1fr) minmax(260px,1.2fr);gap:12px;padding:8px 12px;overflow:hidden}
+.rq-left{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rq-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rq-title b{font:600 12px var(--label);letter-spacing:.12em;color:var(--amber)}
+.rq-title button{border:1px solid var(--line);padding:3px 7px;color:var(--mute);font-size:10px}
+.rq-title button:hover{border-color:var(--amber);color:var(--amber)}
+#rq-model-status{font-size:10px;color:var(--warn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rq-model-status[data-state="live"]{color:var(--up)}
+#rq-model-status[data-state="down"]{color:var(--down)}
+.rq-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.rq-metric{min-width:0;border-left:2px solid var(--line);padding-left:7px}
+.rq-metric label{display:block;color:var(--mute);font-size:9px;letter-spacing:.06em}
+.rq-metric strong{display:block;font-size:13px;font-weight:500;white-space:nowrap}
+.rq-metric small{display:block;color:var(--mute);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rq-chart{min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.rq-chart-head{display:flex;justify-content:space-between;gap:8px;color:var(--mute);font-size:10px}
+.rq-chart svg{width:100%;height:92px;overflow:visible}
+#rq-fan-outer{fill:rgba(255,176,0,.10);stroke:rgba(255,176,0,.2);stroke-width:1}
+#rq-fan-inner{fill:rgba(255,176,0,.18);stroke:none}
+#rq-fan-median{fill:none;stroke:var(--amber);stroke-width:1.6;vector-effect:non-scaling-stroke}
+.rq-note{font-size:9px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1180px){.research-panel{grid-template-columns:minmax(210px,1fr) minmax(220px,1fr);padding:7px 9px}.rq-metric strong{font-size:12px}}
+@media(max-width:900px){.research-panel{flex:none;min-height:250px;grid-template-columns:minmax(0,1fr);gap:8px}.rq-chart svg{height:100px}.rq-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:420px){.rq-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.rq-chart-head{font-size:9px}}
