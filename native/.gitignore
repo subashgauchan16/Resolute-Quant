@@ -1,0 +1,5 @@
+# Build output and the private Python runtime are recreated by tools/, never committed.
+/build/
+/runtime/
+/dist/
+__pycache__/
