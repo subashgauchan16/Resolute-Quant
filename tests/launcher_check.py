@@ -102,7 +102,7 @@ def record(name, passed, **detail):
 
 def main():
     work.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(PROJECT, copy, ignore=shutil.ignore_patterns(".venv", "__pycache__", "docs", "research"))
+    shutil.copytree(PROJECT, copy, ignore=shutil.ignore_patterns(".venv", "__pycache__", "docs", "research", "native"))
     (work / "log_browser.py").write_text("import sys\nopen(sys.argv[0].replace('log_browser.py','browser.log'),'a').write(sys.argv[1]+'\\n')\n", encoding="utf-8")
     blocker = None
     if BUSY != DEFAULT_PORT:
