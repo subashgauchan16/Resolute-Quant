@@ -32,6 +32,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 import yfinance as yf
 
 import history
+import research_models
 from crypto_feed import GRANULARITIES, MAX_WATCH, PAIR, CoinbaseFeed, ProviderError, Rest, normalise_candles
 
 try:
@@ -479,6 +480,21 @@ class Handler(BaseHTTPRequestHandler):
             symbol = self.symbol(query)
             if not symbol:
                 return self.send_json({"error": "That is not a valid symbol."}, 400)
+            if url.path == "/api/research/forecast":
+                # Research is restricted to Yahoo candles. Coinbase candles are not used for model training.
+                if PAIR.match(symbol):
+                    return self.send_json({"error": "Coinbase data is not used for model research without written provider permission."}, 403)
+                name = (query.get("interval") or ["1D"])[0].upper()
+                if name not in INTERVALS:
+                    return self.send_json({"error": "Unknown interval."}, 400)
+                bars, stale = cache.get(("bars", symbol, name), INTERVALS[name][2],
+                                        lambda: yahoo.call(lambda: candles(symbol, name)))
+                try:
+                    model, _ = cache.get(("research", symbol, name, bars[-1]["time"] if bars else 0), 60,
+                                         lambda: research_models.run_research(bars))
+                except ValueError as error:
+                    return self.send_json({"error": str(error), "model_status": "insufficient_data"}, 422)
+                return self.send_json(dict(model, data_stale=stale))
             if url.path == "/api/history":
                 return self.history(symbol, query)
             if url.path == "/api/candles":
