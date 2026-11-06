@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: resolute-quant-private
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py --no-browser
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: RESOLUTE_DEPLOYED
+        value: "1"
+      - key: RESOLUTE_AUTH_USER
+        sync: false
+      - key: RESOLUTE_AUTH_PASSWORD
+        sync: false
