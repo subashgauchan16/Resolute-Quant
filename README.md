@@ -99,6 +99,8 @@ CSV columns: `time_utc, symbol, interval, open, high, low, close, volume, source
 
 - Up to 5,000 bars per request. If a range holds more, the newest are returned and the page says so.
 - Missing bars are reported and never filled. Invalid rows and the bar still in progress are left out and counted.
+- For Yahoo, gaps are counted only inside a trading day, so a whole missing day is not detected. A missing volume stays blank, and negative prices are kept because futures can trade below zero.
+- Export checks every row against the table first, and refuses if the data has changed since it was loaded.
 - History is fetched from the provider when requested and cached briefly. Only the files you export are kept.
 - Exports are for your own use. Do not share them or publish anything derived from them. Coinbase's terms also bar using its data to build or test models without written consent. See `docs/architecture/phase-0-audit.md`.
 

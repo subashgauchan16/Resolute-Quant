@@ -251,6 +251,23 @@ async function historyPanel(page) {
   check("Esc closes history", states.closed, states.closed);
 }
 
+/* A CSV with the right number of rows but different values must not be saved as "the rows shown". */
+async function exportGuard(page) {
+  const r = await page.eval(`${HELPERS}
+    const wait=async(f,ms=30000)=>{const s=Date.now();while(Date.now()-s<ms&&!f())await sleep(150)};
+    await cmd('BTC',1500);await cmd('HISTORY',200);await wait(()=>el('hsummary').textContent||el('hstatus').dataset.kind==='bad');
+    const rows=el('hbody').children.length,real=window.fetch;let written=false;
+    window.showSaveFilePicker=async()=>({createWritable:async()=>({write:async()=>{written=true},close:async()=>{},abort:async()=>{}})});
+    window.fetch=async(u,o)=>{const x=await real(u,o);if(!String(u).includes('format=csv'))return x;const lines=(await x.text()).split(String.fromCharCode(10)),f=lines[1].split(',');f[6]=String(Number(f[6])+1);lines[1]=f.join(',');return new Response(lines.join(String.fromCharCode(10)),{status:200})};
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='bad',15000);
+    const changed=el('hresult').textContent;window.fetch=real;written=false;
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='good',15000);
+    const clean=el('hresult').textContent,wroteClean=written;window.showSaveFilePicker=undefined;key('Escape');await sleep(200);
+    return {rows,changed,clean,wroteClean}`);
+  check("export refuses when a row's values differ from the table, even with the same row count", r.rows > 0 && r.changed.startsWith("Export failed") && r.changed.includes("differs"), r.changed);
+  check("export still saves when the rows match the table", r.clean.startsWith("Saved") && r.wroteClean, r.clean);
+}
+
 /* Browser storage belongs to the exact address, so a different port starts with no saved settings. */
 async function storagePerPort(page) {
   const other = spawn(PYTHON, ["-m", "http.server", String(PORT + 1), "--bind", "127.0.0.1", "--directory", join(PROJECT, "assets", "img-none-" + Date.now())], { stdio: "ignore" });
@@ -384,6 +401,7 @@ async function main() {
     await regression(page);
     await dataHonesty(page);
     await historyPanel(page);
+    await exportGuard(page);
     await storagePerPort(page);
     const beforeRestartConsole = result.console.length;
     await restart(page);

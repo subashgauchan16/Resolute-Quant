@@ -87,6 +87,18 @@ class Candles(unittest.TestCase):
         self.assertEqual([b["time"] for b in bars], [100])
         self.assertEqual(rejected, 8)
 
+    def test_market_mode_keeps_negative_prices_and_missing_volume(self):
+        rows = [[100, -40, -30, -38, -35, 9], [200, 1, 4, 2, 3, None]]
+        bars, rejected = cf.normalise_candles(rows, now=NOW, market=True)
+        self.assertEqual((rejected, bars[0]["low"], bars[1]["volume"]), (0, -40.0, None))
+
+    def test_market_mode_still_rejects_bad_rows(self):
+        rows = [[100, 3, 2, 2, 2, 1], [200, 0, 4, 2, 3, 1], [300, 1, 4, 2, None, 1], [400, 1, 4, 2, 3, -1], [500, 1, 2, 3, 2, 1]]
+        self.assertEqual(cf.normalise_candles(rows, now=NOW, market=True), ([], 5))
+
+    def test_exchange_mode_is_unchanged(self):
+        self.assertEqual(cf.normalise_candles([[100, -40, -30, -38, -35, 9], [200, 1, 4, 2, 3, None]], now=NOW), ([], 2))
+
     def test_non_list_answer_gives_no_bars(self):
         self.assertEqual(cf.normalise_candles({"message": "error"}, now=NOW), ([], 0))
 
@@ -324,9 +336,43 @@ class HistoryLogic(unittest.TestCase):
         self.assertEqual([b["time"] for b in done], [june])
         self.assertEqual(unfinished, 1)
 
+    def test_month_bar_of_an_exchange_east_of_utc_is_unfinished_in_its_own_month(self):
+        november = hs.parse_day("2027-11-01", "x")
+        tokyo_november_bar = november - 9 * 3600  # 1 November local time, still October in UTC
+        tokyo_october_bar = hs.parse_day("2027-10-01", "x") - 9 * 3600
+        done, unfinished = hs.complete_only([bar(tokyo_october_bar), bar(tokyo_november_bar)], None, now=november + 3600)
+        self.assertEqual([b["time"] for b in done], [tokyo_october_bar])
+        self.assertEqual(unfinished, 1)
+
+    def test_month_bar_west_of_utc_still_finishes_correctly(self):
+        october, november = hs.parse_day("2027-10-01", "x") + 4 * 3600, hs.parse_day("2027-11-01", "x") + 4 * 3600
+        done, _ = hs.complete_only([bar(october), bar(november)], None, now=november + 3600)
+        self.assertEqual([b["time"] for b in done], [october])
+
+    def test_market_closures_between_days_are_not_gaps(self):
+        monday, friday = 0, 3600 * 72
+        bars = [bar(monday), bar(monday + 3600), bar(monday + 3 * 3600), bar(friday)]
+        days = {monday: "mon", monday + 3600: "mon", monday + 3 * 3600: "mon", friday: "fri"}
+        self.assertEqual(hs.session_gaps(bars, 3600, days), {"count": 1, "missing_bars": 1, "largest_seconds": 7200, "scope": "within_trading_days"})
+
+    def test_daily_and_monthly_market_bars_report_no_session_gaps(self):
+        bars = [bar(0), bar(4 * hs.DAY)]
+        self.assertEqual(hs.session_gaps(bars, hs.DAY, {})["count"], 0)
+        self.assertEqual(hs.session_gaps(bars, None, {})["count"], 0)
+
+    def test_view_prefers_the_providers_session_gaps(self):
+        fetched = {"bars": [bar(DAY0), bar(DAY0 + 7200)], "rejected": 0, "truncated": False, "downloaded_at": DAY0, "gaps": {"count": 0, "missing_bars": 0, "largest_seconds": 0, "scope": "within_trading_days"}}
+        view = hs.build_view(fetched, "AAPL", "1H", "yahoo", 3600, "a", "b", now=DAY0 + 10**7)
+        self.assertEqual(view["gaps"]["scope"], "within_trading_days")
+
+    def test_missing_volume_is_blank_in_csv_and_never_zero(self):
+        view = self.view([bar(DAY0, volume=None)])
+        row = hs.to_csv(view).strip().split(chr(13) + chr(10))[1].split(",")
+        self.assertEqual(row[hs.COLUMNS.index("volume")], "")
+
     def test_gaps_are_counted_and_never_filled(self):
         bars = [bar(0), bar(60), bar(300)]
-        self.assertEqual(hs.gap_summary(bars, 60), {"count": 1, "missing_bars": 3, "largest_seconds": 240})
+        self.assertEqual(hs.gap_summary(bars, 60), {"count": 1, "missing_bars": 3, "largest_seconds": 240, "scope": "all"})
         self.assertEqual(len(bars), 3)
         self.assertEqual(hs.gap_summary(bars, None)["count"], 0)
 
@@ -543,6 +589,18 @@ class Routes(unittest.TestCase):
         self.assertEqual(out["bars"][0]["volume"], 0.0)
         self.assertEqual(out["rejected"], 1)
         self.assertFalse(ticker.return_value.history.call_args.kwargs["auto_adjust"])
+
+    def test_yahoo_history_counts_gaps_inside_a_trading_day_only(self):
+        import pandas as pd
+        monday = pd.Timestamp("2020-01-06 09:30", tz="America/New_York")
+        index = pd.DatetimeIndex([monday, monday + pd.Timedelta(hours=1), monday + pd.Timedelta(hours=3), monday + pd.Timedelta(days=1)])
+        frame = pd.DataFrame({"Open": [2.0] * 4, "High": [4.0] * 4, "Low": [1.0] * 4, "Close": [3.0] * 4, "Volume": [1.0, float("nan"), 1.0, 1.0]}, index=index)
+        with mock.patch.object(srv.yf, "Ticker") as ticker:
+            ticker.return_value.history.return_value = frame
+            out = srv.yahoo_history("CL=F", "1H", 0, 10**10)
+        self.assertEqual((out["gaps"]["count"], out["gaps"]["scope"]), (1, "within_trading_days"))
+        self.assertEqual(out["rejected"], 0)
+        self.assertIsNone(out["bars"][1]["volume"])
 
     def test_watch_and_book_set_the_feed(self):
         status, body = self.get("/api/crypto/watch?symbols=BTC-USD,bad!,ETH-USD")
