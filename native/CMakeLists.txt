@@ -40,8 +40,14 @@ set_target_properties(rq_python_host PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAK
 
 # Everything except main(), shared with the tests.
 qt_add_library(rq_core STATIC
+  src/app/CandleChart.cpp
+  src/app/CandleChart.h
+  src/app/ErrorDisplay.cpp
+  src/app/ErrorDisplay.h
   src/app/HealthPanel.cpp
   src/app/HealthPanel.h
+  src/app/HistoryPanel.cpp
+  src/app/HistoryPanel.h
   src/app/Logging.cpp
   src/app/Logging.h
   src/app/MainWindow.cpp
@@ -70,7 +76,8 @@ qt_add_resources(ResoluteQuant "assets"
 file(WRITE "${CMAKE_BINARY_DIR}/dev_runtime_path.txt" "${RQ_PYTHON_DIR}")
 add_custom_target(rq_python_files ALL
   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/rq_engine" "${CMAKE_BINARY_DIR}/python/rq_engine"
-  COMMENT "Copying the rq_engine Python package"
+  COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/../history.py" "${CMAKE_CURRENT_SOURCE_DIR}/../crypto_feed.py" "${CMAKE_BINARY_DIR}/python/"
+  COMMENT "Copying the Python sources, including the modules shared with the browser terminal"
 )
 add_dependencies(ResoluteQuant rq_python_files)
 
@@ -89,6 +96,16 @@ function(rq_add_test name)
 endfunction()
 rq_add_test(test_bridge)
 rq_add_test(test_ui)
+rq_add_test(test_history_ui)
+
+# Contacts real providers, so it is built but deliberately not registered with ctest.
+qt_add_executable(live_history_check tests/live_history_check.cpp)
+target_link_libraries(live_history_check PRIVATE rq_core Qt6::Test)
+set_target_properties(live_history_check PROPERTIES WIN32_EXECUTABLE OFF)
+add_dependencies(live_history_check ResoluteQuant)
+
+# Runs the Python history code directly on the private Python, against a fake provider.
+add_test(NAME python_tests COMMAND "${RQ_PYTHON_DIR}/python.exe" -I "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_market_history.py")
 
 set(RQ_POWERSHELL powershell -NoProfile -ExecutionPolicy Bypass -File)
 add_test(NAME process_tests COMMAND ${RQ_POWERSHELL} "${CMAKE_CURRENT_SOURCE_DIR}/tests/process_tests.ps1"

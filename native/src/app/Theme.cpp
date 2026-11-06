@@ -19,6 +19,20 @@ QString applicationStyleSheet() {
     QPushButton:disabled { color: #6c7078; border-color: #33363c; }
     QLineEdit, QPlainTextEdit { background: #101114; border: 1px solid #3a3d44; border-radius: 3px; padding: 5px; }
     QLineEdit:focus, QPlainTextEdit:focus { border-color: #c9a24b; }
+    QComboBox, QDateEdit { background: #101114; border: 1px solid #3a3d44; border-radius: 3px; padding: 5px; min-width: 70px; min-height: 20px; }
+    QDateEdit { min-width: 100px; }
+    QLineEdit { min-height: 20px; }
+    QComboBox:focus, QDateEdit:focus { border-color: #c9a24b; }
+    QScrollBar:vertical { background: #101114; width: 12px; margin: 0; }
+    QScrollBar:horizontal { background: #101114; height: 12px; margin: 0; }
+    QScrollBar::handle { background: #3a3d44; border-radius: 4px; min-height: 24px; min-width: 24px; margin: 2px; }
+    QScrollBar::handle:hover { background: #c9a24b; }
+    QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
+    QScrollBar::add-page, QScrollBar::sub-page { background: none; }
+    QComboBox QAbstractItemView { background: #101114; selection-background-color: #24262b; selection-color: #e3c374; }
+    QTableView { background: #101114; gridline-color: #24262b; border: 1px solid #33363c; selection-background-color: #24262b; selection-color: #e3c374; }
+    QHeaderView::section { background: #17181b; color: #aeb2b9; border: none; border-bottom: 1px solid #33363c; padding: 5px; }
+    QSplitter::handle { background: #24262b; height: 3px; }
     QProgressBar { background: #101114; border: 1px solid #3a3d44; border-radius: 3px; text-align: center; }
     QProgressBar::chunk { background: #c9a24b; }
     QStatusBar { background: #101114; color: #aeb2b9; }

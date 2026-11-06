@@ -18,6 +18,8 @@ New-Item -ItemType Directory -Force $Out | Out-Null
 Copy-Item (Join-Path $build 'ResoluteQuant.exe'), (Join-Path $build 'rq_python_host.dll') $Out
 New-Item -ItemType Directory (Join-Path $Out 'python') | Out-Null
 Copy-Item (Join-Path $native 'python\rq_engine') (Join-Path $Out 'python\rq_engine') -Recurse
+# Shared with the browser terminal, from the repository root.
+Copy-Item (Join-Path $native '..\history.py'), (Join-Path $native '..\crypto_feed.py') (Join-Path $Out 'python')
 New-Item -ItemType Directory (Join-Path $Out 'runtime') | Out-Null
 Copy-Item $runtime (Join-Path $Out 'runtime\python') -Recurse
 
