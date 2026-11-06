@@ -10,6 +10,7 @@ import { checkAlerts, initAlerts, showWatchDropped } from "./ui/alert.js";
 import { initBrand } from "./ui/brand.js";
 import { initCommands } from "./ui/command.js";
 import { loadDetails } from "./ui/details.js";
+import { initHistory } from "./ui/history.js";
 import { applyMode, paintHeader, select } from "./ui/selection.js";
 import { paintCryptoStats, paintFearGreed, paintMarketStats, paintQuote } from "./ui/stats.js";
 import { paintMeter, paintPortNotice, paintStatus } from "./ui/status.js";
@@ -49,6 +50,7 @@ function boot() {
   initWatchlist();
   initAlerts();
   initCommands();
+  initHistory();
   applyMode();
   paintHeader();
   highlight();

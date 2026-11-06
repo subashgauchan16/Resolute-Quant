@@ -209,6 +209,48 @@ async function dataHonesty(page) {
   check("a full watchlist refuses a new symbol and says why", limit.text.includes("full at 40") && !limit.added, limit.text);
 }
 
+/* History reads real provider bars. Failure and save paths are forced inside the page. */
+async function historyPanel(page) {
+  const live = await page.eval(`${HELPERS}
+    await cmd('BTC',1500);await cmd('HISTORY',200);
+    const visible=!el('history').hidden,wait=async(f,ms=30000)=>{const s=Date.now();while(Date.now()-s<ms&&!f())await sleep(150)};
+    await wait(()=>el('hsummary').textContent||el('hstatus').dataset.kind==='bad');
+    const times=[...el('hbody').querySelectorAll('tr th')].map(x=>x.textContent),rows=times.length;
+    const newestFirst=times.every((x,i)=>!i||times[i-1]>x);
+    const req=new URLSearchParams({symbol:'BTC-USD',interval:el('hinterval').value,source:'coinbase',start:el('hstart').value,end:el('hend').value});
+    const csv=await (await fetch('/api/history?'+req+'&format=csv')).text(),lines=csv.trim().split(String.fromCharCode(10));
+    let written=null;
+    window.showSaveFilePicker=async()=>({createWritable:async()=>({write:async b=>{written=await b.text()},close:async()=>{},abort:async()=>{}})});
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='good'||el('hresult').dataset.kind==='bad',15000);
+    const saved=el('hresult').textContent,savedKind=el('hresult').dataset.kind,writtenRows=written?written.trim().split(String.fromCharCode(10)).length-1:0;
+    window.showSaveFilePicker=async()=>({createWritable:async()=>({write:async()=>{throw new Error('disk full')},close:async()=>{},abort:async()=>{}})});
+    el('hexport').click();await wait(()=>el('hresult').dataset.kind==='bad',15000);
+    const failed=el('hresult').textContent;
+    window.showSaveFilePicker=async()=>{throw new DOMException('no','AbortError')};
+    el('hexport').click();await wait(()=>el('hresult').textContent.startsWith('Export cancelled'),5000);
+    const cancelled=el('hresult').textContent;window.showSaveFilePicker=undefined;let downloaded=null;const clickReal=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){downloaded=this.download};el('hexport').click();await wait(()=>el('hresult').textContent.startsWith('Download of'),15000);const fallback=el('hresult').textContent;HTMLAnchorElement.prototype.click=clickReal;
+    return {visible,rows,newestFirst,statusKind:el('hstatus').dataset.kind,header:lines[0].trim(),csvRows:lines.length-1,written:writtenRows,savedKind,saved,failed,cancelled,fallback,downloaded}`);
+  check("history opens and shows real bars, newest first", live.visible && live.rows > 0 && live.newestFirst, { rows: live.rows, newestFirst: live.newestFirst });
+  check("CSV has the documented header and the same rows as the table", live.header === "time_utc,symbol,interval,open,high,low,close,volume,source,downloaded_at_utc" && live.csvRows === live.rows, { csv: live.csvRows, table: live.rows });
+  check("export reports saved only after the file is written", live.savedKind === "good" && live.written === live.rows && live.saved.startsWith("Saved"), live.saved);
+  check("a failed write is reported as a failure", live.failed.startsWith("Export failed") && live.failed.includes("disk full"), live.failed);
+  check("a cancelled save dialog is reported as cancelled", live.cancelled.startsWith("Export cancelled"), live.cancelled);
+  check("without a save dialog, export says the download started and does not claim it saved", live.fallback.startsWith("Download of") && !live.fallback.includes("Saved") && live.downloaded?.endsWith(".csv"), live.fallback);
+  const states = await page.eval(`${HELPERS}
+    const wait=async(f,ms=30000)=>{const s=Date.now();while(Date.now()-s<ms&&!f())await sleep(150)};
+    el('hstart').value=el('hend').value='2000-01-03';el('hload').click();
+    await wait(()=>!el('hempty').hidden||el('hstatus').dataset.kind==='bad');
+    const empty={shown:!el('hempty').hidden,exportDisabled:el('hexport').disabled,tableHidden:el('htable').hidden,status:el('hstatus').textContent};
+    const real=window.fetch;window.fetch=(u,o)=>String(u).includes('/api/history')?Promise.resolve(new Response(JSON.stringify({error:'fixture failure'}),{status:502})):real(u,o);
+    el('hload').click();await wait(()=>el('hstatus').dataset.kind==='bad',5000);
+    const error={text:el('hstatus').textContent,exportDisabled:el('hexport').disabled};window.fetch=real;
+    key('Escape');await sleep(200);const closed=el('history').hidden,pairBefore=t('pair');
+    return {empty,error,closed,pairBefore}`);
+  check("empty history explains itself and disables export", states.empty.shown && states.empty.exportDisabled && states.empty.tableHidden, states.empty.status);
+  check("a history error is shown and disables export", states.error.text.includes("fixture failure") && states.error.exportDisabled, states.error.text);
+  check("Esc closes history", states.closed, states.closed);
+}
+
 /* Browser storage belongs to the exact address, so a different port starts with no saved settings. */
 async function storagePerPort(page) {
   const other = spawn(PYTHON, ["-m", "http.server", String(PORT + 1), "--bind", "127.0.0.1", "--directory", join(PROJECT, "assets", "img-none-" + Date.now())], { stdio: "ignore" });
@@ -341,6 +383,7 @@ async function main() {
 
     await regression(page);
     await dataHonesty(page);
+    await historyPanel(page);
     await storagePerPort(page);
     const beforeRestartConsole = result.console.length;
     await restart(page);

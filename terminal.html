@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/brand.css">
+<link rel="stylesheet" href="assets/css/history.css">
 </head>
 <body>
 <div class="app" id="app">
@@ -19,6 +20,7 @@
     <div class="status y" id="ystatus" data-s="wait" title="State of the Yahoo Finance data program"><i class="dot"></i><span id="ystatustext">STOCKS OFF</span></div>
     <div class="meta hidephone" title="Messages received per second, and the time since each message was stamped by the exchange"><span id="rate">0</span> msg/s · <span id="lag">-</span></div>
     <div class="clock" id="clock">--:--:--</div>
+    <button class="icon" id="historybtn" title="Price history and CSV export for the open symbol">HISTORY</button>
     <button class="icon" id="fs" title="Full screen">FULL</button>
     <button class="icon" id="helpbtn">HELP</button>
   </header>
@@ -106,12 +108,32 @@
   <p class="rq-note"><b>© 2026 RESOLUTE QUANT | SG | subashgauchan16</b>Research display only. Places no orders. Click or press any key to enter.</p>
 </div>
 
+<section class="history" id="history" aria-labelledby="htitle" hidden>
+  <header class="hhead"><h2 id="htitle">HISTORY <span id="hsymbol"></span></h2><button class="hbtn" id="hclose" type="button">Close</button></header>
+  <form class="hform" id="hform">
+    <label>TIMEFRAME<select id="hinterval"></select></label>
+    <label>FROM (UTC)<input id="hstart" type="date" required></label>
+    <label>TO (UTC)<input id="hend" type="date" required></label>
+    <button class="hbtn" id="hload" type="submit">Load history</button>
+    <button class="hbtn main" id="hexport" type="button" disabled>Export CSV</button>
+  </form>
+  <div class="hmsgs" role="status" aria-live="polite">
+    <p id="hstatus"></p><p id="hsummary"></p><p id="hnotes"></p><p id="hresult"></p>
+    <p class="hterms">Exports are for your own use. Do not share them or publish anything derived from them. Coinbase data also cannot be used to build or test models without Coinbase's written permission.</p>
+  </div>
+  <div class="hscroll">
+    <table class="htable" id="htable" hidden><thead><tr><th scope="col">TIME (UTC)</th><th scope="col">OPEN</th><th scope="col">HIGH</th><th scope="col">LOW</th><th scope="col">CLOSE</th><th scope="col">VOLUME</th></tr></thead><tbody id="hbody"></tbody></table>
+    <p class="hempty" id="hempty" hidden></p>
+  </div>
+</section>
+
 <div class="help" id="help" hidden><div>
   <h2>COMMANDS</h2>
   <dl>
     <dt>BTC or AAPL or VOD.L</dt><dd>Open a symbol. Coinbase is checked first, then Yahoo.</dd>
     <dt>STK META</dt><dd>Use Yahoo when the symbol exists on both.</dd>
     <dt>1M 5M 15M 1H 1D</dt><dd>Change the candle size. 1M is one minute. Crypto adds 6H. Markets add 4H, 1W and 1MO (one month).</dd>
+    <dt>HISTORY</dt><dd>Show past bars for the open symbol, and export them as CSV.</dd>
     <dt>ADD PEPE</dt><dd>Add a symbol to the watchlist.</dd>
     <dt>DEL PEPE</dt><dd>Remove a symbol.</dd>
     <dt>ALERT 77000</dt><dd>Alert when the open symbol crosses a price.</dd>
