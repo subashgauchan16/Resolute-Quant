@@ -1,0 +1,40 @@
+{
+ "warmupMinutes": 3,
+ "readings": [
+  {
+   "minute": 3,
+   "heapMB": 2.822,
+   "status": "LIVE"
+  },
+  {
+   "minute": 8,
+   "heapMB": 3.593,
+   "status": "LIVE"
+  },
+  {
+   "minute": 13,
+   "heapMB": 3.613,
+   "status": "LIVE"
+  },
+  {
+   "minute": 18,
+   "heapMB": 3.115,
+   "status": "LIVE"
+  },
+  {
+   "minute": 23,
+   "heapMB": 3.137,
+   "status": "LIVE"
+  },
+  {
+   "minute": 28,
+   "heapMB": 3.153,
+   "status": "LIVE"
+  },
+  {
+   "minute": 33,
+   "heapMB": 3.21,
+   "status": "LIVE"
+  }
+ ]
+}

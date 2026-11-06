@@ -1,0 +1,65 @@
+{
+ "busy_port": 8765,
+ "busy_port_status": 401,
+ "results": [
+  {
+   "scenario": "fresh install; default port busy; deterministic fallback",
+   "pass": true,
+   "seconds_to_ready": 125,
+   "browser": [
+    "http://127.0.0.1:8766"
+   ],
+   "source": "default",
+   "venv_created": true
+  },
+  {
+   "scenario": "second launch reuses the running terminal",
+   "pass": true,
+   "browser": [
+    "http://127.0.0.1:8766"
+   ],
+   "same_instance": true,
+   "bat_exit": 0
+  },
+  {
+   "scenario": "configured busy port does not fall back",
+   "pass": true,
+   "browser": [],
+   "message": [
+    "Port 8765 was set by RESOLUTE_QUANT_PORT, so no other port was tried. Choose a free port or free this one."
+   ]
+  },
+  {
+   "scenario": "RESOLUTE_QUANT_PORT honoured",
+   "pass": true,
+   "browser": [
+    "http://127.0.0.1:8772"
+   ]
+  },
+  {
+   "scenario": "terminal.config.json honoured",
+   "pass": true,
+   "browser": [
+    "http://127.0.0.1:8773"
+   ]
+  },
+  {
+   "scenario": "--port beats RESOLUTE_QUANT_PORT and config",
+   "pass": true,
+   "browser": [
+    "http://127.0.0.1:8774"
+   ]
+  },
+  {
+   "scenario": "bad port setting stops with a message",
+   "pass": true,
+   "browser": []
+  },
+  {
+   "scenario": "other service on the busy port unchanged",
+   "pass": true,
+   "before": 401,
+   "after": 401
+  }
+ ]
+}

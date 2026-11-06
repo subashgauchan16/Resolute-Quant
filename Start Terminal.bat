@@ -1,5 +1,5 @@
 @echo off
-title Subash Terminal
+title Resolute Quant
 cd /d "%~dp0"
 
 set "PY="
@@ -16,7 +16,7 @@ if errorlevel 1 goto failed
 ".venv\Scripts\python.exe" -m pip install --quiet --disable-pip-version-check -r requirements.txt
 if errorlevel 1 goto failed
 
-".venv\Scripts\python.exe" server.py
+".venv\Scripts\python.exe" server.py %*
 pause
 exit /b 0
 

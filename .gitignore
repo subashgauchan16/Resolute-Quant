@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Local settings and secrets. Never commit keys.
+terminal.config.json
+.env
+.env.*
+*.key
+
+# Market data stays out of this public repository: terms are unverified and files are large.
+/data/
+/research/data/
+*.csv
+*.parquet
+*.feather
+*.h5
+*.db
+*.sqlite
+
+# Test output
+result.json
+acceptance.json
+!docs/sprint-1.1/evidence/*.json

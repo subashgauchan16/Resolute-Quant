@@ -1,4 +1,4 @@
-"""Subash Terminal data program.
+"""Resolute Quant data program.
 
 Runs on your own PC only. It uses yfinance to read stocks, indices, FX, company
 data and news from Yahoo Finance, then passes them to the terminal page.
@@ -8,20 +8,29 @@ working without notice. This program never places orders.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import math
+import os
 import queue
 import re
+import socket
+import sys
 import threading
 import time
+import urllib.error
+import urllib.request
+import uuid
 import warnings
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import yfinance as yf
+
+from crypto_feed import GRANULARITIES, MAX_WATCH, PAIR, CoinbaseFeed, ProviderError, Rest
 
 try:
     from yfinance.exceptions import YFRateLimitError
@@ -29,15 +38,23 @@ except Exception:  # older yfinance versions
     class YFRateLimitError(Exception):
         pass
 
-HOST, PORT = "127.0.0.1", 8765
-PAGE = Path(__file__).with_name("terminal.html")
-SYMBOL = re.compile(r"^[A-Z0-9.^=\-]{1,15}$")
+HOST, DEFAULT_PORT = "127.0.0.1", 8765
+FALLBACK_PORTS = 10        # with no configured port, try this many ports after the default
+CONFIG_FILE = Path(__file__).with_name("terminal.config.json")
+SERVICE = "resolute-quant"
+PAGE =Path(__file__).with_name("terminal.html")
+ASSETS = Path(__file__).with_name("assets").resolve()
+ASSET_TYPES = {".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+               ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
+               ".webp": "image/webp"}
+SYMBOL =re.compile(r"^[A-Z0-9.^=\-]{1,15}$")
 SNAPSHOT_SECONDS = 90      # gap between price refreshes for the whole watchlist
 META_SECONDS = 300         # gap between market-state refreshes
 MIN_CALL_GAP = 0.3         # polite gap between Yahoo requests
 INTERVALS = {              # name: (yfinance interval, period, cache seconds)
     "1M": ("1m", "5d", 20), "5M": ("5m", "1mo", 45), "15M": ("15m", "1mo", 90),
-    "1H": ("60m", "1y", 300), "1D": ("1d", "5y", 900), "1W": ("1wk", "10y", 1800),
+    "1H": ("60m", "1y", 300), "4H": ("4h", "1y", 600), "1D": ("1d", "5y", 900),
+    "1W": ("1wk", "10y", 1800), "1MO": ("1mo", "max", 3600),  # 1M is one minute, 1MO one month
 }
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
@@ -156,6 +173,26 @@ class Hub:
 
 
 hub = Hub()
+coinbase = CoinbaseFeed(hub.publish)
+rest = Rest()
+instance = {"id": uuid.uuid4().hex, "started": int(time.time() * 1000), "port": None,
+            "preferred": DEFAULT_PORT, "source": "default"}
+
+
+def health():
+    """Contract for GET /api/health. The launcher uses `service` and `instance` to confirm that
+    a port is really this terminal, and the page uses the port fields to report a fallback."""
+    feed = coinbase.status()
+    fine = feed["connected"] and not yahoo.limited
+    return {"service": SERVICE, "status": "ok" if fine else "degraded",
+            "timestamp": int(time.time() * 1000), "instance": instance["id"], "started": instance["started"],
+            "port": instance["port"], "preferredPort": instance["preferred"], "portSource": instance["source"],
+            "fallback": instance["port"] != instance["preferred"], "clients": len(hub.clients),
+            "providers": {
+                "yahoo": {"stream": hub.stream_up, "limited": yahoo.limited, "snapshot": hub.last_snapshot},
+                "coinbase": {"connected": feed["connected"], "lastMessage": feed["lastMessage"], "retryIn": feed["retryIn"],
+                             "reconnects": feed["reconnects"], "rejected": feed["rejected"], "restRejected": rest.rejected},
+            }}
 
 
 def fast_quote(symbol):
@@ -330,7 +367,7 @@ def resolve(symbol):
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    server_version = "SubashTerminal"
+    server_version = "ResoluteQuant"
 
     def log_message(self, *args):
         pass
@@ -350,6 +387,17 @@ class Handler(BaseHTTPRequestHandler):
         value = (query.get("symbol") or [""])[0].upper()
         return value if SYMBOL.match(value) else None
 
+    def send_asset(self, path):
+        """Serve the page's CSS, JS modules and vendored chart library from assets/.
+
+        Added for the modular frontend. Only known file types inside assets/ are served.
+        """
+        target = (ASSETS / unquote(path[len("/assets/"):])).resolve()
+        kind = ASSET_TYPES.get(target.suffix.lower())
+        if kind is None or not target.is_relative_to(ASSETS) or not target.is_file():
+            return self.send_json({"error": "Not found."}, 404)
+        return self.reply(200, target.read_bytes(), kind)
+
     def do_GET(self):
         # Only answer pages addressed to this PC, not other websites.
         if self.headers.get("Host", "").split(":")[0] not in ("127.0.0.1", "localhost"):
@@ -359,8 +407,40 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if url.path in ("/", "/terminal.html"):
                 return self.reply(200, PAGE.read_bytes(), "text/html; charset=utf-8")
+            if url.path.startswith("/assets/"):
+                return self.send_asset(url.path)
             if url.path == "/api/stream":
                 return self.stream()
+            if url.path == "/api/health":
+                return self.send_json(health())
+            if url.path == "/api/sentiment/feargreed":
+                data, stale = cache.get(("fng",), 3600, rest.fear_greed)
+                return self.send_json(dict(data, stale=stale))
+            if url.path == "/api/crypto/watch":
+                raw = (query.get("symbols") or [""])[0].upper().split(",")
+                return self.send_json({"watch": coinbase.set_watch(raw[:MAX_WATCH]), "status": coinbase.status()})
+            if url.path == "/api/crypto/book":  # one book at a time; an empty symbol stops it
+                value = (query.get("symbol") or [""])[0].upper()
+                if value and not PAIR.match(value):
+                    return self.send_json({"error": "That is not a valid pair."}, 400)
+                coinbase.set_book(value)
+                return self.send_json({"symbol": value or None})
+            if url.path in ("/api/crypto/candles", "/api/crypto/stats"):
+                pair = (query.get("symbol") or [""])[0].upper()
+                if not PAIR.match(pair):
+                    return self.send_json({"error": "That is not a valid pair."}, 400)
+                if url.path.endswith("stats"):
+                    data, stale = cache.get(("cstats", pair), 20, lambda: rest.stats(pair))
+                    return self.send_json(dict(data, stale=stale))
+                try:
+                    granularity = int((query.get("granularity") or [""])[0])
+                except ValueError:
+                    granularity = 0
+                if granularity not in GRANULARITIES:
+                    return self.send_json({"error": "Coinbase does not serve that candle size."}, 400)
+                bars, stale = cache.get(("cbars", pair, granularity), min(granularity // 6, 60),
+                                        lambda: rest.candles(pair, granularity))
+                return self.send_json({"bars": bars, "stale": stale})
             if url.path == "/api/watch":
                 raw = (query.get("symbols") or [""])[0].upper().split(",")
                 hub.set_watch([s for s in raw if SYMBOL.match(s)][:40])
@@ -389,6 +469,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"error": "Not found."}, 404)
         except YFRateLimitError:
             return self.send_json({"error": "Yahoo is rate limiting this PC. It will retry shortly."}, 429)
+        except ProviderError as error:
+            return self.send_json({"error": str(error)}, error.status)
         except (BrokenPipeError, ConnectionError):
             return None
         except Exception as error:
@@ -406,7 +488,8 @@ class Handler(BaseHTTPRequestHandler):
         hub.clients.add(client)
         try:
             client.put_nowait(json.dumps(hub.status()))
-            while True:
+            client.put_nowait(json.dumps(coinbase.status()))
+            while client in hub.clients:  # a client that fell too far behind reconnects for a clean start
                 try:
                     data = client.get(timeout=10)
                     self.wfile.write(f"data: {data}\n\n".encode())
@@ -421,21 +504,120 @@ class Handler(BaseHTTPRequestHandler):
 
 class Server(ThreadingHTTPServer):
     daemon_threads = True
+    # On Windows SO_REUSEADDR lets a second listener share a busy port, so ask for sole use instead.
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self):
+        if os.name == "nt":
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
+def valid_port(value):
+    try:
+        port = int(value)
+    except (TypeError, ValueError):
+        return None
+    return port if 1024 <= port <= 65535 else None
+
+
+def configured_port(cli_port, env, config_file):
+    """Port selection order: --port, then RESOLUTE_QUANT_PORT, then terminal.config.json, then the default.
+
+    Returns (port, source). A configured port never falls back. Bad settings stop the launch.
+    """
+    settings = [("--port", cli_port), ("RESOLUTE_QUANT_PORT", env.get("RESOLUTE_QUANT_PORT"))]
+    if config_file.exists():
+        try:
+            settings.append((config_file.name, json.loads(config_file.read_text(encoding="utf-8")).get("port")))
+        except (OSError, ValueError, AttributeError):
+            raise SystemExit(f"{config_file.name} could not be read. Fix it or delete it.")
+    for source, value in settings:
+        if value is not None:
+            port = valid_port(value)
+            if port is None:
+                raise SystemExit(f"{source} must be a port number from 1024 to 65535, not {value!r}.")
+            return port, source
+    return DEFAULT_PORT, "default"
+
+
+def identify(port):
+    """Ask whoever holds a port what it is. Sends one GET and changes nothing.
+
+    Returns (is_terminal, description, health).
+    """
+    request = urllib.request.Request(f"http://{HOST}:{port}/api/health", headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:
+            body = json.load(response)
+            if isinstance(body, dict) and body.get("service") == SERVICE:
+                return True, "this terminal", body
+            return False, f"HTTP {response.status}, server {response.headers.get('Server') or 'unnamed'}", None
+    except urllib.error.HTTPError as error:
+        return False, f"HTTP {error.code}, server {error.headers.get('Server') or 'unnamed'}", None
+    except (urllib.error.URLError, OSError, ValueError):
+        return False, "it did not answer as a web server", None
+
+
+def busy_message(port, description):
+    return (f"Port {port} is held by another program ({description}). It has not been touched.\n"
+            f"  To see what holds it, run: netstat -ano | findstr :{port}\n"
+            f"  and, for Windows HTTP services: netsh http show servicestate")
+
+
+def bind_server(port, source):
+    """Bind the chosen port, or a fallback if none was configured.
+
+    Returns (server, None) when bound, (None, url) when this terminal is already running.
+    """
+    candidates = [port] if source != "default" else [port + i for i in range(FALLBACK_PORTS + 1)]
+    for candidate in candidates:
+        try:
+            return Server((HOST, candidate), Handler), None
+        except OSError:
+            is_terminal, description, _ = identify(candidate)
+            if is_terminal:
+                return None, f"http://{HOST}:{candidate}"
+            print(busy_message(candidate, description))
+    if source != "default":
+        raise SystemExit(f"\nPort {port} was set by {source}, so no other port was tried. Choose a free port or free this one.")
+    raise SystemExit(f"\nPorts {candidates[0]} to {candidates[-1]} are all busy. Set a free port with RESOLUTE_QUANT_PORT or terminal.config.json.")
+
+
+def open_when_confirmed(url, port):
+    """Open the browser only after confirming that the port answers as this very instance."""
+    is_terminal, description, body = identify(port)
+    if is_terminal and body.get("instance") == instance["id"]:
+        webbrowser.open(url)
+    else:
+        print(f"Not opening the browser: port {port} did not answer as this terminal ({description}).")
 
 
 def main():
-    try:
-        server = Server((HOST, PORT), Handler)
-    except OSError:
-        print(f"Port {PORT} is already in use. The terminal may already be running.")
-        print(f"Opening http://{HOST}:{PORT}")
-        webbrowser.open(f"http://{HOST}:{PORT}")
+    parser = argparse.ArgumentParser(description="Resolute Quant data program")
+    parser.add_argument("--port", help="port to use; overrides RESOLUTE_QUANT_PORT and terminal.config.json")
+    parser.add_argument("--no-browser", action="store_true", help="do not open a browser")
+    options = parser.parse_args()
+    preferred, source = configured_port(options.port, os.environ, CONFIG_FILE)
+    server, existing = bind_server(preferred, source)
+    if server is None:
+        print(f"The terminal is already running at {existing}. Opening it.")
+        if not options.no_browser:
+            webbrowser.open(existing)
         return
+    port = server.server_address[1]
+    instance.update(port=port, preferred=preferred, source=source)
+    url = f"http://{HOST}:{port}"
     threading.Thread(target=snapshot_loop, daemon=True).start()
     threading.Thread(target=stream_loop, daemon=True).start()
-    print(f"Subash Terminal is running at http://{HOST}:{PORT}")
+    threading.Thread(target=coinbase.run, daemon=True).start()
+    if port != preferred:
+        print(f"\nUSING PORT {port} INSTEAD OF {preferred}. Watchlists and alerts are saved per address,\n"
+              f"so this address has its own saved settings. To choose the port, set RESOLUTE_QUANT_PORT or terminal.config.json.\n")
+    print(f"Resolute Quant is running at {url}")
     print("Keep this window open. Close it to stop the terminal.")
-    threading.Timer(0.8, lambda: webbrowser.open(f"http://{HOST}:{PORT}")).start()
+    if not options.no_browser:
+        threading.Timer(0.8, lambda: open_when_confirmed(url, port)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

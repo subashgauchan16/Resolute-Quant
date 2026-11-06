@@ -1,0 +1,56 @@
+/* Resolute Quant brand: the looping header mark and the full-screen logo intro.
+   The light bands use color-dodge, which leaves pure black alone, so the shine only lands on the metal. */
+:root{
+  --rq-gold:#d9a93f; --rq-gold-hi:#fff3c9; --rq-silver:#a9acb2; --rq-silver-hi:#ffffff;
+  --rq-shine:rgba(255,236,190,.95);
+}
+.rq-mark-shine,.rq-shine{mix-blend-mode:color-dodge;pointer-events:none;will-change:transform}
+
+/* Header */
+.brand{display:flex;align-items:center;gap:9px;height:100%;color:inherit;letter-spacing:.16em;font:600 14px var(--label)}
+.brand:hover .rq-mark{filter:brightness(1.2)}
+.rq-mark{position:relative;display:block;flex:none;width:55px;height:34px;overflow:hidden;isolation:isolate;background:#000 url("../img/rq-mark.webp") center/contain no-repeat}
+.rq-mark-shine{position:absolute;inset:-30% -60%;background:linear-gradient(105deg,transparent 44%,var(--rq-shine) 50%,transparent 56%);transform:translateX(-60%);animation:rq-sweep 5s cubic-bezier(.45,.05,.55,.95) infinite}
+.rq-word{background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rq-text 5s linear infinite}
+.rq-word.gold{background-image:linear-gradient(100deg,var(--rq-gold) 30%,var(--rq-gold-hi) 50%,var(--rq-gold) 70%)}
+.rq-word.silver{background-image:linear-gradient(100deg,var(--rq-silver) 30%,var(--rq-silver-hi) 50%,var(--rq-silver) 70%);animation-delay:.25s}
+@keyframes rq-sweep{0%{transform:translateX(-60%)}55%,100%{transform:translateX(60%)}}
+@keyframes rq-text{0%{background-position:130% 0}55%,100%{background-position:-30% 0}}
+
+/* Footer notice */
+.foot .rq-copy{flex:none;color:var(--fg);text-decoration:none}
+.foot .rq-copy:hover{color:var(--amber)}
+.foot .rq-sources{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.foot .rq-session{flex:none}
+
+/* Full-screen intro */
+body:has(.rq-intro:not([hidden])){overflow:hidden}
+.rq-intro{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vh,20px);padding:16px;overflow:hidden;cursor:pointer;
+  background:radial-gradient(ellipse 70% 60% at 50% 42%,#191307 0%,#070503 45%,#000 75%);animation:rq-fade .5s ease-out}
+.rq-intro.closing{opacity:0;transition:opacity .45s ease-in}
+.rq-stage{position:relative;width:min(92vw,calc((100vh - 110px)*1.777));aspect-ratio:1672/941;overflow:hidden;isolation:isolate;
+  transform:perspective(1400px) rotateX(var(--rq-tilt-x,0deg)) rotateY(var(--rq-tilt-y,0deg));transition:transform .25s ease-out}
+.rq-breathe{position:absolute;inset:0;isolation:isolate;animation:rq-breathe 9s ease-in-out infinite}
+.rq-logo{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rq-shine{position:absolute;inset:-25% -70%;background:linear-gradient(105deg,transparent 45%,rgba(255,225,160,.35) 48.5%,var(--rq-shine) 50%,rgba(255,225,160,.35) 51.5%,transparent 55%);transform:translateX(-55%);animation:rq-sweep-big 4.6s cubic-bezier(.45,.05,.55,.95) infinite}
+.rq-shine.second{animation-delay:.55s;opacity:.45}
+.rq-orbit{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen;pointer-events:none}
+.rq-orbit path{fill:none;stroke:#fff3cf;stroke-width:5;stroke-linecap:round;stroke-dasharray:70 1000;animation:rq-orbit 4.6s linear infinite;filter:drop-shadow(0 0 7px #ffc95c)}
+.rq-ember{position:absolute;left:75%;top:15.2%;width:16%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;mix-blend-mode:screen;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,226,150,.95) 0%,rgba(255,170,50,.42) 18%,rgba(255,150,30,.1) 42%,transparent 66%);animation:rq-ember 2.3s ease-in-out infinite}
+.rq-dust{position:absolute;bottom:-8px;width:3px;height:3px;border-radius:50%;background:#ffdc8c;box-shadow:0 0 7px #ffb733;opacity:0;pointer-events:none;animation:rq-rise linear infinite}
+.rq-note{position:relative;text-align:center;font:400 12px/1.65 var(--mono);color:var(--mute)}
+.rq-note b{display:block;font-weight:500;color:var(--fg);letter-spacing:.06em}
+@keyframes rq-fade{from{opacity:0}}
+@keyframes rq-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.022)}}
+@keyframes rq-sweep-big{0%{transform:translateX(-55%)}62%,100%{transform:translateX(55%)}}
+@keyframes rq-orbit{from{stroke-dashoffset:1070}to{stroke-dashoffset:0}}
+@keyframes rq-ember{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.82)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}}
+@keyframes rq-rise{0%{transform:translateY(0);opacity:0}12%{opacity:.85}85%{opacity:.4}100%{transform:translateY(-92vh);opacity:0}}
+
+@media(max-width:900px){.brand{flex:1 0 100%;height:36px;letter-spacing:.1em;font-size:13px}}
+@media(prefers-reduced-motion:reduce){
+  .rq-mark-shine,.rq-word,.rq-shine,.rq-breathe,.rq-orbit path,.rq-ember,.rq-intro{animation:none}
+  .rq-word{background-position:50% 0}.rq-shine,.rq-mark-shine,.rq-orbit,.rq-dust{display:none}
+  .rq-stage{transform:none;transition:none}
+}

@@ -1,0 +1,139 @@
+{
+ "generated_utc": "2026-11-05T23:48:10.468178+00:00",
+ "spread": {
+  "BTC-USD": {
+   "samples": 30,
+   "seconds_between": 2,
+   "median_bps": 0.001,
+   "p90_bps": 0.217,
+   "max_bps": 0.39
+  },
+  "ETH-USD": {
+   "samples": 30,
+   "seconds_between": 2,
+   "median_bps": 0.47,
+   "p90_bps": 0.851,
+   "max_bps": 1.433
+  }
+ },
+ "moves": {
+  "BTC-USD": {
+   "15m bars": {
+    "bars": 350,
+    "first_utc": "2026-11-02T08:30:00+00:00",
+    "last_utc": "2026-11-05T23:45:00+00:00",
+    "horizons": {
+     "15m": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 10.4
+     },
+     "1H": {
+      "overlapping_observations": 346,
+      "median_abs_move_bps": 21.7
+     },
+     "4H": {
+      "overlapping_observations": 334,
+      "median_abs_move_bps": 45.7
+     }
+    }
+   },
+   "1H bars": {
+    "bars": 350,
+    "first_utc": "2026-10-22T10:00:00+00:00",
+    "last_utc": "2026-11-05T23:00:00+00:00",
+    "horizons": {
+     "1H": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 16.1
+     },
+     "4H": {
+      "overlapping_observations": 346,
+      "median_abs_move_bps": 34.9
+     },
+     "24H": {
+      "overlapping_observations": 326,
+      "median_abs_move_bps": 87.3
+     }
+    }
+   },
+   "1D bars": {
+    "bars": 350,
+    "first_utc": "2025-11-21T00:00:00+00:00",
+    "last_utc": "2026-11-05T00:00:00+00:00",
+    "horizons": {
+     "1D": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 114.9
+     },
+     "5D": {
+      "overlapping_observations": 345,
+      "median_abs_move_bps": 255.5
+     },
+     "20D": {
+      "overlapping_observations": 330,
+      "median_abs_move_bps": 553.6
+     }
+    }
+   }
+  },
+  "ETH-USD": {
+   "15m bars": {
+    "bars": 350,
+    "first_utc": "2026-11-02T08:30:00+00:00",
+    "last_utc": "2026-11-05T23:45:00+00:00",
+    "horizons": {
+     "15m": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 14.0
+     },
+     "1H": {
+      "overlapping_observations": 346,
+      "median_abs_move_bps": 25.6
+     },
+     "4H": {
+      "overlapping_observations": 334,
+      "median_abs_move_bps": 56.6
+     }
+    }
+   },
+   "1H bars": {
+    "bars": 350,
+    "first_utc": "2026-10-22T10:00:00+00:00",
+    "last_utc": "2026-11-05T23:00:00+00:00",
+    "horizons": {
+     "1H": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 21.9
+     },
+     "4H": {
+      "overlapping_observations": 346,
+      "median_abs_move_bps": 42.9
+     },
+     "24H": {
+      "overlapping_observations": 326,
+      "median_abs_move_bps": 118.6
+     }
+    }
+   },
+   "1D bars": {
+    "bars": 350,
+    "first_utc": "2025-11-21T00:00:00+00:00",
+    "last_utc": "2026-11-05T00:00:00+00:00",
+    "horizons": {
+     "1D": {
+      "overlapping_observations": 349,
+      "median_abs_move_bps": 133.0
+     },
+     "5D": {
+      "overlapping_observations": 345,
+      "median_abs_move_bps": 290.7
+     },
+     "20D": {
+      "overlapping_observations": 330,
+      "median_abs_move_bps": 815.4
+     }
+    }
+   }
+  }
+ }
+}

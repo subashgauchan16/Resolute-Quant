@@ -1,0 +1,1075 @@
+{
+ "started": "2026-11-06T01:26:19.221Z",
+ "base": "http://127.0.0.1:8771",
+ "checks": [
+  {
+   "name": "health identifies the service",
+   "pass": true,
+   "detail": {
+    "port": 8771,
+    "source": "--port",
+    "status": "degraded"
+   }
+  },
+  {
+   "name": "first visit in a fresh profile opens the logo intro",
+   "pass": true,
+   "detail": {
+    "msAfterNavigate": 3287
+   }
+  },
+  {
+   "name": "first-visit intro closes by itself",
+   "pass": true,
+   "detail": {
+    "msToClose": 2865
+   }
+  },
+  {
+   "name": "name is Resolute Quant, with no old name on the page",
+   "pass": true,
+   "detail": {
+    "title": "BTC 75,839.11 ▼ Resolute Quant"
+   }
+  },
+  {
+   "name": "copyright notice and repository link",
+   "pass": true,
+   "detail": "© 2026 RESOLUTE QUANT | SG | subashgauchan16"
+  },
+  {
+   "name": "logo file served and displayed",
+   "pass": true,
+   "detail": {
+    "type": "image/webp",
+    "width": 1672
+   }
+  },
+  {
+   "name": "header animation is running in a loop",
+   "pass": true,
+   "detail": true
+  },
+  {
+   "name": "brand reopens the intro, which loops until closed",
+   "pass": true,
+   "detail": {
+    "reopened": true,
+    "shine": true,
+    "staysOpen": true
+   }
+  },
+  {
+   "name": "any key closes the intro without also running a shortcut",
+   "pass": true,
+   "detail": {
+    "closed": true,
+    "keyEaten": true
+   }
+  },
+  {
+   "name": "crypto badge LIVE through the backend",
+   "pass": true,
+   "detail": "LIVE"
+  },
+  {
+   "name": "crypto quote and chart render",
+   "pass": true,
+   "detail": {
+    "big": "$75,862.85",
+    "legend": "O 75,803.30H 75,862.90L 75,802.68C 75,862.85VOL 2.70EMA 20"
+   }
+  },
+  {
+   "name": "order book renders ten levels a side",
+   "pass": true,
+   "detail": "LIVE, DEPTH 39,245"
+  },
+  {
+   "name": "trade tape fills",
+   "pass": true,
+   "detail": 40
+  },
+  {
+   "name": "session stats compute",
+   "pass": true,
+   "detail": {
+    "status": "LIVE",
+    "y": "YAHOO STREAM",
+    "big": "$75,862.85",
+    "rate": "12",
+    "book": "LIVE, DEPTH 39,245",
+    "asks": 10,
+    "bids": 10,
+    "tape": 40,
+    "vwap": "75,828.35",
+    "flow": "92% / 8%",
+    "imb": "-42.8%",
+    "fng": "28 / 100",
+    "fngd": "Fear, daily",
+    "range": "75,035.10 to 80,784.93",
+    "vol": "$1.15B",
+    "rows": 20,
+    "grans": "1m5m15m1H6H1D",
+    "legend": "O 75,803.30H 75,862.90L 75,802.68C 75,862.85VOL 2.70EMA 20",
+    "canvases": 7,
+    "msg": true
+   }
+  },
+  {
+   "name": "fear and greed through the backend",
+   "pass": true,
+   "detail": {
+    "fng": "28 / 100",
+    "detail": "Fear, daily"
+   }
+  },
+  {
+   "name": "watchlist has all rows",
+   "pass": true,
+   "detail": 20
+  },
+  {
+   "name": "crypto timeframes offered are the ones Coinbase serves",
+   "pass": true,
+   "detail": "1m5m15m1H6H1D"
+  },
+  {
+   "name": "crypto timeframe 1M",
+   "pass": true,
+   "detail": "1m"
+  },
+  {
+   "name": "crypto timeframe 15M",
+   "pass": true,
+   "detail": "15m"
+  },
+  {
+   "name": "crypto timeframe 1H",
+   "pass": true,
+   "detail": "1H"
+  },
+  {
+   "name": "crypto timeframe 6H",
+   "pass": true,
+   "detail": "6H"
+  },
+  {
+   "name": "crypto timeframe 1D",
+   "pass": true,
+   "detail": "1D"
+  },
+  {
+   "name": "crypto timeframe 5M",
+   "pass": true,
+   "detail": "5m"
+  },
+  {
+   "name": "live 1m bar exists and its OHLC is self-consistent",
+   "pass": true,
+   "detail": {
+    "time": 1793928480,
+    "open": 75979.7,
+    "high": 75979.7,
+    "low": 75953.76,
+    "close": 75967.13,
+    "volume": 1.2688259199999998,
+    "age": 13
+   }
+  },
+  {
+   "name": "alert set, clear, fire, dismiss (firing uses an injected crossing)",
+   "pass": true,
+   "detail": "BTC-USD crossed 500.00 at 01:28:14. Last 501.00."
+  },
+  {
+   "name": "stock view: quote, chart, profile, news, stats",
+   "pass": true,
+   "detail": {
+    "pair": "AAPL",
+    "big": "$343.09",
+    "asof": "CLOSED, Yahoo delay 15m, as of 01:28:22",
+    "legend": "O 346.02H 346.09L 344.10C 344.31VOL 4.20MEMA 20",
+    "bookHidden": true,
+    "co": "Apple Inc.AAPL · NasdaqGSSectorTechnologyIndustryConsumer El",
+    "news": 10,
+    "state": "CLOSED",
+    "cap": "5.00T",
+    "grans": "1m5m15m1H4H1D1W1MO",
+    "msg": true
+   }
+  },
+  {
+   "name": "stock timeframes include 4H and 1MO",
+   "pass": true,
+   "detail": "1m5m15m1H4H1D1W1MO"
+  },
+  {
+   "name": "stock timeframe 1MO",
+   "pass": true,
+   "detail": {
+    "on": "1MO",
+    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.61MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 4H",
+   "pass": true,
+   "detail": {
+    "on": "4H",
+    "legend": "O 343.60H 346.60L 342.53C 344.31VOL 26.78MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1W",
+   "pass": true,
+   "detail": {
+    "on": "1W",
+    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.73MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1M",
+   "pass": true,
+   "detail": {
+    "on": "1m",
+    "legend": "O 344.56H 344.95L 344.25C 344.31VOL 1.57MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1D",
+   "pass": true,
+   "detail": {
+    "on": "1D",
+    "legend": "O 341.57H 354.50L 340.99C 349.51VOL 89.64MEMA 20"
+   }
+  },
+  {
+   "name": "1M is one minute and 1MO is one month",
+   "pass": true,
+   "detail": {
+    "minuteStep": 60,
+    "monthStep": 2678400,
+    "minuteRows": 320,
+    "monthRows": 320
+   }
+  },
+  {
+   "name": "switching crypto symbol moves the book",
+   "pass": true,
+   "detail": {
+    "pair": "ETH-USD",
+    "book": "LIVE, DEPTH 19,059",
+    "asks": 10
+   }
+  },
+  {
+   "name": "ADD and DEL through the backend check",
+   "pass": true,
+   "detail": {
+    "pepe": {
+     "pair": "PEPE-USD",
+     "row": true,
+     "saved": true
+    },
+    "gone": {
+     "row": false,
+     "saved": false
+    }
+   }
+  },
+  {
+   "name": "unknown symbol explained",
+   "pass": true,
+   "detail": "Neither Coinbase nor Yahoo lists NOSUCHSYM1."
+  },
+  {
+   "name": "HELP, Esc, arrow, slash",
+   "pass": true,
+   "detail": [
+    "BTC-USD",
+    "ETH-USD"
+   ]
+  },
+  {
+   "name": "open symbol and timeframe survive a refresh",
+   "pass": true,
+   "detail": {
+    "persisted": {
+     "sel": "\"SOL-USD\"",
+     "gran": "900"
+    },
+    "reloaded": {
+     "pair": "SOL-USD",
+     "on": "15m",
+     "status": "LIVE"
+    }
+   }
+  },
+  {
+   "name": "layout store saves and rejects damage (no panel controls use it yet)",
+   "pass": true,
+   "detail": {
+    "version": 1,
+    "hidden": [
+     "paneNews"
+    ],
+    "order": [],
+    "sizes": {
+     "watch": 300
+    }
+   }
+  },
+  {
+   "name": "saved settings do not carry across ports (documented limit)",
+   "pass": true,
+   "detail": {
+    "here": [
+     "subash.alerts",
+     "subash.gran",
+     "subash.list",
+     "subash.sel"
+    ],
+    "there": []
+   }
+  },
+  {
+   "name": "backend stopped: offline message shown and page stays up",
+   "pass": true,
+   "detail": {
+    "y": "STOCKS OFF",
+    "crypto": "CRYPTO OFF",
+    "note": "Data program offline. Start Start Terminal.bat.",
+    "rows": 20,
+    "last": "$75,910.95"
+   }
+  },
+  {
+   "name": "backend stopped: controls still respond, without error",
+   "pass": true,
+   "detail": "ETH-USD"
+  },
+  {
+   "name": "backend restarted: page recovers without a reload",
+   "pass": true,
+   "detail": {
+    "y": "YAHOO STREAM",
+    "crypto": "LIVE",
+    "noteHidden": true,
+    "rate": "20",
+    "book": "LIVE, DEPTH 39,269"
+   }
+  },
+  {
+   "name": "network audit: page requested only the local server and Google Fonts",
+   "pass": true,
+   "detail": {
+    "127.0.0.1:8771": 221,
+    "fonts.googleapis.com": 3,
+    "fonts.gstatic.com": 15,
+    "127.0.0.1:8772": 2
+   }
+  },
+  {
+   "name": "network audit: page opened no WebSocket",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "idle 10 min: completed without interruption",
+   "pass": true,
+   "detail": 608
+  },
+  {
+   "name": "idle: heap after GC grew by no more than 10% over the run",
+   "pass": false,
+   "detail": {
+    "heapStart": 3.01,
+    "heapEnd": 3.39
+   }
+  },
+  {
+   "name": "idle: chart updates at no more than 5 per second",
+   "pass": true,
+   "detail": {
+    "updates": 1613,
+    "perSecond": 2.65,
+    "trades": 4562
+   }
+  },
+  {
+   "name": "idle: DOM size stable (within 5%)",
+   "pass": true,
+   "detail": [
+    642,
+    642
+   ]
+  },
+  {
+   "name": "idle: feed stayed LIVE in at least 99% of samples",
+   "pass": true,
+   "detail": {
+    "LIVE": 606
+   }
+  },
+  {
+   "name": "idle: no frame gap over 250 ms",
+   "pass": false,
+   "detail": {
+    "maxGapMs": 1783,
+    "gapsOver100ms": 566,
+    "gapsOver250ms": 97
+   }
+  },
+  {
+   "name": "idle: no console errors",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "network audit: page requested only the local server and Google Fonts",
+   "pass": true,
+   "detail": {
+    "127.0.0.1:8771": 317,
+    "fonts.googleapis.com": 4,
+    "fonts.gstatic.com": 20,
+    "127.0.0.1:8772": 2
+   }
+  },
+  {
+   "name": "network audit: page opened no WebSocket",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "no uncaught page exceptions in the whole run",
+   "pass": true,
+   "detail": []
+  }
+ ],
+ "requests": {
+  "http://127.0.0.1:8771/": 4,
+  "https://fonts.googleapis.com/css2": 4,
+  "http://127.0.0.1:8771/assets/css/style.css": 4,
+  "http://127.0.0.1:8771/assets/css/brand.css": 4,
+  "http://127.0.0.1:8771/assets/img/resolute-quant-logo.webp": 5,
+  "http://127.0.0.1:8771/assets/lib/lightweight-charts.standalone.production.js": 4,
+  "http://127.0.0.1:8771/assets/js/main.js": 4,
+  "http://127.0.0.1:8771/assets/img/rq-mark.webp": 4,
+  "https://fonts.gstatic.com/s/ibmplexsanscondensed/v15/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY527LvspYY.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1i8q1w.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgg.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexsanscondensed/v15/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY5a67vspYY.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3vAOwlBFgg.woff2": 4,
+  "http://127.0.0.1:8771/assets/js/chart/book.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/helper.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/ohlc.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/crypto.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/markets.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/events.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/state.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/alert.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/brand.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/command.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/details.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/selection.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/stats.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/status.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/watchlist.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/orderbook.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/chart-engine.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/indicators.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/http.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/localStorage.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/feargreed.js": 4,
+  "http://127.0.0.1:8771/api/crypto/candles": 83,
+  "http://127.0.0.1:8771/api/crypto/stats": 64,
+  "http://127.0.0.1:8771/api/sentiment/feargreed": 4,
+  "http://127.0.0.1:8771/api/health": 4,
+  "http://127.0.0.1:8771/api/stream": 8,
+  "http://127.0.0.1:8771/assets/img/favicon.png": 3,
+  "http://127.0.0.1:8771/api/watch": 5,
+  "http://127.0.0.1:8771/api/crypto/watch": 7,
+  "http://127.0.0.1:8771/api/crypto/book": 14,
+  "http://127.0.0.1:8771/api/candles": 8,
+  "http://127.0.0.1:8771/api/profile": 1,
+  "http://127.0.0.1:8771/api/news": 1,
+  "http://127.0.0.1:8771/api/resolve": 1,
+  "http://127.0.0.1:8771/assets/js/store/layout.js": 1,
+  "http://127.0.0.1:8772/": 1,
+  "http://127.0.0.1:8772/favicon.ico": 1
+ },
+ "webSockets": [],
+ "console": [
+  "01:28:55 error Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:8771/api/crypto/stats?symbol=NOSUCHSYM1-USD",
+  "01:28:56 error Failed to load resource: the server responded with a status of 502 (Bad Gateway) http://127.0.0.1:8771/api/resolve?symbol=NOSUCHSYM1",
+  "01:29:17 error Failed to load resource: the server responded with a status of 404 (File not found) http://127.0.0.1:8772/",
+  "01:29:18 error Failed to load resource: the server responded with a status of 404 (File not found) http://127.0.0.1:8772/favicon.ico",
+  "01:29:28 error Failed to load resource: net::ERR_CONNECTION_RESET http://127.0.0.1:8771/api/stream",
+  "01:29:31 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "01:29:33 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/book?symbol=ETH-USD",
+  "01:29:33 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/candles?symbol=ETH-USD&granularity=900",
+  "01:29:34 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/book?symbol=BTC-USD",
+  "01:29:34 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/candles?symbol=BTC-USD&granularity=900",
+  "01:29:34 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "01:29:38 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream"
+ ],
+ "exceptions": [],
+ "serverOutput": [
+  "01:26:25 Resolute Quant is running at http://127.0.0.1:8771",
+  "01:26:25 Keep this window open. Close it to stop the terminal.",
+  "01:28:56 /api/resolve failed: no price",
+  "01:29:40 Resolute Quant is running at http://127.0.0.1:8771",
+  "01:29:40 Keep this window open. Close it to stop the terminal."
+ ],
+ "idle": {
+  "minutes": 10,
+  "heapSeries": [
+   {
+    "minute": 0.5,
+    "heapMB": 4.91,
+    "domNodes": 642
+   },
+   {
+    "minute": 1,
+    "heapMB": 5.63,
+    "domNodes": 642
+   },
+   {
+    "minute": 1.6,
+    "heapMB": 3.57,
+    "domNodes": 642
+   },
+   {
+    "minute": 2.1,
+    "heapMB": 4.08,
+    "domNodes": 642
+   },
+   {
+    "minute": 2.6,
+    "heapMB": 3.87,
+    "domNodes": 642
+   },
+   {
+    "minute": 3.1,
+    "heapMB": 6.82,
+    "domNodes": 642
+   },
+   {
+    "minute": 3.6,
+    "heapMB": 3.39,
+    "domNodes": 642
+   },
+   {
+    "minute": 4.1,
+    "heapMB": 7.31,
+    "domNodes": 642
+   },
+   {
+    "minute": 4.6,
+    "heapMB": 3.45,
+    "domNodes": 642
+   },
+   {
+    "minute": 5.1,
+    "heapMB": 3.92,
+    "domNodes": 642
+   },
+   {
+    "minute": 5.6,
+    "heapMB": 4.37,
+    "domNodes": 642
+   },
+   {
+    "minute": 6.1,
+    "heapMB": 4.27,
+    "domNodes": 642
+   },
+   {
+    "minute": 6.6,
+    "heapMB": 4.23,
+    "domNodes": 642
+   },
+   {
+    "minute": 7.1,
+    "heapMB": 4.02,
+    "domNodes": 642
+   },
+   {
+    "minute": 7.6,
+    "heapMB": 7.92,
+    "domNodes": 642
+   },
+   {
+    "minute": 8.1,
+    "heapMB": 5.18,
+    "domNodes": 642
+   },
+   {
+    "minute": 8.6,
+    "heapMB": 5.12,
+    "domNodes": 642
+   },
+   {
+    "minute": 9.1,
+    "heapMB": 4.52,
+    "domNodes": 642
+   },
+   {
+    "minute": 9.6,
+    "heapMB": 7.9,
+    "domNodes": 642
+   },
+   {
+    "minute": 10.1,
+    "heapMB": 4.53,
+    "domNodes": 642
+   }
+  ],
+  "heapStart": 3.01,
+  "heapEnd": 3.39,
+  "probe": {
+   "elapsedSeconds": 608.441,
+   "frames": 26400,
+   "maxGapMs": 1783,
+   "gapsOver100ms": 566,
+   "gapsOver250ms": 97,
+   "gapTimes": [
+    [
+     43,
+     383
+    ],
+    [
+     48,
+     253
+    ],
+    [
+     49,
+     434
+    ],
+    [
+     49,
+     284
+    ],
+    [
+     50,
+     283
+    ],
+    [
+     50,
+     317
+    ],
+    [
+     51,
+     282
+    ],
+    [
+     51,
+     685
+    ],
+    [
+     52,
+     266
+    ],
+    [
+     56,
+     317
+    ],
+    [
+     58,
+     378
+    ],
+    [
+     59,
+     299
+    ],
+    [
+     59,
+     283
+    ],
+    [
+     60,
+     283
+    ],
+    [
+     61,
+     934
+    ],
+    [
+     63,
+     300
+    ],
+    [
+     64,
+     500
+    ],
+    [
+     65,
+     500
+    ],
+    [
+     69,
+     316
+    ],
+    [
+     70,
+     251
+    ],
+    [
+     71,
+     251
+    ],
+    [
+     72,
+     285
+    ],
+    [
+     74,
+     332
+    ],
+    [
+     74,
+     382
+    ],
+    [
+     80,
+     318
+    ],
+    [
+     80,
+     283
+    ],
+    [
+     87,
+     251
+    ],
+    [
+     129,
+     502
+    ],
+    [
+     130,
+     335
+    ],
+    [
+     130,
+     283
+    ],
+    [
+     135,
+     283
+    ],
+    [
+     139,
+     316
+    ],
+    [
+     172,
+     283
+    ],
+    [
+     185,
+     252
+    ],
+    [
+     189,
+     283
+    ],
+    [
+     190,
+     264
+    ],
+    [
+     197,
+     516
+    ],
+    [
+     198,
+     317
+    ],
+    [
+     199,
+     515
+    ],
+    [
+     199,
+     364
+    ],
+    [
+     200,
+     384
+    ],
+    [
+     201,
+     333
+    ],
+    [
+     202,
+     283
+    ],
+    [
+     205,
+     1050
+    ],
+    [
+     207,
+     717
+    ],
+    [
+     226,
+     349
+    ],
+    [
+     229,
+     583
+    ],
+    [
+     232,
+     283
+    ],
+    [
+     238,
+     467
+    ],
+    [
+     251,
+     333
+    ],
+    [
+     252,
+     515
+    ],
+    [
+     253,
+     915
+    ],
+    [
+     254,
+     1084
+    ],
+    [
+     255,
+     1000
+    ],
+    [
+     256,
+     400
+    ],
+    [
+     269,
+     583
+    ],
+    [
+     271,
+     1783
+    ],
+    [
+     273,
+     767
+    ],
+    [
+     274,
+     817
+    ],
+    [
+     275,
+     533
+    ],
+    [
+     278,
+     649
+    ],
+    [
+     291,
+     301
+    ],
+    [
+     294,
+     300
+    ],
+    [
+     295,
+     301
+    ],
+    [
+     295,
+     532
+    ],
+    [
+     299,
+     269
+    ],
+    [
+     304,
+     782
+    ],
+    [
+     320,
+     268
+    ],
+    [
+     320,
+     266
+    ],
+    [
+     334,
+     265
+    ],
+    [
+     335,
+     300
+    ],
+    [
+     335,
+     483
+    ],
+    [
+     337,
+     348
+    ],
+    [
+     339,
+     450
+    ],
+    [
+     341,
+     301
+    ],
+    [
+     341,
+     266
+    ],
+    [
+     342,
+     285
+    ],
+    [
+     342,
+     368
+    ],
+    [
+     343,
+     270
+    ],
+    [
+     343,
+     315
+    ],
+    [
+     344,
+     252
+    ],
+    [
+     345,
+     482
+    ],
+    [
+     346,
+     384
+    ],
+    [
+     348,
+     1031
+    ],
+    [
+     351,
+     647
+    ],
+    [
+     352,
+     334
+    ],
+    [
+     354,
+     266
+    ],
+    [
+     356,
+     250
+    ],
+    [
+     360,
+     351
+    ],
+    [
+     361,
+     399
+    ],
+    [
+     361,
+     267
+    ],
+    [
+     365,
+     252
+    ],
+    [
+     369,
+     267
+    ],
+    [
+     375,
+     251
+    ],
+    [
+     377,
+     665
+    ],
+    [
+     446,
+     431
+    ],
+    [
+     554,
+     317
+    ]
+   ],
+   "tradesToChart": 4562,
+   "chartUpdates": 1613,
+   "chartUpdatesPerSecond": 2.65,
+   "statusSamples": {
+    "LIVE": 606
+   }
+  },
+  "health": {
+   "service": "resolute-quant",
+   "status": "ok",
+   "timestamp": 1793929208310,
+   "instance": "d011a599584449afad7f6c27a4826484",
+   "started": 1793928580288,
+   "port": 8771,
+   "preferredPort": 8771,
+   "portSource": "--port",
+   "fallback": false,
+   "clients": 1,
+   "providers": {
+    "yahoo": {
+     "stream": true,
+     "limited": false,
+     "snapshot": 1793929125.7475188
+    },
+    "coinbase": {
+     "connected": true,
+     "lastMessage": 1793929208283,
+     "retryIn": 0,
+     "reconnects": 0,
+     "rejected": 0,
+     "restRejected": 0
+    }
+   }
+  }
+ },
+ "consoleBeforeRestart": 4,
+ "hosts": {
+  "127.0.0.1:8771": 317,
+  "fonts.googleapis.com": 4,
+  "fonts.gstatic.com": 20,
+  "127.0.0.1:8772": 2
+ },
+ "consoleDuringIdle": [],
+ "finished": "2026-11-06T01:40:16.647Z",
+ "summary": {
+  "pass": 53,
+  "fail": 2
+ }
+}

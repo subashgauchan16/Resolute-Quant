@@ -1,0 +1,1250 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Resolute Quant: Stage 1.1 report</title><style>
+@page{size:A4;margin:17mm 15mm 18mm}
+:root{--ink:#1a1a1a;--mute:#5d6066;--gold:#8f6a14;--line:#d8d4c8;--band:#f7f4ec}
+body{font:10pt/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink);margin:0}
+.cover{display:block;width:62mm;margin:0 0 4mm -2mm;border-radius:2mm}
+h1{font-size:18pt;line-height:1.2;margin:0 0 3mm;color:#111}
+h2{font-size:13pt;margin:7mm 0 2mm;padding-bottom:1mm;border-bottom:1.2pt solid var(--gold);color:#111;break-after:avoid}
+h3{font-size:10.5pt;margin:4.5mm 0 1.5mm;color:var(--gold);break-after:avoid}
+p{margin:0 0 2mm}ul,ol{margin:0 0 2.5mm;padding-left:5mm}li{margin-bottom:.8mm}
+table{width:100%;border-collapse:collapse;margin:1.5mm 0 3.5mm;font-size:8.3pt;line-height:1.3}
+thead{display:table-header-group}tr{break-inside:avoid}
+th{background:var(--band);text-align:left;font-weight:600;border-bottom:1pt solid var(--gold)}
+th,td{padding:1.1mm 1.5mm;vertical-align:top}td{border-bottom:.5pt solid var(--line);overflow-wrap:anywhere}
+code{font:8.6pt Consolas,monospace;background:#f2f0ea;padding:0 .6mm;border-radius:.5mm}
+pre{background:#f2f0ea;padding:2mm 3mm;font:8pt/1.35 Consolas,monospace;overflow:hidden;break-inside:avoid}pre code{background:none;padding:0}
+a{color:var(--gold)}
+.foot{margin-top:6mm;padding-top:2mm;border-top:.5pt solid var(--line);color:var(--mute);font-size:8pt}
+</style></head><body><img class="cover" src="../../assets/img/resolute-quant-logo.webp" alt="Resolute Quant"><h1>Resolute Quant (formerly Subash Terminal): Stage 1.1 and Research Sprint 1 report</h1>
+<p><strong>Date:</strong> 6 November 2026. <strong>Scope:</strong> terminal stabilisation, historical data audit, and research specification.</p>
+<p>This report does not claim that any model or strategy is profitable, and it does not claim production readiness. No model was trained and no backtest was run. Live order execution does not exist in this project and was not added.</p>
+<p>Evidence labels: <strong>[V]</strong> verified on this machine, <strong>[T]</strong> test result, <strong>[A]</strong> assumption, <strong>[R]</strong> recommendation, <strong>[Q]</strong> unresolved question. Raw results are in <code>evidence/</code>.</p>
+<h2>1. Executive summary</h2>
+<p><strong>Terminal.</strong> The terminal now gets all market data through its local backend. An audit of every request made by the page during a full test run found only the local server and Google Fonts, with no provider connections and no WebSockets. The launcher handles this PC's real port conflict without touching the other service.</p>
+<p><strong>Final acceptance run: 53 of 55 checks passed, with 2 failures left open.</strong></p>
+<ul>
+<li><strong>Frame smoothness fails and is unexplained.</strong> Identical code gave a 67 ms worst frame gap in one run and 1,783 ms in the last, while other programs were busy on this PC. The cause is not established, so the check stays failed.</li>
+<li><strong>The heap limit fails, but no sustained leak was seen.</strong> The heap grew 12.6% in the 10-minute run. A separate 33-minute trend rose during warm-up, peaked at 3.61 MB, then settled near 3.2 MB. That trend is suggestive and is not proof over longer periods.</li>
+</ul>
+<p><strong>Data.</strong> The project has <strong>no historical dataset</strong>, so no data audit has passed. What exists is a small provider probe, which shows that Coinbase can supply the history needed and that Yahoo data has quality problems.</p>
+<p><strong>The finding that matters most for research: costs rule out short-horizon direction trading at retail fee tiers.</strong> Coinbase's published lowest-tier taker fee is 60 bps, or about 120 bps for a round trip, while the sampled median BTC move over 15 minutes is about 10 bps. The 15-minute direction target proposed in the coordinator's documents would need moves about twelve times the typical size just to cover fees.</p>
+<p><strong>Recommended first target:</strong> 24-hour-ahead realised volatility of BTC-USD, sampled hourly, compared with an EWMA benchmark. It needs no tradable edge, and it tests the pipeline honestly. Every later strategy can also use it for sizing. Direction research would follow at horizons of 5 days or longer.</p>
+<p><strong>Recommendation: GO for a small, approved next sprint, and NO-GO for any live trading or complex model.</strong> Section 10 lists the decisions needed.</p>
+<h2>2. Verified baseline and outstanding issues</h2>
+<p>The full baseline, written before implementation, is in <code>00-baseline.md</code>. Main points:</p>
+<ul>
+<li>[V] The project had no version control: its Git root was the home folder, with no commits. No repository was initialised there. The owner has since named the public repository <code>subashgauchan16/Resolute-Quant</code> as the project's home. This work is proposed there on the review branch <code>stage-1.1</code>, <strong>not merged into <code>main</code></strong>, with the original program as its first commit so that every change can be reviewed as a diff.</li>
+<li>[V] Before this sprint there were no tests.</li>
+<li>[V] Another agent's documents audit a separate, unmodified copy of the original program. Those documents contain claims that do not match the code, listed in the baseline. They were not edited.</li>
+<li>[V] <strong>That agent stayed active during this sprint.</strong> It initialised a Git repository in the <code>Downloads</code> folder and made 5 commits there, the last at 01:16 UTC. Those commits track no file of this project. A <code>.venv</code> also appeared in this project's folder at 01:28 UTC, during the final test run, from a source not established.</li>
+<li>[V] The Phase 1 report's claims were retested here, not assumed. Retesting found three defects it had missed: the invalid live-bar open, the unmeasured chart update rate, and the unbounded per-symbol buffer.</li>
+</ul>
+<p><strong>Outstanding issues</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Issue</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Port 8765 is held by an unidentified Windows HTTP service</td>
+<td>Handled by fallback. The owner of that service is unknown [Q]</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Two tabs on different symbols compete for the single watchlist and book</td>
+<td>Known limit, inherited design</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Coinbase's newest REST candle lags by up to about 5 minutes, so a load can show a short gap before live bars</td>
+<td>Documented, not fixed. Fixing it needs a reconciliation rule [R]</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Yahoo history is cut to the newest 320 bars, so a US stock's <code>1H</code> chart shows about 46 trading days rather than the 1 year requested</td>
+<td>Documented, inherited</td>
+</tr>
+<tr>
+<td>5</td>
+<td>429 handling in the page is a retry message rather than the prompt's gentle warning everywhere</td>
+<td>Phase 4 work</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Multi-chart layout, panels and indicators from the original brief</td>
+<td>Not started; this sprint did not cover them</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Frame gaps over 250 ms</strong>, intermittent</td>
+<td><strong>Open.</strong> Failed in 2 of 3 runs on the final code. Cause not established</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Heap limit</strong> exceeded in the 10-minute run</td>
+<td><strong>Open.</strong> No sustained growth in a 33-minute trend</td>
+</tr>
+<tr>
+<td>9</td>
+<td>The page waits for the Google Fonts stylesheet before it starts</td>
+<td>Inherited. The intro appeared about 3.3 s after navigation on a fresh profile. Vendoring the fonts would fix this</td>
+</tr>
+<tr>
+<td>10</td>
+<td>The licence names a different canonical repository from its source line</td>
+<td>Owner to check. The licence was not edited</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Workstream A: architecture and acceptance</h2>
+<h3>Architecture now</h3>
+<pre><code>Coinbase REST + WebSocket ─┐
+alternative.me ────────────┼─&gt; crypto_feed.py ─┐
+Yahoo (yfinance) ──────────────&gt; server.py ────┴─&gt; HTTP + SSE on 127.0.0.1 ─&gt; browser page
+</code></pre>
+<p>Validation in the backend:</p>
+<ul>
+<li>Prices must be finite and positive.</li>
+<li>OHLC bars must be self-consistent.</li>
+<li>Timestamps need a timezone and may not be more than 60 seconds ahead of the clock.</li>
+<li>Symbols and granularities are checked against an allowlist.</li>
+<li>Bad values are <strong>dropped and counted, never repaired</strong>. Counts appear in <code>/api/health</code>.</li>
+<li>When a provider refuses, the last good copy is served with <code>stale: true</code>.</li>
+</ul>
+<p>The dependency change is one line: <code>websockets</code> is now declared directly. <code>yfinance</code> already required it.</p>
+<h3>Port policy</h3>
+<p>Order: <code>--port</code>, then <code>RESOLUTE_QUANT_PORT</code>, then <code>terminal.config.json</code>, then the default 8765.</p>
+<ul>
+<li>A <strong>configured</strong> port never falls back. If it is busy, the program explains and stops.</li>
+<li>The <strong>default</strong> falls back through 8766 to 8775, in order. It announces this in the console and in the page footer.</li>
+<li>A terminal already running is reused, and <code>/api/health</code> confirms that it really is this terminal.</li>
+<li>The browser opens only after the port answers with this instance's ID.</li>
+<li>The server now requests exclusive use of the port. [V] Python's default on Windows allowed a second listener on a busy port, so two terminals could have shared one.</li>
+<li><strong>Storage:</strong> [T] saved watchlists and alerts do not carry across ports. They are not migrated. Because the fallback is deterministic, this PC should settle on 8766 as long as that port stays free.</li>
+</ul>
+<p><strong>Decision needed:</strong> this policy assumes an announced fallback is acceptable [A].</p>
+<h3><code>/api/health</code> contract</h3>
+<p>Purpose: launcher identity check and the page's port notice.</p>
+<p>Fields: <code>service</code>, <code>status</code> (<code>ok</code> or <code>degraded</code>), <code>timestamp</code>, <code>instance</code>, <code>started</code>, <code>port</code>, <code>preferredPort</code>, <code>portSource</code>, <code>fallback</code>, <code>clients</code>, and <code>providers</code>, covering Yahoo stream and limit state and Coinbase connection, last message, retry time, reconnects and rejected counts.</p>
+<h3>Timeframes (A4)</h3>
+<p>Tested against the providers. <strong>Native</strong> means the provider serves it directly.</p>
+<table>
+<thead>
+<tr>
+<th>Timeframe</th>
+<th>Coinbase (crypto)</th>
+<th>Yahoo (stocks, FX, indices)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1m</code>, <code>5m</code>, <code>15m</code>, <code>1H</code>, <code>1D</code></td>
+<td>Native</td>
+<td>Native</td>
+</tr>
+<tr>
+<td><code>6H</code></td>
+<td>Native</td>
+<td>Not offered</td>
+</tr>
+<tr>
+<td><code>4H</code></td>
+<td><strong>Not available</strong> (HTTP 400)</td>
+<td>Native, <strong>added</strong></td>
+</tr>
+<tr>
+<td><code>1W</code></td>
+<td><strong>Not available</strong> (HTTP 400)</td>
+<td>Native</td>
+</tr>
+<tr>
+<td><code>1MO</code></td>
+<td>Not offered by the API</td>
+<td>Native, <strong>added</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>1M</code> means one minute in commands and the API, and <code>1MO</code> means one month. Buttons show <code>1m</code> and <code>1MO</code>. [T] Measured bar steps are 60 seconds and about 31 days.</li>
+<li>Crypto <code>4H</code>, <code>1W</code> and <code>1MO</code> are <strong>not offered</strong>. No candles are invented. They could be aggregated from <code>1H</code> or <code>1D</code> in UTC-anchored buckets, but Coinbase's 350-row limit gives only about 87 <code>4H</code> bars or about 50 <code>1W</code> bars from one request. <strong>Proposal for approval.</strong></li>
+<li>Yahoo <code>4H</code> bars are anchored to the session open, not to UTC. For AAPL that gives two bars a day of unequal length.</li>
+</ul>
+<h3>Chart library (A4)</h3>
+<ul>
+<li>[V] Vendored: Lightweight Charts 4.2.0, Apache 2.0, local file, works offline. The attribution logo stays on, and the notice is now in <code>README.md</code>.</li>
+<li>[V] Upstream typings: v4.2.0 has no panes, and v5.0.0 has <code>addPane</code>. v5 replaces <code>addCandlestickSeries</code> with a unified <code>addSeries</code>, so upgrading changes code. Latest is 5.2.1, Apache 2.0.</li>
+<li><strong>Not upgraded.</strong> This sprint has no panel requirement to demonstrate. [R] Decide in Phase 2 with a prototype: v5 panes or one v4 chart per panel. Both remain open.</li>
+<li>The coordinator's note describing the licence as dual "Commercial + OSS" does not match the vendored file, which says Apache 2.0 only.</li>
+</ul>
+<h3>Acceptance matrix</h3>
+<p><strong>Unit tests:</strong> 31 of 31 pass [T], with a fake local upstream covering bad data and reconnects. All provider payloads in them are labelled fixtures.</p>
+<p><strong>Launcher:</strong> 8 of 8 pass [T] on the rebranded code, using the real <code>Start Terminal.bat</code>, a fresh copy, a newly built <code>.venv</code> and the real conflict on 8765. A logger stood in for the browser, so the exact URL was recorded.</p>
+<p><strong>End-to-end:</strong> final run on the rebranded code, using headless Edge with a throwaway profile, real providers and a <code>.venv</code> built by the launcher test.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Result</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fresh install, default port busy, announced fallback</td>
+<td><strong>Pass</strong></td>
+<td>Ready in 125 s, opened <code>:8766</code></td>
+</tr>
+<tr>
+<td>Second launch reuses the terminal</td>
+<td><strong>Pass</strong></td>
+<td>Same instance ID</td>
+</tr>
+<tr>
+<td>Configured busy port does not fall back</td>
+<td><strong>Pass</strong></td>
+<td>Clear message, no browser</td>
+</tr>
+<tr>
+<td><code>--port</code>, <code>RESOLUTE_QUANT_PORT</code>, config file priority</td>
+<td><strong>Pass</strong></td>
+<td>Each honoured</td>
+</tr>
+<tr>
+<td>Other service on the busy port unaffected</td>
+<td><strong>Pass</strong></td>
+<td>401 before and after</td>
+</tr>
+<tr>
+<td>Backend-only data, whole run</td>
+<td><strong>Pass</strong></td>
+<td>Hosts: local server, Google Fonts, and the storage check's spare local port. No WebSockets</td>
+</tr>
+<tr>
+<td>Name, copyright notice and repository link</td>
+<td><strong>Pass</strong></td>
+<td><code>© 2026 RESOLUTE QUANT \| SG \| subashgauchan16</code></td>
+</tr>
+<tr>
+<td>Logo intro opens on first visit, closes itself, reopens and loops; header animation loops</td>
+<td><strong>Pass</strong></td>
+<td>Looks and alignment were checked by eye at desktop and phone widths</td>
+</tr>
+<tr>
+<td>Crypto: quote, chart, book, tape, stats, Fear &amp; Greed</td>
+<td><strong>Pass</strong></td>
+<td>Live through the backend</td>
+</tr>
+<tr>
+<td>Stocks: quote, chart, profile, news, stats</td>
+<td><strong>Pass</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>All timeframes offered, both markets</td>
+<td><strong>Pass</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Alerts: set, clear, fire, dismiss</td>
+<td><strong>Pass</strong></td>
+<td>Firing used an injected crossing</td>
+</tr>
+<tr>
+<td><code>ADD</code>, <code>DEL</code>, invalid symbol, <code>HELP</code>, keys</td>
+<td><strong>Pass</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Persistence across a refresh</td>
+<td><strong>Pass</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Backend stop: offline state, page usable</td>
+<td><strong>Pass</strong></td>
+<td>Exact message shown</td>
+</tr>
+<tr>
+<td>Backend restart: recovers without reload</td>
+<td><strong>Pass</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>10-minute uninterrupted idle</td>
+<td><strong>Pass</strong></td>
+<td>608 s, <code>LIVE</code> in 606 of 606 samples, no reconnects, DOM constant at 642 nodes</td>
+</tr>
+<tr>
+<td>No console errors during idle</td>
+<td><strong>Pass</strong></td>
+<td>Empty</td>
+</tr>
+<tr>
+<td>No frame gap over 250 ms</td>
+<td><strong>Fail</strong></td>
+<td>97 gaps, worst 1,783 ms, about 43 frames a second on average. See the run history</td>
+</tr>
+<tr>
+<td>Chart updates at or below 5 per second</td>
+<td><strong>Pass</strong></td>
+<td>2.65/s from 4,562 trades. About 6.8/s before the fix</td>
+</tr>
+<tr>
+<td>Heap after GC grows at most 10%</td>
+<td><strong>Fail</strong></td>
+<td>3.01 to 3.39 MB (+12.6%). See below</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Run history.</strong> Every run is kept in <code>evidence/</code>, including the failures.</p>
+<table>
+<thead>
+<tr>
+<th>Run</th>
+<th>Code</th>
+<th>Browser</th>
+<th>Checks</th>
+<th>Worst frame gap</th>
+<th>Gaps over 250 ms</th>
+<th>Heap start to end</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Before fixes</td>
+<td>Fresh</td>
+<td>45 of 46</td>
+<td>733 ms</td>
+<td>11</td>
+<td>Not comparable; GC ran every 30 s</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Fixes, before rebrand</td>
+<td><strong>Reused</strong></td>
+<td>46 of 47</td>
+<td>150 ms</td>
+<td>0</td>
+<td>2.89 to 3.76 MB</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Rebrand</td>
+<td><strong>Reused</strong></td>
+<td>53 of 54</td>
+<td>67 ms</td>
+<td>0</td>
+<td>2.76 to 3.31 MB</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Rebrand</td>
+<td>Fresh</td>
+<td>51 of 55</td>
+<td>486 ms</td>
+<td>12</td>
+<td>2.76 to 3.30 MB</td>
+</tr>
+<tr>
+<td>5 (final)</td>
+<td>Rebrand</td>
+<td>Fresh</td>
+<td>53 of 55</td>
+<td>1,783 ms</td>
+<td>97</td>
+<td>3.01 to 3.39 MB</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Reused browser:</strong> a mistake in my test harness left the previous Edge alive on Windows, so runs 2 and 3 attached to the old page and profile. Their "fresh profile" description would have been false, and they had the first-visit intro hidden from proper testing. The harness now kills browsers by profile path and refuses to start if the debug port is busy.</li>
+<li><strong>Run 4's two intro failures were test timing:</strong> a fixed wait, on a profile with no cached fonts. The test now polls.</li>
+<li><strong>Frame gaps:</strong> runs 3 to 5 used the same app code, so the app alone does not explain the range. Run 5's gaps followed the appearance of an unrelated <code>.venv</code>, with CPU at 44% before the run began. This fits outside load, but <strong>it is a correlation and not a demonstrated cause</strong>. Headless timing may also differ from a visible window. [R] Test on a quiet machine with a CPU trace before relying on this.</li>
+</ul>
+<p><strong>Heap trend</strong> (<code>evidence/heap_trend.json</code>, on pre-rebrand code, GC before each reading):</p>
+<table>
+<thead>
+<tr>
+<th>Minute</th>
+<th>3</th>
+<th>8</th>
+<th>13</th>
+<th>18</th>
+<th>23</th>
+<th>28</th>
+<th>33</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heap, MB</td>
+<td>2.82</td>
+<td>3.59</td>
+<td>3.61</td>
+<td>3.12</td>
+<td>3.14</td>
+<td>3.15</td>
+<td>3.21</td>
+</tr>
+</tbody>
+</table>
+<p>Readings from minute 18 still rise slowly, about 0.006 MB a minute, which is too short a period to tell apart from a small leak or noise. The check's threshold was not changed.</p>
+<p><strong>Console errors outside idle, all explained:</strong></p>
+<ul>
+<li>Deliberate invalid symbol: 404 and 502.</li>
+<li>Deliberate storage check against a port with no page: 404.</li>
+<li>Deliberate server stop: connection reset and refused.</li>
+</ul>
+<p><strong>Blocked or not run</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real Coinbase outage or real provider 429</td>
+<td><strong>Not run</strong></td>
+<td>Covered by a fake upstream and fixtures only</td>
+</tr>
+<tr>
+<td>A real visible double-click, using the default browser</td>
+<td><strong>Not run</strong></td>
+<td>Logger used. The owner should do this once</td>
+</tr>
+<tr>
+<td>Default port 8765 when free</td>
+<td><strong>Blocked</strong></td>
+<td>Port is held on this PC; the logic is covered by unit tests</td>
+</tr>
+<tr>
+<td>Phone-width layout</td>
+<td><strong>Partly checked</strong></td>
+<td>No sideways scroll and the intro fits at 375 px. Not automated, and the last small header change was not rechecked</td>
+</tr>
+<tr>
+<td>Opening <code>terminal.html</code> directly</td>
+<td><strong>Not run</strong></td>
+<td>Guard message never exercised</td>
+</tr>
+<tr>
+<td>Full-screen control</td>
+<td><strong>Not run</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Soak beyond 33 minutes</td>
+<td><strong>Not run</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>The intro on real GPUs and with reduced-motion set</td>
+<td><strong>Not run</strong></td>
+<td>Reduced-motion styles exist but were never exercised</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Regression, with cause:</strong> crypto now stops if the data program stops, because the browser no longer connects to Coinbase itself. Phase 1 kept crypto running in that state. This follows directly from the backend-only rule and is shown as <code>CRYPTO OFF</code>. Prices freeze and dim; they are not hidden or simulated.</p>
+<p><strong>Multi-tab behaviour changed slightly:</strong> the book is now a single backend subscription, so a second tab on another symbol takes it over.</p>
+<h2>4. Historical data inventory and quality</h2>
+<p><strong>Finding: there is no historical dataset to audit, and no audit has passed.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Asset examined</th>
+<th>What it is</th>
+<th>Usable as research data?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project folder</td>
+<td>No data files</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>trading_intelligence/</code></td>
+<td>Harness with a synthetic generator whose docstring says it is built to give positive expected value. A later commit added a crypto downloader script, which was not reviewed. A check on 6 November found no data files there</td>
+<td><strong>No.</strong> Must never support market conclusions</td>
+</tr>
+<tr>
+<td><code>server.py</code> <code>/api/candles</code></td>
+<td>Live view, newest 320 bars, not stored</td>
+<td>No, not reproducible</td>
+</tr>
+<tr>
+<td>Unrelated forecasting script</td>
+<td>Reads <code>daily_long_clean.csv</code>, which was not found</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3>Provider probe (<code>research/data_probe.py</code>)</h3>
+<p>This measures what the providers return; it is <strong>a sample and not a dataset</strong>. Raw data was not stored. All timestamps were converted to UTC.</p>
+<p><strong>Coinbase Exchange, BTC-USD and ETH-USD spot</strong></p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Acquisition</td>
+<td>Public REST, 350 rows per request, newest first</td>
+</tr>
+<tr>
+<td>Fields</td>
+<td>time, low, high, open, close, volume</td>
+</tr>
+<tr>
+<td>Native sizes</td>
+<td>60, 300, 900, 3600, 21600, 86400 seconds</td>
+</tr>
+<tr>
+<td>Sample quality</td>
+<td>At every size and on both symbols: no duplicates, no missing steps, no invalid OHLC, no zero-volume rows</td>
+</tr>
+<tr>
+<td>Depth</td>
+<td>BTC-USD 1m windows returned full rows 2, 5 and 8 years ago. The earliest date was not established</td>
+</tr>
+<tr>
+<td>Freshness</td>
+<td>Newest 1m bar about 4.7 minutes old at probe time</td>
+</tr>
+<tr>
+<td>Trades</td>
+<td>About 100 recent trades, price, side, size, time and ID. Deep history was not tested</td>
+</tr>
+<tr>
+<td>Order book, funding</td>
+<td>No historical book found through this route. Spot has no funding</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td><strong>Not verified</strong> [Q]</td>
+</tr>
+</tbody>
+</table>
+<p>These clean results cover only about 350 bars per size. They say nothing about the history as a whole.</p>
+<p><strong>Yahoo Finance via yfinance</strong></p>
+<table>
+<thead>
+<tr>
+<th>Instrument</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AAPL, ^GSPC, HSBA.L</td>
+<td>Session gaps are expected. AAPL <code>1D</code> has 1 invalid OHLC row and 1 NaN row. HSBA.L <code>1D</code> has 1 invalid row. ^GSPC has hundreds of zero-volume <code>1H</code> rows</td>
+</tr>
+<tr>
+<td>GBPUSD=X</td>
+<td><strong>Volume is zero in every row at every interval. <code>1D</code> has 27 invalid OHLC rows</strong></td>
+</tr>
+<tr>
+<td>BTC-USD via Yahoo</td>
+<td><strong>77% of 1m rows have zero volume</strong>. <code>1H</code> is missing 189 steps, with one gap of about 4.2 days</td>
+</tr>
+<tr>
+<td>Depth</td>
+<td><code>1m</code> 5 days, <code>15m</code> 1 month, <code>1H</code> 1 year (for the requested periods), <code>1MO</code> back to 1985 for AAPL</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>yfinance is for personal use, per the project's README</td>
+</tr>
+</tbody>
+</table>
+<p>[R] <strong>Do not use Yahoo for research data in this stage.</strong> Its crypto is clearly unsuitable. Its equities might serve as a low-frequency comparison later.</p>
+<h3>Smallest useful acquisition plan (needs approval)</h3>
+<ul>
+<li><strong>What:</strong> Coinbase BTC-USD and ETH-USD at <code>1H</code> and <code>1D</code>.</li>
+<li><strong>Size:</strong> about 125 requests per symbol per 5 years at <code>1H</code>. Under 2 MB per symbol, estimated at about 40 bytes per row.</li>
+<li><strong>Not:</strong> the <code>1m</code>, 2-year-plus download in the coordinator's plan, which needs thousands of requests and is not needed for the recommended target.</li>
+<li><strong>Storage:</strong> dated, immutable files outside version control, with a SHA-256 manifest. <strong>The repository is public, and the licence is unverified, so raw data must not be committed.</strong></li>
+<li><strong>First step:</strong> find each symbol's real start date, then run the audit in section 8.</li>
+</ul>
+<h2>5. Proposed first prediction target</h2>
+<h3>Scale evidence (<code>research/cost_hurdle_probe.py</code>)</h3>
+<p>A small, recent, overlapping sample. It shows scale only, and says nothing about whether a signal exists.</p>
+<table>
+<thead>
+<tr>
+<th>Horizon</th>
+<th>BTC median move</th>
+<th>ETH median move</th>
+<th>Compared with ~120 bps taker round trip</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15 minutes</td>
+<td>10.4 bps</td>
+<td>14.0 bps</td>
+<td>About 12 times the move</td>
+</tr>
+<tr>
+<td>1 hour</td>
+<td>16.1 bps</td>
+<td>21.9 bps</td>
+<td>About 5 to 7 times</td>
+</tr>
+<tr>
+<td>24 hours</td>
+<td>87.3 bps</td>
+<td>118.6 bps</td>
+<td>About 1 to 1.4 times</td>
+</tr>
+<tr>
+<td>5 days</td>
+<td>255.5 bps</td>
+<td>290.7 bps</td>
+<td>About 0.4 to 0.5 times</td>
+</tr>
+<tr>
+<td>20 days</td>
+<td>553.6 bps</td>
+<td>815.4 bps</td>
+<td>About 0.15 to 0.2 times</td>
+</tr>
+</tbody>
+</table>
+<p>Median quoted spread over 60 seconds was about 0.001 bps for BTC and 0.47 bps for ETH (p90 0.22 and 0.85). <strong>Fees dominate spread at this tier.</strong></p>
+<p><strong>Fees.</strong> The Coinbase Exchange help page lists 40 bps maker and 60 bps taker at the $0 to $10K tier, and Coinbase's Advanced pages list 50 and 90 bps at entry. Fees fall with volume. <strong>The owner's actual tier is unknown [Q]</strong>. The <code>trading_intelligence</code> config uses a 0.05 bps fee, which is roughly 1,000 times too low.</p>
+<p>Sources: <a href="https://help.coinbase.com/en/exchange/trading-and-funding/exchange-fees">Coinbase Exchange fees</a>, <a href="https://www.coinbase.com/blog/were-lowering-fees-for-many-active-traders-on-coinbase-advanced">Coinbase Advanced fee announcement</a>, <a href="https://www.coinbase.com/advanced-vip">Advanced VIP</a>.</p>
+<h3>Candidates</h3>
+<p>Notation: <code>C(t)</code> is the close of the bar ending at <code>t</code>, in UTC. <code>r(t) = ln(C(t) / C(t-1))</code>.</p>
+<p><strong>Timing for all candidates.</strong> The bar's end alone is not a safe decision time, because REST candles were seen up to about 5 minutes late. Decision time is <strong>bar end + 10 minutes</strong> [A]. Candles may be revised after first publication, so a live system must use the value as seen at decision time, and that must be tested [Q].</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>T1: Direction</th>
+<th>T2: Forward return</th>
+<th><strong>T3: Volatility (recommended)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Label</td>
+<td><code>1 if ln(C(t+h)/C(t)) &gt; 0, else 0</code></td>
+<td><code>ln(C(t+h)/C(t))</code></td>
+<td><code>ln( sqrt( sum[i=1..24] r(t+i)^2 ) )</code></td>
+</tr>
+<tr>
+<td>Horizon</td>
+<td>5 days</td>
+<td>5 days</td>
+<td>24 hours</td>
+</tr>
+<tr>
+<td>Sampling</td>
+<td>Daily, 00:00 UTC</td>
+<td>Daily, 00:00 UTC</td>
+<td>Hourly</td>
+</tr>
+<tr>
+<td>Data needed</td>
+<td><code>1D</code></td>
+<td><code>1D</code></td>
+<td><code>1H</code></td>
+</tr>
+<tr>
+<td>Label overlap</td>
+<td>4 days</td>
+<td>4 days</td>
+<td>23 hours</td>
+</tr>
+<tr>
+<td>Purge + embargo</td>
+<td>5 + 5 days</td>
+<td>5 + 5 days</td>
+<td>24 + 24 hours</td>
+</tr>
+<tr>
+<td>Independent samples, 5 years</td>
+<td>About 365</td>
+<td>About 365</td>
+<td>About 1,825</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>Brier, log loss, calibration, AUC</td>
+<td>MAE, sign accuracy, out-of-sample R²</td>
+<td>QLIKE, MSE of log RV, Mincer-Zarnowitz</td>
+</tr>
+<tr>
+<td>Benchmark</td>
+<td>Base rate</td>
+<td>Zero and historical mean</td>
+<td>EWMA and previous-day RV</td>
+</tr>
+<tr>
+<td>Weakness</td>
+<td>Few samples, drift-driven base rate</td>
+<td>Very noisy</td>
+<td>Not a trading signal</td>
+</tr>
+</tbody>
+</table>
+<h3>Why T3 first [R]</h3>
+<ol>
+<li><strong>It suits the data available:</strong> <code>1H</code> Coinbase candles are small to acquire, and there are more independent samples than for T1.</li>
+<li><strong>Failure is informative:</strong> volatility clustering is widely documented, so failing to beat EWMA would point to a pipeline problem. A failed direction model says very little.</li>
+<li><strong>It avoids an early false positive:</strong> it can't be mistaken for a profitable strategy.</li>
+<li><strong>It is reused:</strong> T1 and every strategy in section 7 need volatility for sizing.</li>
+</ol>
+<p><strong>Instrument:</strong> BTC-USD on Coinbase spot, with ETH-USD as the out-of-universe check.</p>
+<p><strong>Assumptions to confirm [A]:</strong> crypto first, research only. The owner's trading capital, tier and preferred markets are unknown, and any of them could change this recommendation.</p>
+<h2>6. Feature dictionary outline and leakage</h2>
+<p>All features use data up to bar <code>t</code>, and are available at decision time (bar end + 10 minutes). Missing input bars make the feature missing; nothing is forward-filled across a gap larger than one bar. Scaling is fitted on each training fold only.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Formula</th>
+<th>Source</th>
+<th>Target</th>
+<th>Live?</th>
+<th>Main risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rv_24h</code></td>
+<td><code>sqrt(sum r(t-i)^2, i=0..23)</code></td>
+<td><code>1H</code> close</td>
+<td>T3, T1</td>
+<td>Yes</td>
+<td>None if trailing</td>
+</tr>
+<tr>
+<td><code>rv_7d</code>, <code>rv_30d</code></td>
+<td>Same, 168 and 720 bars</td>
+<td><code>1H</code> close</td>
+<td>T3, T1</td>
+<td>Yes</td>
+<td>Warm-up rows</td>
+</tr>
+<tr>
+<td><code>ewma_vol</code></td>
+<td><code>s(t)^2 = λ s(t-1)^2 + (1-λ) r(t)^2</code></td>
+<td><code>1H</code> close</td>
+<td>T3 benchmark</td>
+<td>Yes</td>
+<td>λ must be fixed before testing</td>
+</tr>
+<tr>
+<td><code>range_pk</code></td>
+<td>Parkinson on trailing high/low</td>
+<td><code>1H</code> OHLC</td>
+<td>T3</td>
+<td>Yes</td>
+<td>Revised bars</td>
+</tr>
+<tr>
+<td><code>abs_ret_1h</code></td>
+<td><code>|r(t)|</code></td>
+<td><code>1H</code> close</td>
+<td>T3</td>
+<td>Yes</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>volume_ratio</code></td>
+<td><code>V(t) / mean(V, trailing 168)</code></td>
+<td><code>1H</code> volume</td>
+<td>T3</td>
+<td>Yes</td>
+<td>Venue share shifts</td>
+</tr>
+<tr>
+<td><code>hour_of_day</code>, <code>weekday</code></td>
+<td>UTC calendar</td>
+<td>Timestamp</td>
+<td>T3</td>
+<td>Yes</td>
+<td>Overfitting</td>
+</tr>
+<tr>
+<td><code>mom_5d</code>, <code>mom_20d</code></td>
+<td><code>ln(C(t)/C(t-k))</code></td>
+<td><code>1D</code> close</td>
+<td>T1</td>
+<td>Yes</td>
+<td>Selection across horizons</td>
+</tr>
+<tr>
+<td><code>ma_gap_20d</code></td>
+<td><code>C(t)/mean(C, trailing 20) - 1</code></td>
+<td><code>1D</code> close</td>
+<td>T1</td>
+<td>Yes</td>
+<td><strong>Must be trailing</strong></td>
+</tr>
+<tr>
+<td><code>eth_btc_ret</code></td>
+<td>ETH return minus BTC return</td>
+<td><code>1D</code> close</td>
+<td>T1</td>
+<td>Yes</td>
+<td>Timestamp alignment</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Leakage risks to test explicitly</strong></p>
+<ul>
+<li><strong>Centred windows.</strong> [T] The <code>trading_intelligence</code> moving average uses <code>np.convolve(mode="same")</code>, which reproduced a 9-bar look-ahead with a 20-bar window.</li>
+<li><strong>Scaler or imputer fitted on all data.</strong></li>
+<li><strong>Overlapping labels</strong> crossing a fold boundary, which is why purge and embargo apply.</li>
+<li><strong>Using the unfinished bar.</strong> The newest REST row may still be in progress.</li>
+<li><strong>Revised candles:</strong> history downloaded later may differ from what was seen live.</li>
+<li><strong>Survivorship:</strong> choosing BTC and ETH today is itself hindsight, which limits how far results generalise. Delisted pairs are not represented.</li>
+<li><strong>Research reuse:</strong> the sample in section 5 is recent data already seen. It should fall in the final holdout only if no further choices depend on it.</li>
+</ul>
+<p><strong>Required test:</strong> corrupt all data after <code>t</code>, and confirm that every feature at <code>t</code> is unchanged.</p>
+<p><strong>Order flow and book features</strong> are out of scope: no historical data exists. Collecting it live from the terminal's feed would take months to become usable.</p>
+<h2>7. Model and strategy comparison plan</h2>
+<h3>Model ladder</h3>
+<p>Each step must beat the one before it out of sample, or the work stops there.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>For T3</th>
+<th>For T1 (later)</th>
+<th>Condition to run</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Naive</td>
+<td>Previous-day RV; historical mean</td>
+<td>Base rate</td>
+<td>Data audit passed</td>
+</tr>
+<tr>
+<td>2. Transparent rule</td>
+<td>EWMA, λ fixed in advance</td>
+<td>20-day momentum sign</td>
+<td>Step 1</td>
+</tr>
+<tr>
+<td>3. Interpretable</td>
+<td>HAR-style linear regression on log RV</td>
+<td>Regularised logistic</td>
+<td>Beats step 2 on validation</td>
+</tr>
+<tr>
+<td>4. Tree-based</td>
+<td>Gradient boosting</td>
+<td>Same</td>
+<td>Step 3 leaves structured residuals, <strong>and new dependency approved</strong></td>
+</tr>
+<tr>
+<td>5. Volatility model</td>
+<td>GARCH only if HAR falls short</td>
+<td>Not applicable</td>
+<td>Dependency approved</td>
+</tr>
+<tr>
+<td>6. Ensemble</td>
+<td>Only from models that each add value</td>
+<td>Same</td>
+<td>Independent validated value</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nothing above step 3 is proposed for the next sprint.</strong></p>
+<h3>Existing <code>trading_intelligence</code> harness</h3>
+<p><strong>Do not reuse it as it stands [R].</strong> It was not run end to end. These findings are for the version on disk at about 23:20 on 5 November. The other agent has committed to that folder since, and those changes were not re-reviewed:</p>
+<table>
+<thead>
+<tr>
+<th>Defect</th>
+<th>How established</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Centred moving average, a look-ahead leak</td>
+<td><strong>Reproduced</strong> in isolation</td>
+</tr>
+<tr>
+<td>NaN assigned to an integer target raises an error</td>
+<td><strong>Reproduced</strong> in isolation</td>
+</tr>
+<tr>
+<td><code>np.errstate(invalid="omit")</code> raises an error</td>
+<td><strong>Reproduced</strong> in isolation</td>
+</tr>
+<tr>
+<td>Horizon divided by the string <code>"1m"</code> raises an error</td>
+<td><strong>Reproduced</strong> in isolation</td>
+</tr>
+<tr>
+<td>Class index (0, 1, 2) used directly as position, so "down" is flat and "flat" is long</td>
+<td>Read in code</td>
+</tr>
+<tr>
+<td>Predictions are a placeholder, always class 1, so the model is never used</td>
+<td>Read in code</td>
+</tr>
+<tr>
+<td><code>baselines</code> called but imported as <code>baselines_mod</code></td>
+<td>Read in code</td>
+</tr>
+<tr>
+<td>Gaps fail the audit even for session markets; the timestamp check always passes</td>
+<td>Read in code</td>
+</tr>
+<tr>
+<td>Fee default about 1,000 times too low</td>
+<td>Compared with published fees</td>
+</tr>
+</tbody>
+</table>
+<p>The specifications in the coordinator's documents are a reasonable checklist, once the target and costs are corrected.</p>
+<h3>Strategy hypotheses</h3>
+<p>These are hypotheses to test later and are <strong>not recommendations to trade</strong>. Each needs T3 first for sizing. Exact parameters must be fixed before the test.</p>
+<table>
+<thead>
+<tr>
+<th>Hypothesis</th>
+<th>Entry and exit</th>
+<th>Holding</th>
+<th>Sizing and limits</th>
+<th>Turnover risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trend</strong></td>
+<td>Long when 20-day return is above 0, checked daily; flat otherwise. No shorts</td>
+<td>Days to weeks</td>
+<td>Volatility target, 100% maximum notional</td>
+<td>Low to medium</td>
+</tr>
+<tr>
+<td><strong>Mean reversion</strong></td>
+<td>Long after a daily close 2 sigma below the 20-day mean; exit at the mean or after 5 days</td>
+<td>1 to 5 days</td>
+<td>Half of trend size</td>
+<td><strong>High; most exposed to cost</strong></td>
+</tr>
+<tr>
+<td><strong>Breakout</strong></td>
+<td>Long on a close above the 20-day high with rising volatility; exit on a close below the 10-day low</td>
+<td>Days to weeks</td>
+<td>Volatility target</td>
+<td>Low to medium</td>
+</tr>
+<tr>
+<td><strong>Order flow</strong></td>
+<td><strong>Not testable</strong></td>
+<td></td>
+<td>No historical data</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Regime selection</strong></td>
+<td>Only if it adds value over the best single rule, using trailing data only</td>
+<td></td>
+<td>Same limits</td>
+<td>Adds parameters</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Shared rules:</strong></p>
+<ul>
+<li>Spot long or flat only, with no leverage.</li>
+<li>Stop conditions: daily loss or drawdown limit moves to flat, and stale data or a feed outage blocks new entries.</li>
+<li>Signals are computed at decision time and filled no earlier than the next bar's open.</li>
+<li>Results before costs are never reported alone.</li>
+</ul>
+<h2>8. Backtesting and risk-control specification</h2>
+<h3>Data audit, before any modelling</h3>
+<p>Must report for each file:</p>
+<ul>
+<li>Rows, first and last time, timezone, and SHA-256.</li>
+<li>Duplicates, gaps against expected steps, and the longest gap.</li>
+<li>Invalid OHLC, non-positive values, zero-volume rows, and outlier returns reviewed by hand.</li>
+</ul>
+<p>Rules: nothing is silently repaired. Every exclusion is logged.</p>
+<h3>Splits</h3>
+<p>Chronological only, and random splits are never used.</p>
+<ul>
+<li>Expanding-window walk-forward: at least 24 months of training, 3-month test folds, stepping 3 months.</li>
+<li><strong>Final holdout:</strong> the newest 6 months, used once after the model is frozen.</li>
+<li>Purge and embargo as in section 5.</li>
+<li>Tuning uses inner folds inside the training window only.</li>
+</ul>
+<h3>Cost model</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Base</th>
+<th>Stress</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fee per side</td>
+<td>60 bps taker</td>
+<td>90 bps</td>
+<td>Published. <strong>Replace with owner's tier</strong></td>
+</tr>
+<tr>
+<td>Maker alternative</td>
+<td>40 bps</td>
+<td>Fill not assumed</td>
+<td>Published; fill risk unmodelled</td>
+</tr>
+<tr>
+<td>Half spread per side</td>
+<td>0.25 bps BTC, 0.5 bps ETH</td>
+<td>1 and 2 bps</td>
+<td>Short sample; recalibrate</td>
+</tr>
+<tr>
+<td>Slippage per side</td>
+<td>5 bps</td>
+<td>15 bps</td>
+<td><strong>Assumption [A]</strong>, not measured</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>Fill at next bar open</td>
+<td>Next bar open + adverse 5 bps</td>
+<td>Assumption</td>
+</tr>
+<tr>
+<td>Funding, borrow</td>
+<td>None for spot long-only</td>
+<td></td>
+<td>Not applicable</td>
+</tr>
+</tbody>
+</table>
+<h3>Required reporting</h3>
+<p>For every candidate and its benchmark, on each fold, subperiod and pooled:</p>
+<ul>
+<li><strong>Returns:</strong> gross and net, with dates and cost scenario.</li>
+<li><strong>Drawdown:</strong> maximum depth, duration, time to recovery.</li>
+<li><strong>Risk-adjusted:</strong> Sharpe and Sortino, stating frequency, annualisation (365 days for crypto), risk-free rate and sample size. Report confidence intervals.</li>
+<li><strong>Trades:</strong> count, hit rate, average win and loss, expectancy, tail losses.</li>
+<li><strong>Turnover:</strong> annual turnover, plus net returns at 0.5x, 1x and 2x costs.</li>
+<li><strong>Stability:</strong> per-fold results, parameter neighbourhood, and number of variants tried, so that selection bias is visible.</li>
+<li><strong>Calibration:</strong> Brier and reliability plot for probabilities; Mincer-Zarnowitz for volatility.</li>
+</ul>
+<h3>Proposed thresholds, for owner sign-off <strong>before</strong> any evaluation</h3>
+<p>These are proposals only. They become binding only once approved, and must not be changed after seeing results.</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Proposed pass condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data</td>
+<td>Zero unexplained duplicates or invalid rows; every gap over 1 bar is explained</td>
+</tr>
+<tr>
+<td>T3 forecast</td>
+<td>QLIKE at least 5% lower than EWMA, pooled; better in at least 70% of folds; Diebold-Mariano p below 0.05 with HAC errors; repeated on the holdout</td>
+</tr>
+<tr>
+<td>T1 forecast</td>
+<td>Brier better than base rate pooled and in at least 60% of folds</td>
+</tr>
+<tr>
+<td>Strategy economics</td>
+<td>Net Sharpe exceeds buy-and-hold by at least 0.3 in base costs; net return above benchmark at 2x costs</td>
+</tr>
+<tr>
+<td>Strategy risk</td>
+<td>Maximum drawdown no worse than buy-and-hold; at least 100 trades, or the sample is reported as inconclusive</td>
+</tr>
+<tr>
+<td>Robustness</td>
+<td>Still passes with parameters moved 25% either way, and in at least 2 of 3 subperiods</td>
+</tr>
+</tbody>
+</table>
+<p>A failure rejects the candidate. Passing permits <strong>paper observation only</strong>. Live execution stays out of scope, and needs separate authorisation, limits, monitoring and a tested kill switch.</p>
+<h2>9. File changes and test evidence</h2>
+<p>Compared with the pre-sprint state.</p>
+<p><strong>Added:</strong> <code>.gitignore</code>, <code>assets/img/</code> (logo, header mark, icon), <code>assets/css/brand.css</code>, <code>assets/js/ui/brand.js</code>, <code>crypto_feed.py</code>, <code>assets/js/data/crypto.js</code>, <code>tests/test_backend.py</code>, <code>tests/acceptance.mjs</code>, <code>tests/launcher_check.py</code>, <code>tests/heap_trend.mjs</code>, <code>research/data_probe.py</code>, <code>research/cost_hurdle_probe.py</code>, <code>docs/sprint-1.1/</code>.</p>
+<p><strong>Modified:</strong></p>
+<ul>
+<li><code>server.py</code>: additive routes, port policy, health, and exclusive bind. It also ends SSE clients that fell behind, instead of leaving them silently without data.</li>
+<li><code>requirements.txt</code>, <code>Start Terminal.bat</code> (passes arguments through), <code>terminal.html</code>, <code>README.md</code>, <code>README.txt</code>.</li>
+<li><code>assets/js/</code>: <code>main.js</code>; <code>chart/book.js</code>, <code>chart/ohlc.js</code>; <code>data/feargreed.js</code>, <code>data/http.js</code>, <code>data/markets.js</code>, <code>data/orderbook.js</code>; <code>store/state.js</code>; <code>ui/command.js</code>, <code>ui/selection.js</code>, <code>ui/stats.js</code>, <code>ui/status.js</code>.</li>
+</ul>
+<p><strong>Renamed:</strong> the product is now Resolute Quant. <code>SUBASH_PORT</code> became <code>RESOLUTE_QUANT_PORT</code>, and the health service name became <code>resolute-quant</code>. Browser storage keeps its internal <code>subash.</code> prefix so saved watchlists survive. <code>Start Terminal.bat</code> keeps its filename.</p>
+<p><strong>Removed:</strong> <code>assets/js/data/coinbase.js</code>, replaced by <code>crypto.js</code>.</p>
+<p><strong>Existing routes keep their meaning.</strong> New stream message types are additive, and <code>/api/candles</code> gains two intervals.</p>
+<p><strong>Bugs fixed that predate this sprint:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Bug</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Live bar opened at a stale REST close</td>
+<td>Bars with an open above the high (seen: 75,789 open, 75,696 high)</td>
+</tr>
+<tr>
+<td>Per-minute trade buffer pruned only for the open symbol</td>
+<td>Unbounded growth for other symbols</td>
+</tr>
+<tr>
+<td>A chart update on every trade</td>
+<td>About 6.8 per second, above the 5 limit</td>
+</tr>
+<tr>
+<td>A favicon request returned 400</td>
+<td>A console error on each load</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Evidence files:</strong> <code>evidence/acceptance.json</code> (final), <code>evidence/acceptance-run*.json</code> (earlier runs), <code>evidence/launcher.json</code>, <code>evidence/heap_trend.json</code>, <code>evidence/data_probe.json</code>, <code>evidence/cost_hurdle_probe.json</code>.</p>
+<p>The launcher test ran on the rebranded code. After it, only test scripts and <code>.gitignore</code> changed. The unit tests were rerun last, and 31 of 31 passed.</p>
+<h2>10. Unresolved decisions, risks and next actions</h2>
+<p><strong>Decisions for the owner</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Review and merge pull request <code>stage-1.1</code>, and confirm the licence's canonical repository and attribution name</td>
+<td>Review the two open failures first</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Which copy is canonical: this folder or <code>subash_extract</code>?</td>
+<td>This folder</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Accept the announced port fallback, or pin a port?</td>
+<td>Pin 8766 once the 8765 service is identified or left as is</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Approve first target T3 on BTC-USD?</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Approve the small Coinbase <code>1H</code> and <code>1D</code> download?</td>
+<td>Yes, after checking the terms</td>
+</tr>
+<tr>
+<td>6</td>
+<td>What is your real fee tier, capital range and market focus?</td>
+<td>Needed; these can change the plan</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Sign the thresholds in section 8</td>
+<td>Before any results</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Crypto <code>4H</code>, <code>1W</code>, <code>1MO</code> by aggregation?</td>
+<td>Yes, labelled as aggregated, in Phase 2</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Ownership of <code>server.py</code> and research between the agents</td>
+<td>Confirm one owner per area, with only one active at a time. Moving the other agent's work into this repository would need a review first</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Risks</strong></p>
+<ul>
+<li><strong>Two agents on one project:</strong> the other agent's documents already describe a different copy, and its activity may have affected the performance results here.</li>
+<li><strong>Provider dependence:</strong> Coinbase and Yahoo can change without notice, and terms are unverified.</li>
+<li><strong>Public repository:</strong> anything pushed is permanent in practice.</li>
+<li><strong>Small sample size:</strong> even 5 years gives about 365 independent 5-day periods, too few to support complex direction models.</li>
+<li><strong>The most likely research outcome is that a tradable edge is not found.</strong> That would be a valid result.</li>
+</ul>
+<p><strong>Next actions if approved</strong></p>
+<ol>
+<li>Owner reviews the pull request and does one real double-click launch.</li>
+<li>Investigate the frame gaps on a quiet machine, with a CPU trace, before multi-chart work adds load.</li>
+<li>Write the data downloader and audit, and download the small dataset.</li>
+<li>Implement the T3 benchmarks and HAR model in a new, tested harness.</li>
+<li>In parallel, resume terminal Phase 2 (multi-chart), including the chart library decision.</li>
+</ol>
+<h2>Go or no-go for the next sprint</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Recommendation</th>
+<th>Conditions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Research: data audit and T3 benchmarks</strong></td>
+<td><strong>GO</strong></td>
+<td>Approve decisions 4 to 7, and check Coinbase's data terms</td>
+</tr>
+<tr>
+<td><strong>Terminal: Phase 2 multi-chart work</strong></td>
+<td><strong>GO, with a condition</strong></td>
+<td>Investigate the frame gaps first, because more charts add load</td>
+</tr>
+<tr>
+<td><strong>Tree models, ensembles or direction models</strong></td>
+<td><strong>NO-GO for now</strong></td>
+<td>Only after the ladder in section 7 justifies them</td>
+</tr>
+<tr>
+<td><strong>Paper trading</strong></td>
+<td><strong>NO-GO for now</strong></td>
+<td>Only after a candidate passes pre-agreed gates</td>
+</tr>
+<tr>
+<td><strong>Live trading or order execution</strong></td>
+<td><strong>NO-GO</strong></td>
+<td>Not in scope. Needs separate authorisation</td>
+</tr>
+<tr>
+<td><strong>Calling the terminal production-ready</strong></td>
+<td><strong>NO-GO</strong></td>
+<td>Two acceptance checks remain open</td>
+</tr>
+</tbody>
+</table>
+<p>No profitability claim is made, and no evidence exists on which to make one.</p><p class="foot">© 2026 RESOLUTE QUANT | SG | subashgauchan16. Not financial advice. See LICENSE.</p></body></html>
