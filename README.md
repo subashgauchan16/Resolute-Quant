@@ -12,6 +12,12 @@ A local research and monitoring terminal for crypto, stocks, indices, FX and gol
 It places no orders and connects to no broker or exchange account. See `README.txt` for
 the short user guide.
 
+## Hosted private terminal (in progress)
+
+A Render deployment configuration is being prepared in `render.yaml`. It is **not deployed or verified yet**. The intended hosted version requires server-side `RESOLUTE_AUTH_USER` and `RESOLUTE_AUTH_PASSWORD` environment variables; never put these in frontend code or commit their values. See [the Render deployment checklist](docs/hosting/render-private-deployment.md).
+
+The local Windows workflow below remains the supported local workflow. The hosted version must pass its security, provider, and mobile checks before it should be treated as ready. No predictive model currently exists in this repository.
+
 ## Run it
 
 Double-click `Start Terminal.bat`, then use the page it opens. Keep the black window open, and
