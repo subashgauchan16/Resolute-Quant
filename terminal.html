@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resolute Quant</title>
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/brand.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <button class="brand" id="brand" title="Show the Resolute Quant logo" aria-label="Resolute Quant. Show the logo."><span class="rq-mark" aria-hidden="true"><span class="rq-mark-shine"></span></span><span aria-hidden="true"><span class="rq-word gold">RESOLUTE</span> <span class="rq-word silver">QUANT</span></span></button>
+    <label class="cmd"><span>&gt;</span><input id="cmd" aria-label="Command" placeholder="Type BTC, 5M, ADD PEPE, ALERT 77000 or HELP. Press / to focus." autocomplete="off" spellcheck="false"></label>
+    <div class="status" id="status" data-s="wait"><i class="dot"></i><span id="statustext">CONNECTING</span></div>
+    <div class="status y" id="ystatus" data-s="wait" title="State of the Yahoo Finance data program"><i class="dot"></i><span id="ystatustext">STOCKS OFF</span></div>
+    <div class="meta hidephone" title="Messages received per second, and the time since each message was stamped by the exchange"><span id="rate">0</span> msg/s · <span id="lag">-</span></div>
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="icon" id="fs" title="Full screen">FULL</button>
+    <button class="icon" id="helpbtn">HELP</button>
+  </header>
+  <div class="alertbar" id="alertbar" hidden><span id="alerttext"></span><button id="alertclose">Dismiss</button></div>
+
+  <aside class="watch">
+    <div class="head"><b>WATCHLIST</b><small>CHANGE</small></div>
+    <div class="list" id="list">
+      <div class="group"><span>MARKETS</span><span>YAHOO, CHANGE TODAY</span></div>
+      <div class="note" id="ynote" hidden>Data program offline. Start Start Terminal.bat.</div>
+      <div id="listM"></div>
+      <div class="group"><span>CRYPTO</span><span>COINBASE, 24H CHANGE</span></div>
+      <div id="listC"></div>
+    </div>
+  </aside>
+
+  <main class="chartp">
+    <div class="quote">
+      <h1 id="pair">BTC-USD</h1>
+      <span id="bigpx">-</span>
+      <span id="bigchg" class="flat">-</span>
+      <span id="asof" class="asof"></span>
+      <div class="intervals" id="intervals"></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div id="chart"><div class="msg" id="chartmsg" hidden></div></div>
+  </main>
+
+  <aside class="side">
+    <section id="paneBook">
+      <div class="head"><b>ORDER BOOK</b><small id="booksrc">WAITING</small></div>
+      <div class="ob" id="asks"></div>
+      <div class="spread"><span>SPREAD <b id="spread">-</b></span><span>MID <b id="mid">-</b></span></div>
+      <div class="ob" id="bids"></div>
+    </section>
+    <section id="paneTape">
+      <div class="head"><b>TIME &amp; SALES</b><small id="tapesrc">LIVE TRADES</small></div>
+      <div class="tapecols"><span>TIME</span><span>PRICE</span><span>SIZE</span></div>
+      <div class="tape" id="tape"></div>
+    </section>
+    <section id="paneCo" hidden>
+      <div class="head"><b>PROFILE</b><small>YAHOO FINANCE</small></div>
+      <div class="co" id="co"></div>
+    </section>
+    <section id="paneNews" hidden>
+      <div class="head"><b>NEWS</b><small id="newssrc">YAHOO FINANCE</small></div>
+      <div class="news" id="news"></div>
+    </section>
+  </aside>
+
+  <section class="stats" id="statsC" aria-label="Crypto session analytics">
+    <div class="stat"><label>24H RANGE</label><strong id="s-range">-</strong><div class="bar"><em id="s-rangepos" style="left:50%"></em></div></div>
+    <div class="stat"><label>24H VOLUME</label><strong id="s-vol">-</strong><small id="s-volbase">-</small></div>
+    <div class="stat"><label>SESSION VWAP</label><strong id="s-vwap">-</strong><small id="s-vwapd">Waiting for the first trade</small></div>
+    <div class="stat"><label>BUY / SELL FLOW</label><strong id="s-flow">-</strong><div class="bar"><i id="s-flowbar" style="width:50%"></i></div></div>
+    <div class="stat"><label>TRADES PER MIN</label><strong id="s-tpm">-</strong><small id="s-count">-</small></div>
+    <div class="stat"><label>BOOK IMBALANCE</label><strong id="s-imb">-</strong><small>bid vs ask, top 10 levels</small></div>
+    <div class="stat"><label>FEAR &amp; GREED</label><strong id="s-fng">-</strong><small id="s-fngd">daily index</small></div>
+  </section>
+
+  <section class="stats" id="statsY" aria-label="Market statistics" hidden>
+    <div class="stat"><label>DAY RANGE</label><strong id="y-range">-</strong><div class="bar"><em id="y-rangepos" style="left:50%"></em></div></div>
+    <div class="stat"><label>52 WEEK RANGE</label><strong id="y-52">-</strong><div class="bar"><em id="y-52pos" style="left:50%"></em></div></div>
+    <div class="stat"><label>PREVIOUS CLOSE</label><strong id="y-prev">-</strong><small id="y-prevd">-</small></div>
+    <div class="stat"><label>VOLUME</label><strong id="y-vol">-</strong><small id="y-avol">-</small></div>
+    <div class="stat"><label>MARKET CAP</label><strong id="y-cap">-</strong><small id="y-cur">-</small></div>
+    <div class="stat"><label>P/E RATIO</label><strong id="y-pe">-</strong><small id="y-eps">trailing 12 months</small></div>
+    <div class="stat"><label>MARKET STATE</label><strong id="y-state">-</strong><small id="y-delay">-</small></div>
+  </section>
+
+  <footer class="foot">
+    <a class="rq-copy" href="https://github.com/subashgauchan16/Resolute-Quant" target="_blank" rel="noopener noreferrer">© 2026 RESOLUTE QUANT | SG | subashgauchan16</a>
+    <span class="rq-sources">All data through the local data program. Crypto: Coinbase Exchange. Stocks, indices and FX: Yahoo Finance via yfinance, personal use, may be delayed. Fear &amp; Greed: alternative.me. Places no orders.</span>
+    <span class="rq-session"><span id="portnote"></span><span id="session">Session started --:--</span></span>
+  </footer>
+</div>
+
+<div class="rq-intro" id="intro" role="dialog" aria-label="Resolute Quant" hidden>
+  <div class="rq-stage" id="rqstage"><div class="rq-breathe">
+    <img class="rq-logo" src="assets/img/resolute-quant-logo.webp" width="1672" height="941" alt="Resolute Quant. Analyse, model, trade.">
+    <div class="rq-shine"></div><div class="rq-shine second"></div>
+    <svg class="rq-orbit" viewBox="0 0 1672 941" aria-hidden="true"><path pathLength="1000" d="M838 238C960 170 1180 110 1245 140C1262 150 1266 180 1262 205C1262 290 1040 400 760 480C590 530 440 565 437 525C436 495 490 430 555 398"/></svg>
+    <div class="rq-ember"></div>
+  </div></div>
+  <p class="rq-note"><b>© 2026 RESOLUTE QUANT | SG | subashgauchan16</b>Research display only. Places no orders. Click or press any key to enter.</p>
+</div>
+
+<div class="help" id="help" hidden><div>
+  <h2>COMMANDS</h2>
+  <dl>
+    <dt>BTC or AAPL or VOD.L</dt><dd>Open a symbol. Coinbase is checked first, then Yahoo.</dd>
+    <dt>STK META</dt><dd>Use Yahoo when the symbol exists on both.</dd>
+    <dt>1M 5M 15M 1H 1D</dt><dd>Change the candle size. 1M is one minute. Crypto adds 6H. Markets add 4H, 1W and 1MO (one month).</dd>
+    <dt>ADD PEPE</dt><dd>Add a symbol to the watchlist.</dd>
+    <dt>DEL PEPE</dt><dd>Remove a symbol.</dd>
+    <dt>ALERT 77000</dt><dd>Alert when the open symbol crosses a price.</dd>
+    <dt>CLEAR</dt><dd>Remove alerts on the open symbol.</dd>
+    <dt>/ · ↑ ↓ · F · Esc</dt><dd>Focus command, move through the list, full screen, close.</dd>
+  </dl>
+  <p>Your watchlist and alerts are saved in this browser. Alerts only fire while this page is open.</p>
+</div></div>
+
+<script src="assets/lib/lightweight-charts.standalone.production.js"></script>
+<script type="module" src="assets/js/main.js"></script>
+<script>
+/* ES modules cannot load from a double-clicked file, so say how to open the page. */
+if(location.protocol==="file:"){
+  document.getElementById("alerttext").textContent="Data program offline. Start Start Terminal.bat, then use the page it opens.";
+  document.getElementById("alertclose").hidden=true;
+  document.getElementById("alertbar").hidden=false;
+}
+</script>
+</body>
+</html>

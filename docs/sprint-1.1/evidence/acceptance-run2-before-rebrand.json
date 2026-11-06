@@ -1,0 +1,661 @@
+{
+ "started": "2026-11-06T00:03:25.961Z",
+ "base": "http://127.0.0.1:8771",
+ "checks": [
+  {
+   "name": "health identifies the service",
+   "pass": true,
+   "detail": {
+    "port": 8771,
+    "source": "--port",
+    "status": "degraded"
+   }
+  },
+  {
+   "name": "crypto badge LIVE through the backend",
+   "pass": true,
+   "detail": "LIVE"
+  },
+  {
+   "name": "crypto quote and chart render",
+   "pass": true,
+   "detail": {
+    "big": "$76,194.34",
+    "legend": "O 76,163.73H 76,200.00L 76,163.73C 76,194.34VOL 0.72EMA 20"
+   }
+  },
+  {
+   "name": "order book renders ten levels a side",
+   "pass": true,
+   "detail": "LIVE, DEPTH 38,996"
+  },
+  {
+   "name": "trade tape fills",
+   "pass": true,
+   "detail": 40
+  },
+  {
+   "name": "session stats compute",
+   "pass": true,
+   "detail": {
+    "status": "LIVE",
+    "y": "YAHOO STREAM",
+    "big": "$76,194.34",
+    "rate": "27",
+    "book": "LIVE, DEPTH 38,996",
+    "asks": 10,
+    "bids": 10,
+    "tape": 40,
+    "vwap": "76,187.85",
+    "flow": "63% / 37%",
+    "imb": "+5.8%",
+    "fng": "28 / 100",
+    "fngd": "Fear, daily",
+    "range": "75,035.10 to 80,843.85",
+    "vol": "$1.14B",
+    "rows": 20,
+    "grans": "1m5m15m1H6H1D",
+    "legend": "O 76,163.73H 76,200.00L 76,163.73C 76,194.34VOL 0.72EMA 20",
+    "canvases": 7,
+    "msg": true
+   }
+  },
+  {
+   "name": "fear and greed through the backend",
+   "pass": true,
+   "detail": {
+    "fng": "28 / 100",
+    "detail": "Fear, daily"
+   }
+  },
+  {
+   "name": "watchlist has all rows",
+   "pass": true,
+   "detail": 20
+  },
+  {
+   "name": "crypto timeframes offered are the ones Coinbase serves",
+   "pass": true,
+   "detail": "1m5m15m1H6H1D"
+  },
+  {
+   "name": "crypto timeframe 1M",
+   "pass": true,
+   "detail": "1m"
+  },
+  {
+   "name": "crypto timeframe 15M",
+   "pass": true,
+   "detail": "15m"
+  },
+  {
+   "name": "crypto timeframe 1H",
+   "pass": true,
+   "detail": "1H"
+  },
+  {
+   "name": "crypto timeframe 6H",
+   "pass": true,
+   "detail": "6H"
+  },
+  {
+   "name": "crypto timeframe 1D",
+   "pass": true,
+   "detail": "1D"
+  },
+  {
+   "name": "crypto timeframe 5M",
+   "pass": true,
+   "detail": "5m"
+  },
+  {
+   "name": "live 1m bar exists and its OHLC is self-consistent",
+   "pass": true,
+   "detail": {
+    "time": 1793923500,
+    "open": 76156.24,
+    "high": 76156.24,
+    "low": 76143.37,
+    "close": 76156.24,
+    "volume": 0.19137838000000001,
+    "age": 3
+   }
+  },
+  {
+   "name": "alert set, clear, fire, dismiss (firing uses an injected crossing)",
+   "pass": true,
+   "detail": "BTC-USD crossed 500.00 at 00:05:04. Last 501.00."
+  },
+  {
+   "name": "stock view: quote, chart, profile, news, stats",
+   "pass": true,
+   "detail": {
+    "pair": "AAPL",
+    "big": "$344.59",
+    "asof": "AFTER HOURS, Yahoo delay 15m, as of 00:05:10",
+    "legend": "O 346.02H 346.09L 344.10C 344.31VOL 4.20MEMA 20",
+    "bookHidden": true,
+    "co": "Apple Inc.AAPL · NasdaqGSSectorTechnologyIndustryConsumer El",
+    "news": 10,
+    "state": "AFTER HOURS",
+    "cap": "5.00T",
+    "grans": "1m5m15m1H4H1D1W1MO",
+    "msg": true
+   }
+  },
+  {
+   "name": "stock timeframes include 4H and 1MO",
+   "pass": true,
+   "detail": "1m5m15m1H4H1D1W1MO"
+  },
+  {
+   "name": "stock timeframe 1MO",
+   "pass": true,
+   "detail": {
+    "on": "1MO",
+    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.61MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 4H",
+   "pass": true,
+   "detail": {
+    "on": "4H",
+    "legend": "O 343.60H 346.60L 342.53C 344.31VOL 26.78MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1W",
+   "pass": true,
+   "detail": {
+    "on": "1W",
+    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.73MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1M",
+   "pass": true,
+   "detail": {
+    "on": "1m",
+    "legend": "O 344.56H 344.95L 344.25C 344.31VOL 1.57MEMA 20"
+   }
+  },
+  {
+   "name": "stock timeframe 1D",
+   "pass": true,
+   "detail": {
+    "on": "1D",
+    "legend": "O 353.89H 355.38L 344.53C 344.17VOL 74.17MEMA 20"
+   }
+  },
+  {
+   "name": "1M is one minute and 1MO is one month",
+   "pass": true,
+   "detail": {
+    "minuteStep": 60,
+    "monthStep": 2678400,
+    "minuteRows": 320,
+    "monthRows": 320
+   }
+  },
+  {
+   "name": "switching crypto symbol moves the book",
+   "pass": true,
+   "detail": {
+    "pair": "ETH-USD",
+    "book": "LIVE, DEPTH 18,855",
+    "asks": 10
+   }
+  },
+  {
+   "name": "ADD and DEL through the backend check",
+   "pass": true,
+   "detail": {
+    "pepe": {
+     "pair": "PEPE-USD",
+     "row": true,
+     "saved": true
+    },
+    "gone": {
+     "row": false,
+     "saved": false
+    }
+   }
+  },
+  {
+   "name": "unknown symbol explained",
+   "pass": true,
+   "detail": "Neither Coinbase nor Yahoo lists NOSUCHSYM1."
+  },
+  {
+   "name": "HELP, Esc, arrow, slash",
+   "pass": true,
+   "detail": [
+    "BTC-USD",
+    "ETH-USD"
+   ]
+  },
+  {
+   "name": "open symbol and timeframe survive a refresh",
+   "pass": true,
+   "detail": {
+    "persisted": {
+     "sel": "\"SOL-USD\"",
+     "gran": "900"
+    },
+    "reloaded": {
+     "pair": "SOL-USD",
+     "on": "15m",
+     "status": "LIVE"
+    }
+   }
+  },
+  {
+   "name": "layout store saves and rejects damage (no panel controls use it yet)",
+   "pass": true,
+   "detail": {
+    "version": 1,
+    "hidden": [
+     "paneNews"
+    ],
+    "order": [],
+    "sizes": {
+     "watch": 300
+    }
+   }
+  },
+  {
+   "name": "saved settings do not carry across ports (documented limit)",
+   "pass": true,
+   "detail": {
+    "here": [
+     "subash.alerts",
+     "subash.gran",
+     "subash.list",
+     "subash.sel"
+    ],
+    "there": []
+   }
+  },
+  {
+   "name": "backend stopped: offline message shown and page stays up",
+   "pass": true,
+   "detail": {
+    "y": "STOCKS OFF",
+    "crypto": "CRYPTO OFF",
+    "note": "Data program offline. Start Start Terminal.bat.",
+    "rows": 20,
+    "last": "$76,038.96"
+   }
+  },
+  {
+   "name": "backend stopped: controls still respond, without error",
+   "pass": true,
+   "detail": "ETH-USD"
+  },
+  {
+   "name": "backend restarted: page recovers without a reload",
+   "pass": true,
+   "detail": {
+    "y": "YAHOO STREAM",
+    "crypto": "LIVE",
+    "noteHidden": true,
+    "rate": "50",
+    "book": "LIVE, DEPTH 39,037"
+   }
+  },
+  {
+   "name": "network audit: page requested only the local server and Google Fonts",
+   "pass": true,
+   "detail": {
+    "127.0.0.1:8771": 206,
+    "fonts.googleapis.com": 3,
+    "fonts.gstatic.com": 15,
+    "127.0.0.1:8772": 1
+   }
+  },
+  {
+   "name": "network audit: page opened no WebSocket",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "idle 10 min: completed without interruption",
+   "pass": true,
+   "detail": 600
+  },
+  {
+   "name": "idle: heap after GC grew by no more than 10% over the run",
+   "pass": false,
+   "detail": {
+    "heapStart": 2.89,
+    "heapEnd": 3.76
+   }
+  },
+  {
+   "name": "idle: chart updates at no more than 5 per second",
+   "pass": true,
+   "detail": {
+    "updates": 1596,
+    "perSecond": 2.66,
+    "trades": 4428
+   }
+  },
+  {
+   "name": "idle: DOM size stable (within 5%)",
+   "pass": true,
+   "detail": [
+    624,
+    624
+   ]
+  },
+  {
+   "name": "idle: feed stayed LIVE in at least 99% of samples",
+   "pass": true,
+   "detail": {
+    "LIVE": 600
+   }
+  },
+  {
+   "name": "idle: no frame gap over 250 ms",
+   "pass": true,
+   "detail": {
+    "maxGapMs": 150,
+    "gapsOver100ms": 2,
+    "gapsOver250ms": 0
+   }
+  },
+  {
+   "name": "idle: no console errors",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "network audit: page requested only the local server and Google Fonts",
+   "pass": true,
+   "detail": {
+    "127.0.0.1:8771": 297,
+    "fonts.googleapis.com": 4,
+    "fonts.gstatic.com": 20,
+    "127.0.0.1:8772": 1
+   }
+  },
+  {
+   "name": "network audit: page opened no WebSocket",
+   "pass": true,
+   "detail": []
+  },
+  {
+   "name": "no uncaught page exceptions in the whole run",
+   "pass": true,
+   "detail": []
+  }
+ ],
+ "requests": {
+  "http://127.0.0.1:8771/": 4,
+  "https://fonts.googleapis.com/css2": 4,
+  "http://127.0.0.1:8771/assets/css/style.css": 4,
+  "http://127.0.0.1:8771/assets/lib/lightweight-charts.standalone.production.js": 4,
+  "http://127.0.0.1:8771/assets/js/main.js": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1i8q1w.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgg.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3vAOwlBFgg.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexsanscondensed/v15/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY5a67vspYY.woff2": 4,
+  "https://fonts.gstatic.com/s/ibmplexsanscondensed/v15/Gg8gN4UfRSqiPg7Jn2ZI12V4DCEwkj1E4LVeHY527LvspYY.woff2": 4,
+  "http://127.0.0.1:8771/assets/js/chart/book.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/helper.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/ohlc.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/crypto.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/markets.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/events.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/state.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/alert.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/command.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/details.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/selection.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/stats.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/status.js": 4,
+  "http://127.0.0.1:8771/assets/js/ui/watchlist.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/orderbook.js": 4,
+  "http://127.0.0.1:8771/assets/js/store/localStorage.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/http.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/chart-engine.js": 4,
+  "http://127.0.0.1:8771/assets/js/chart/indicators.js": 4,
+  "http://127.0.0.1:8771/assets/js/data/feargreed.js": 4,
+  "http://127.0.0.1:8771/api/crypto/candles": 83,
+  "http://127.0.0.1:8771/api/crypto/stats": 64,
+  "http://127.0.0.1:8771/api/sentiment/feargreed": 4,
+  "http://127.0.0.1:8771/api/health": 4,
+  "http://127.0.0.1:8771/api/stream": 8,
+  "http://127.0.0.1:8771/api/watch": 5,
+  "http://127.0.0.1:8771/api/crypto/watch": 7,
+  "http://127.0.0.1:8771/api/crypto/book": 14,
+  "http://127.0.0.1:8771/api/candles": 8,
+  "http://127.0.0.1:8771/api/profile": 1,
+  "http://127.0.0.1:8771/api/news": 1,
+  "http://127.0.0.1:8771/api/resolve": 1,
+  "http://127.0.0.1:8771/assets/js/store/layout.js": 1,
+  "http://127.0.0.1:8772/": 1
+ },
+ "webSockets": [],
+ "console": [
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_RESET http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:03:29 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:05:44 error Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:8771/api/crypto/stats?symbol=NOSUCHSYM1-USD",
+  "00:05:46 error Failed to load resource: the server responded with a status of 502 (Bad Gateway) http://127.0.0.1:8771/api/resolve?symbol=NOSUCHSYM1",
+  "00:06:04 error Failed to load resource: the server responded with a status of 404 (File not found) http://127.0.0.1:8772/",
+  "00:06:14 error Failed to load resource: net::ERR_CONNECTION_RESET http://127.0.0.1:8771/api/stream",
+  "00:06:17 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:06:19 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/book?symbol=ETH-USD",
+  "00:06:19 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/candles?symbol=ETH-USD&granularity=900",
+  "00:06:19 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/book?symbol=BTC-USD",
+  "00:06:19 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/crypto/candles?symbol=BTC-USD&granularity=900",
+  "00:06:20 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream",
+  "00:06:23 error Failed to load resource: net::ERR_CONNECTION_REFUSED http://127.0.0.1:8771/api/stream"
+ ],
+ "exceptions": [],
+ "serverOutput": [
+  "00:03:28 Subash Terminal is running at http://127.0.0.1:8771",
+  "00:03:28 Keep this window open. Close it to stop the terminal.",
+  "00:05:46 /api/resolve failed: no price",
+  "00:06:23 Subash Terminal is running at http://127.0.0.1:8771",
+  "00:06:23 Keep this window open. Close it to stop the terminal."
+ ],
+ "idle": {
+  "minutes": 10,
+  "heapSeries": [
+   {
+    "minute": 0.5,
+    "heapMB": 3.7,
+    "domNodes": 624
+   },
+   {
+    "minute": 1,
+    "heapMB": 4.9,
+    "domNodes": 624
+   },
+   {
+    "minute": 1.5,
+    "heapMB": 3.17,
+    "domNodes": 624
+   },
+   {
+    "minute": 2,
+    "heapMB": 3.25,
+    "domNodes": 624
+   },
+   {
+    "minute": 2.5,
+    "heapMB": 3.38,
+    "domNodes": 624
+   },
+   {
+    "minute": 3,
+    "heapMB": 3.43,
+    "domNodes": 624
+   },
+   {
+    "minute": 3.5,
+    "heapMB": 4.46,
+    "domNodes": 624
+   },
+   {
+    "minute": 4,
+    "heapMB": 5.1,
+    "domNodes": 624
+   },
+   {
+    "minute": 4.5,
+    "heapMB": 5.06,
+    "domNodes": 624
+   },
+   {
+    "minute": 5,
+    "heapMB": 3.47,
+    "domNodes": 624
+   },
+   {
+    "minute": 5.5,
+    "heapMB": 4.16,
+    "domNodes": 624
+   },
+   {
+    "minute": 6,
+    "heapMB": 3.56,
+    "domNodes": 624
+   },
+   {
+    "minute": 6.5,
+    "heapMB": 4.59,
+    "domNodes": 624
+   },
+   {
+    "minute": 7,
+    "heapMB": 3.49,
+    "domNodes": 624
+   },
+   {
+    "minute": 7.5,
+    "heapMB": 3.72,
+    "domNodes": 624
+   },
+   {
+    "minute": 8,
+    "heapMB": 4.6,
+    "domNodes": 624
+   },
+   {
+    "minute": 8.5,
+    "heapMB": 3.51,
+    "domNodes": 624
+   },
+   {
+    "minute": 9,
+    "heapMB": 3.95,
+    "domNodes": 624
+   },
+   {
+    "minute": 9.5,
+    "heapMB": 3.93,
+    "domNodes": 624
+   },
+   {
+    "minute": 10,
+    "heapMB": 4.68,
+    "domNodes": 624
+   }
+  ],
+  "heapStart": 2.89,
+  "heapEnd": 3.76,
+  "probe": {
+   "elapsedSeconds": 600.23,
+   "frames": 35980,
+   "maxGapMs": 150,
+   "gapsOver100ms": 2,
+   "gapsOver250ms": 0,
+   "gapTimes": [],
+   "tradesToChart": 4428,
+   "chartUpdates": 1596,
+   "chartUpdatesPerSecond": 2.66,
+   "statusSamples": {
+    "LIVE": 600
+   }
+  },
+  "health": {
+   "service": "subash-terminal",
+   "status": "ok",
+   "timestamp": 1793924202523,
+   "instance": "ddfd7b9a8ead4cf5bafdc80cf77b792a",
+   "started": 1793923583656,
+   "port": 8771,
+   "preferredPort": 8771,
+   "portSource": "--port",
+   "fallback": false,
+   "clients": 2,
+   "providers": {
+    "yahoo": {
+     "stream": true,
+     "limited": false,
+     "snapshot": 1793924139.2146401
+    },
+    "coinbase": {
+     "connected": true,
+     "lastMessage": 1793924202463,
+     "retryIn": 0,
+     "reconnects": 0,
+     "rejected": 0,
+     "restRejected": 0
+    }
+   }
+  }
+ },
+ "consoleBeforeRestart": 41,
+ "hosts": {
+  "127.0.0.1:8771": 297,
+  "fonts.googleapis.com": 4,
+  "fonts.gstatic.com": 20,
+  "127.0.0.1:8772": 1
+ },
+ "consoleDuringIdle": [],
+ "finished": "2026-11-06T00:16:43.769Z",
+ "summary": {
+  "pass": 46,
+  "fail": 1
+ }
+}
