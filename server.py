@@ -9,6 +9,8 @@ working without notice. This program never places orders.
 from __future__ import annotations
 
 import argparse
+import base64
+import hmac
 import json
 import logging
 import math
@@ -39,6 +41,9 @@ except Exception:  # older yfinance versions
         pass
 
 HOST, DEFAULT_PORT = "127.0.0.1", 8765
+DEPLOYED = os.environ.get("RENDER", "").lower() == "true" or os.environ.get("RESOLUTE_DEPLOYED") == "1"
+AUTH_USER = os.environ.get("RESOLUTE_AUTH_USER", "")
+AUTH_PASSWORD = os.environ.get("RESOLUTE_AUTH_PASSWORD", "")
 FALLBACK_PORTS = 10        # with no configured port, try this many ports after the default
 CONFIG_FILE = Path(__file__).with_name("terminal.config.json")
 SERVICE = "resolute-quant"
@@ -406,10 +411,32 @@ class Handler(BaseHTTPRequestHandler):
         return self.reply(200, target.read_bytes(), kind)
 
     def do_GET(self):
-        # Only answer pages addressed to this PC, not other websites.
-        if self.headers.get("Host", "").split(":")[0] not in ("127.0.0.1", "localhost"):
-            return self.send_json({"error": "Local use only."}, 403)
         url = urlparse(self.path)
+        # The health endpoint is intentionally unauthenticated for Render health checks.
+        # Every page, asset, API route and event stream requires Basic Auth in hosted mode.
+        if DEPLOYED and url.path != "/api/health":
+            header = self.headers.get("Authorization", "")
+            supplied_user = supplied_password = ""
+            if header.startswith("Basic "):
+                try:
+                    decoded = base64.b64decode(header[6:], validate=True).decode("utf-8")
+                    supplied_user, separator, supplied_password = decoded.partition(":")
+                    if not separator:
+                        supplied_user = supplied_password = ""
+                except (ValueError, UnicodeDecodeError):
+                    supplied_user = supplied_password = ""
+            valid_user = hmac.compare_digest(supplied_user.encode(), AUTH_USER.encode())
+            valid_password = hmac.compare_digest(supplied_password.encode(), AUTH_PASSWORD.encode())
+            if not (valid_user and valid_password):
+                self.send_response(401)
+                self.send_header("WWW-Authenticate", 'Basic realm="Resolute Quant", charset="UTF-8"')
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
+        # Local development remains restricted to localhost. Hosted requests are protected above.
+        if not DEPLOYED and self.headers.get("Host", "").split(":")[0] not in ("127.0.0.1", "localhost"):
+            return self.send_json({"error": "Local use only."}, 403)
         query = parse_qs(url.query)
         try:
             if url.path in ("/", "/terminal.html"):
@@ -613,8 +640,17 @@ def main():
     parser.add_argument("--port", help="port to use; overrides RESOLUTE_QUANT_PORT and terminal.config.json")
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser")
     options = parser.parse_args()
-    preferred, source = configured_port(options.port, os.environ, CONFIG_FILE)
-    server, existing = bind_server(preferred, source)
+    if DEPLOYED:
+        if not AUTH_USER or not AUTH_PASSWORD:
+            raise SystemExit("Hosted mode requires RESOLUTE_AUTH_USER and RESOLUTE_AUTH_PASSWORD. Configure both as Render secrets.")
+        port = valid_port(os.environ.get("PORT", "10000"))
+        if port is None:
+            raise SystemExit("PORT must be a valid port number from 1024 to 65535.")
+        preferred, source = port, "PORT"
+        server, existing = Server(("0.0.0.0", port), Handler), None
+    else:
+        preferred, source = configured_port(options.port, os.environ, CONFIG_FILE)
+        server, existing = bind_server(preferred, source)
     if server is None:
         print(f"The terminal is already running at {existing}. Opening it.")
         if not options.no_browser:
