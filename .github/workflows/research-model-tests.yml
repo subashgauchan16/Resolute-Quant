@@ -6,6 +6,7 @@ on:
       - "research_models.py"
       - "server.py"
       - "assets/js/ui/research.js"
+      - "assets/js/ui/selection.js"
       - "assets/js/chart/ohlc.js"
       - "assets/js/main.js"
       - "terminal.html"
@@ -36,4 +37,8 @@ jobs:
           cache: pip
       - run: python -m pip install "numpy>=2.0,<3"
       - run: python -m py_compile server.py research_models.py tests/test_research_models.py
+      - run: node --input-type=module --check < assets/js/ui/research.js
+      - run: node --input-type=module --check < assets/js/ui/selection.js
+      - run: node --input-type=module --check < assets/js/chart/ohlc.js
+      - run: node --input-type=module --check < assets/js/main.js
       - run: PYTHONPATH=. python -m unittest discover -s tests -p "test_research_models.py" -v
