@@ -28,6 +28,7 @@ void printLine(const QJsonObject& line) {
 void runSmokeTest(rq::PythonEngine& engine) {
   auto* healthJob = new quint64(0);
   auto* calculationJob = new quint64(0);
+  auto* packagesJob = new quint64(0);
   auto* report = new QJsonObject;
 
   QObject::connect(&engine, &rq::PythonEngine::started, &engine, [&engine, healthJob] {
@@ -38,9 +39,9 @@ void runSmokeTest(rq::PythonEngine& engine) {
     QApplication::exit(kExitPythonUnavailable);
   });
   QObject::connect(&engine, &rq::PythonEngine::jobFinished, &engine,
-                   [&engine, healthJob, calculationJob, report](const rq::JobResult& result) {
+                   [&engine, healthJob, calculationJob, packagesJob, report](const rq::JobResult& result) {
                      if (result.status != rq::JobStatus::Ok &&
-                         (result.id == *healthJob || result.id == *calculationJob)) {
+                         (result.id == *healthJob || result.id == *calculationJob || result.id == *packagesJob)) {
                        printLine({{"python", "running"}, {"ok", false}, {"job", result.job}, {"error", result.message}});
                        QApplication::exit(kExitSmokeFailed);
                      } else if (result.id == *healthJob) {
@@ -52,14 +53,21 @@ void runSmokeTest(rq::PythonEngine& engine) {
                        const bool correct = result.value["mean"].toDouble() == 5.0 &&
                                             std::abs(result.value["sample_std_dev"].toDouble() - std::sqrt(32.0 / 7.0)) < 1e-12;
                        const bool isolated = (*report)["isolated"].toBool() && !(*report)["numpy_version"].toString().isEmpty();
+                       (*report)["ok"] = correct && isolated;
+                       (*report)["calculation"] = result.value;
+                       // Quitting with these libraries loaded proves shutdown still works.
+                       *packagesJob = engine.submit(QStringLiteral("_import_market_for_test"));
+                     } else if (result.id == *packagesJob) {
+                       const bool ok = (*report)["ok"].toBool();
                        printLine({{"python", "running"},
-                                  {"ok", correct && isolated},
+                                  {"ok", ok},
                                   {"prefix", (*report)["prefix"]},
                                   {"python_version", (*report)["python_version"]},
                                   {"numpy_version", (*report)["numpy_version"]},
                                   {"isolated", (*report)["isolated"]},
-                                  {"calculation", result.value}});
-                       QApplication::exit(correct && isolated ? 0 : kExitSmokeFailed);
+                                  {"calculation", (*report)["calculation"]},
+                                  {"packages", result.value}});
+                       QApplication::exit(ok ? 0 : kExitSmokeFailed);
                      }
                    });
   QTimer::singleShot(kSmokeTimeoutMs, qApp, [] { QApplication::exit(kExitSmokeFailed); });

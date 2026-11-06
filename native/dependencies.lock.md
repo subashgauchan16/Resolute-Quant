@@ -5,7 +5,7 @@ Every version here is exact. `tools/setup_runtime.ps1` and `CMakeLists.txt` refu
 | Dependency | Version | Source | SHA-256 | Licence |
 | --- | --- | --- | --- | --- |
 | Python (private runtime) | 3.13.17 | `https://www.nuget.org/api/v2/package/python/3.13.17` | `DCE409744B088F94C6E37BA41F8100C384C27E029E843237364C602D30D475E5` | PSF |
-| NumPy | 2.5.4 | PyPI, `numpy-2.5.4-cp313-cp313-win_amd64.whl` | `8b4d2fd2d34e5f8c9235ee787de5631a37a28402b15cb80814df973d2be54129` | BSD-3-Clause, with bundled libraries under their own terms |
+| Python packages, including NumPy 2.5.4, pandas 3.1.1 and yfinance 1.8.0 | The 22 pins in `requirements.txt` at the repository root | PyPI | Every wheel's hash is in [python/requirements.lock](python/requirements.lock) | Each package's own licence |
 | pybind11 | 3.1.0 | `https://github.com/pybind/pybind11/archive/refs/tags/v3.1.0.tar.gz` | `EF712655692A2E9BF7BB7874C022564A45F91D847DDEE987E720CD9E28849665` | BSD-style |
 
 ## Installed separately, at these versions

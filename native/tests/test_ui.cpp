@@ -59,9 +59,11 @@ void UiTest::navigationSwitchesPages() {
   auto* navigation = find<QListWidget>(*window_, "navigation");
   auto* pages = window_->findChild<QStackedWidget*>();
   QVERIFY(pages != nullptr);
-  QCOMPARE(navigation->count(), 2);
+  QCOMPARE(navigation->count(), 3);
   navigation->setCurrentRow(1);
   QCOMPARE(pages->currentIndex(), 1);
+  navigation->setCurrentRow(2);  // The Python Health page, which the tests below use.
+  QCOMPARE(pages->currentIndex(), 2);
 }
 
 void UiTest::healthPanelShowsPythonState() {
@@ -91,18 +93,28 @@ void UiTest::pythonErrorAppearsWithDetails() {
   auto* input = find<QLineEdit>(*window_, "calculationInput");
   input->setText("1, oops");
   QTest::mouseClick(find<QPushButton>(*window_, "calculate"), Qt::LeftButton);
-  auto* error = find<QLabel>(*window_, "calculationError");
+  auto* error = find<QLabel>(*window_, "calculationErrorMessage");
   QTRY_VERIFY_WITH_TIMEOUT(error->isVisible(), 10000);
   QVERIFY2(error->text().startsWith("ValueError"), qPrintable(error->text()));
   QVERIFY(error->text().contains("oops"));
-  auto* details = find<QPlainTextEdit>(*window_, "calculationDetails");
+
+  // The traceback stays hidden until asked for.
+  auto* details = find<QPlainTextEdit>(*window_, "calculationErrorDetails");
+  auto* toggle = find<QPushButton>(*window_, "calculationErrorToggle");
+  QVERIFY(!details->isVisible());
+  QCOMPARE(toggle->text(), QStringLiteral("Show details"));
+  QTest::mouseClick(toggle, Qt::LeftButton);
   QVERIFY(details->isVisible());
   QVERIFY(details->toPlainText().contains("Traceback"));
+  QCOMPARE(toggle->text(), QStringLiteral("Hide details"));
+  QTest::mouseClick(toggle, Qt::LeftButton);
+  QVERIFY(!details->isVisible());
 
   input->setText("1, 2");
   QTest::mouseClick(find<QPushButton>(*window_, "calculate"), Qt::LeftButton);
   QTRY_VERIFY_WITH_TIMEOUT(!error->isVisible(), 10000);
   QVERIFY(!details->isVisible());
+  QVERIFY(!toggle->isVisible());
 }
 
 void UiTest::windowStaysLiveDuringALongJobAndCancels() {

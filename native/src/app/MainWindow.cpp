@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 
 #include "app/HealthPanel.h"
+#include "app/HistoryPanel.h"
 
 namespace rq {
 
@@ -21,9 +22,9 @@ QWidget* makeHomePage() {
   auto* title = new QLabel(QStringLiteral("Resolute Quant"));
   title->setObjectName(QStringLiteral("pageTitle"));
   auto* body = new QLabel(QStringLiteral(
-      "Native application foundation. This build proves the Qt window and the embedded Python "
-      "engine work together. It has no market data, models or trading functions. The browser "
-      "terminal remains the working product."));
+      "The native app is being built one screen at a time. Market-price history is available now, "
+      "with a chart, a table and CSV export. It has no live prices, models or trading functions yet, "
+      "and it never places orders. The browser terminal remains the full working product."));
   body->setWordWrap(true);
   layout->addWidget(title);
   layout->addWidget(body);
@@ -66,6 +67,7 @@ MainWindow::MainWindow(PythonEngine& engine, QWidget* parent)
 
   auto* healthPanel = new HealthPanel(engine);
   addPage(QStringLiteral("Home"), makeHomePage());
+  addPage(QStringLiteral("History"), new HistoryPanel(engine));
   auto* healthScroll = new QScrollArea;
   healthScroll->setWidget(healthPanel);
   healthScroll->setWidgetResizable(true);
