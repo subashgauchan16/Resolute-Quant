@@ -7,6 +7,8 @@
 #include <QStatusBar>
 #include <QVBoxLayout>
 
+#include "app/HealthPanel.h"
+
 namespace rq {
 
 namespace {
@@ -30,8 +32,11 @@ QWidget* makeHomePage() {
 
 }  // namespace
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), navigation_(new QListWidget), pages_(new QStackedWidget) {
+MainWindow::MainWindow(PythonEngine& engine, QWidget* parent)
+    : QMainWindow(parent),
+      navigation_(new QListWidget),
+      pages_(new QStackedWidget),
+      pythonState_(new QLabel(QStringLiteral("Python: starting"))) {
   setWindowTitle(QStringLiteral("Resolute Quant"));
   setWindowIcon(QIcon(QStringLiteral(":/assets/img/favicon.png")));
   resize(1000, 680);
@@ -58,9 +63,14 @@ MainWindow::MainWindow(QWidget* parent)
 
   connect(navigation_, &QListWidget::currentRowChanged, pages_, &QStackedWidget::setCurrentIndex);
 
+  auto* healthPanel = new HealthPanel(engine);
   addPage(QStringLiteral("Home"), makeHomePage());
+  addPage(QStringLiteral("Python Health"), healthPanel);
   navigation_->setCurrentRow(0);
-  statusBar()->showMessage(QStringLiteral("Ready"));
+
+  pythonState_->setObjectName(QStringLiteral("pythonState"));
+  statusBar()->addPermanentWidget(pythonState_);
+  connect(healthPanel, &HealthPanel::pythonStateChanged, pythonState_, &QLabel::setText);
 }
 
 void MainWindow::addPage(const QString& title, QWidget* page) {
