@@ -24,13 +24,15 @@ import urllib.request
 import uuid
 import warnings
 import webbrowser
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 import yfinance as yf
 
-from crypto_feed import GRANULARITIES, MAX_WATCH, PAIR, CoinbaseFeed, ProviderError, Rest
+import history
+from crypto_feed import GRANULARITIES, MAX_WATCH, PAIR, CoinbaseFeed, ProviderError, Rest, normalise_candles
 
 try:
     from yfinance.exceptions import YFRateLimitError
@@ -109,6 +111,8 @@ yahoo = Yahoo()
 
 
 class Cache:
+    MAX_ITEMS = 256
+
     def __init__(self):
         self.lock = threading.Lock()
         self.items = {}
@@ -127,6 +131,8 @@ class Cache:
             raise
         with self.lock:
             self.items[key] = (time.time(), value)
+            for old in sorted(self.items, key=lambda k: self.items[k][0])[:max(0, len(self.items) - self.MAX_ITEMS)]:
+                del self.items[old]
         return value, False
 
 
@@ -337,6 +343,18 @@ def candles(symbol, name):
     return bars
 
 
+def yahoo_history(symbol, name, start, end):
+    """Unadjusted Yahoo bars for a date range. Rows failing validation are dropped and counted."""
+    begin = datetime.fromtimestamp(start, timezone.utc)
+    finish = datetime.fromtimestamp(end, timezone.utc)
+    frame = yf.Ticker(symbol).history(start=begin, end=finish, interval=INTERVALS[name][0], auto_adjust=False)
+    rows = [[int(stamp.timestamp()), clean(row["Low"]), clean(row["High"]), clean(row["Open"]), clean(row["Close"]), clean(row.get("Volume"))]
+            for stamp, row in frame.iterrows()]
+    bars, rejected = normalise_candles(rows)
+    return {"bars": bars[-history.MAX_BARS:], "rejected": rejected, "truncated": len(bars) > history.MAX_BARS,
+            "downloaded_at": int(time.time())}
+
+
 def profile(symbol):
     info = yf.Ticker(symbol).info or {}
     keep = ("sector", "industry", "country", "website", "currency", "quoteType")
@@ -379,9 +397,11 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
-    def reply(self, status, body, kind="application/json; charset=utf-8"):
+    def reply(self, status, body, kind="application/json; charset=utf-8", extra=None):
         self.send_response(status)
         self.send_header("Content-Type", kind)
+        for header, value in (extra or {}).items():
+            self.send_header(header, value)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
@@ -459,6 +479,8 @@ class Handler(BaseHTTPRequestHandler):
             symbol = self.symbol(query)
             if not symbol:
                 return self.send_json({"error": "That is not a valid symbol."}, 400)
+            if url.path == "/api/history":
+                return self.history(symbol, query)
             if url.path == "/api/candles":
                 name = (query.get("interval") or ["5M"])[0].upper()
                 if name not in INTERVALS:
@@ -480,11 +502,41 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"error": "Yahoo is rate limiting this PC. It will retry shortly."}, 429)
         except ProviderError as error:
             return self.send_json({"error": str(error)}, error.status)
+        except history.BadRequest as error:
+            return self.send_json({"error": str(error)}, 400)
         except (BrokenPipeError, ConnectionError):
             return None
         except Exception as error:
             print(f"{url.path} failed: {error}")
             return self.send_json({"error": "Yahoo returned no data for that request."}, 502)
+
+    def history(self, symbol, query):
+        """Market-price history for the history panel, as JSON or as a CSV file."""
+        field = lambda name: (query.get(name) or [""])[0]
+        source, name, wants = field("source"), field("interval").upper(), field("format") or "json"
+        steps = {"coinbase": history.COINBASE_STEPS, "yahoo": history.YAHOO_STEPS}.get(source)
+        if steps is None:
+            raise history.BadRequest("The source must be coinbase or yahoo.")
+        if name not in steps:
+            raise history.BadRequest(f"{source} does not offer that timeframe. Choose from {', '.join(steps)}.")
+        if wants not in ("json", "csv"):
+            raise history.BadRequest("The format must be json or csv.")
+        if source == "coinbase" and not PAIR.match(symbol):
+            raise history.BadRequest("That is not a valid pair.")
+        if symbol[0] in "=-":  # a spreadsheet would read these as formulas
+            raise history.BadRequest("That is not a valid symbol.")
+        start, end = history.parse_range(field("start"), field("end"))
+        step = steps[name]
+        if source == "coinbase":
+            load = lambda: rest.candles_between(symbol, step, start, end)
+        else:
+            load = lambda: yahoo.call(lambda: yahoo_history(symbol, name, start, end))
+        fetched, stale = cache.get(("history", source, symbol, name, start // 60, end // 60), 300, load)
+        view = history.build_view(fetched, symbol, name, source, step, field("start"), field("end"), stale=stale)
+        if wants == "json":
+            return self.send_json(view)
+        disposition = f'attachment; filename="{history.export_name(view)}"'
+        return self.reply(200, history.to_csv(view).encode("utf-8"), "text/csv; charset=utf-8", {"Content-Disposition": disposition})
 
     def stream(self):
         self.send_response(200)

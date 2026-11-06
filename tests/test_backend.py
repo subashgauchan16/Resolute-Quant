@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from websockets.sync.server import serve  # noqa: E402
 
 import crypto_feed as cf  # noqa: E402
+import history as hs  # noqa: E402
 import server as srv  # noqa: E402
 
 NOW = 1_800_000_000
@@ -280,6 +281,126 @@ class WatchLimit(unittest.TestCase):
         self.assertEqual(srv.split_watch(["AAPL", "MSFT"], srv.SYMBOL), (["AAPL", "MSFT"], []))
 
 
+DAY0 = 1_700_000_000 - 1_700_000_000 % 86400  # a UTC midnight safely in the past
+
+
+def bar(t, close=100.5, volume=2.5):
+    return {"time": t, "open": 100.0, "high": 101.0, "low": 99.0, "close": close, "volume": volume}
+
+
+class HistoryLogic(unittest.TestCase):
+    def test_range_is_whole_utc_days_inclusive_and_capped_at_now(self):
+        self.assertEqual(hs.parse_range("2027-01-14", "2027-01-14", now=hs.parse_day("2027-06-01", "x")), (hs.parse_day("2027-01-14", "x"), hs.parse_day("2027-01-15", "x")))
+        start, end = hs.parse_range("2027-01-14", "2099-01-01", now=hs.parse_day("2027-01-15", "x") + 5)
+        self.assertEqual(end, hs.parse_day("2027-01-15", "x") + 5)
+
+    def test_bad_ranges_are_refused_with_a_reason(self):
+        for start, end in (("", "2027-01-01"), ("2027-13-01", "2027-01-01"), ("2027-01-02", "2027-01-01"), ("2099-01-01", "2099-01-02")):
+            with self.assertRaises(hs.BadRequest):
+                hs.parse_range(start, end, now=hs.parse_day("2027-06-01", "x"))
+
+    def test_pages_cover_the_range_without_gaps_or_overlap(self):
+        windows, truncated = hs.page_windows(0, 3600 * 650, 3600)
+        self.assertFalse(truncated)
+        self.assertEqual(windows[0][1], 3600 * 650)
+        self.assertEqual(windows[-1][0], 0)
+        for newer, older in zip(windows, windows[1:]):
+            self.assertEqual(newer[0], older[1])
+        self.assertTrue(all((b - a) // 3600 <= hs.COINBASE_PAGE for a, b in windows))
+
+    def test_oversized_range_keeps_the_newest_and_says_so(self):
+        windows, truncated = hs.page_windows(0, 60 * 20000, 60)
+        self.assertTrue(truncated)
+        self.assertEqual(windows[-1][0], 60 * (20000 - hs.MAX_BARS))
+
+    def test_unfinished_bars_are_left_out_and_counted(self):
+        done, unfinished = hs.complete_only([bar(0), bar(60), bar(120)], 60, now=125)
+        self.assertEqual([b["time"] for b in done], [0, 60])
+        self.assertEqual(unfinished, 1)
+
+    def test_current_month_bar_is_unfinished(self):
+        june, july = hs.parse_day("2027-06-01", "x"), hs.parse_day("2027-07-01", "x")
+        done, unfinished = hs.complete_only([bar(june), bar(july)], None, now=july + 100)
+        self.assertEqual([b["time"] for b in done], [june])
+        self.assertEqual(unfinished, 1)
+
+    def test_gaps_are_counted_and_never_filled(self):
+        bars = [bar(0), bar(60), bar(300)]
+        self.assertEqual(hs.gap_summary(bars, 60), {"count": 1, "missing_bars": 3, "largest_seconds": 240})
+        self.assertEqual(len(bars), 3)
+        self.assertEqual(hs.gap_summary(bars, None)["count"], 0)
+
+    def view(self, bars, **change):
+        fetched = {"bars": bars, "rejected": 0, "truncated": False, "downloaded_at": DAY0}
+        arguments = {"symbol": "BTC-USD", "interval": "1H", "source": "coinbase", "step": 3600, "start_text": "2027-01-14", "end_text": "2027-01-15", "now": DAY0 + 10**7}
+        arguments.update(change)
+        return hs.build_view(fetched, **arguments)
+
+    def test_view_is_newest_first_with_coverage(self):
+        view = self.view([bar(DAY0), bar(DAY0 + 3600)])
+        self.assertEqual([b["time"] for b in view["bars"]], [DAY0 + 3600, DAY0])
+        self.assertEqual((view["count"], view["first_utc"]), (2, hs.iso_utc(DAY0)))
+
+    def test_empty_view_and_csv_have_a_header_only(self):
+        view = self.view([])
+        self.assertEqual((view["bars"], view["count"], view["first_utc"]), ([], 0, None))
+        self.assertEqual(hs.to_csv(view), ",".join(hs.COLUMNS) + "\r\n")
+
+    def test_csv_header_order_row_count_and_values(self):
+        import csv
+        import io
+        view = self.view([bar(DAY0, close=0.1 + 0.2, volume=1e-07), bar(DAY0 + 3600)])
+        rows = list(csv.reader(io.StringIO(hs.to_csv(view))))
+        self.assertEqual(tuple(rows[0]), hs.COLUMNS)
+        self.assertEqual(len(rows), 3)
+        oldest = dict(zip(rows[0], rows[2]))
+        self.assertEqual(float(oldest["close"]), 0.1 + 0.2, "numbers must read back exactly")
+        self.assertEqual(float(oldest["volume"]), 1e-07)
+        self.assertEqual(oldest["time_utc"], hs.iso_utc(DAY0))
+        self.assertTrue(oldest["time_utc"].endswith("Z"))
+
+    def test_csv_escapes_commas_quotes_and_line_breaks(self):
+        import csv
+        import io
+        for awkward in ("A,B", "say " + chr(34) + "hi" + chr(34), "one" + chr(10) + "two", "caf" + chr(233)):
+            view = self.view([bar(DAY0)], symbol=awkward)
+            text = hs.to_csv(view)
+            self.assertEqual(list(csv.reader(io.StringIO(text, newline="")))[1][1], awkward)
+            self.assertEqual(text.encode("utf-8").decode("utf-8"), text)
+        self.assertIn('"A,B"', hs.to_csv(self.view([bar(DAY0)], symbol="A,B")))
+        self.assertIn(chr(34) + "say " + chr(34) * 2 + "hi" + chr(34) * 3, hs.to_csv(self.view([bar(DAY0)], symbol="say " + chr(34) + "hi" + chr(34))))
+
+    def test_export_name_is_safe(self):
+        self.assertEqual(hs.export_name({"symbol": "^GSPC", "interval": "1D", "start": "2027-01-01", "end": "2027-01-02"}), "GSPC_1D_2027-01-01_to_2027-01-02.csv")
+
+
+class CoinbasePaging(unittest.TestCase):
+    def test_all_pages_are_requested_merged_and_validated(self):
+        rest = cf.Rest()
+        step = 3600
+        pages = [[[DAY0 + 301 * step, 1, 4, 2, 3, 9], [DAY0 + 300 * step, 3, 2, 2, 2, 1]], [[DAY0, 1, 4, 2, 3, 9]]]
+        with mock.patch.object(rest, "get", side_effect=pages) as get:
+            out = rest.candles_between("BTC-USD", step, DAY0, DAY0 + 350 * step)
+        self.assertEqual(get.call_count, 2)
+        self.assertIn("granularity=3600", get.call_args_list[0].args[0])
+        self.assertEqual([b["time"] for b in out["bars"]], [DAY0, DAY0 + 301 * step])
+        self.assertEqual((out["rejected"], out["truncated"]), (1, False))
+
+    def test_a_failed_page_fails_the_whole_request(self):
+        rest = cf.Rest()
+        with mock.patch.object(rest, "get", side_effect=[[], cf.ProviderError(502, "fixture")]), self.assertRaises(cf.ProviderError):
+            rest.candles_between("BTC-USD", 3600, DAY0, DAY0 + 350 * 3600)
+
+
+class CacheLimit(unittest.TestCase):
+    def test_oldest_entries_are_removed_at_the_limit(self):
+        cache = srv.Cache()
+        with mock.patch.object(srv.Cache, "MAX_ITEMS", 3), mock.patch.object(srv.time, "time", side_effect=[float(i) for i in range(100)]):
+            for key in "abcde":
+                cache.get(key, 1000, lambda: key)
+        self.assertEqual(sorted(cache.items), ["c", "d", "e"])
+
+
 class Routes(unittest.TestCase):
     """The real HTTP handler on a spare port, with the provider layer stubbed by fixtures."""
 
@@ -348,6 +469,80 @@ class Routes(unittest.TestCase):
         srv.cache.items[key] = (0, bars)
         with mock.patch.object(srv.rest, "candles", side_effect=cf.ProviderError(502, "fixture")):
             self.assertTrue(self.get("/api/crypto/candles?symbol=BTC-USD&granularity=60")[1]["stale"])
+
+    def history_url(self, **change):
+        query = {"symbol": "BTC-USD", "interval": "1H", "source": "coinbase", "start": "2020-01-01", "end": "2020-01-02"}
+        query.update(change)
+        return "/api/history?" + "&".join(f"{k}={v}" for k, v in query.items())
+
+    def fetched(self, bars=(), **change):
+        return dict({"bars": list(bars), "rejected": 0, "truncated": False, "downloaded_at": DAY0}, **change)
+
+    def test_history_json_is_newest_first(self):
+        first = hs.parse_day("2020-01-01", "x")
+        with mock.patch.object(srv.rest, "candles_between", return_value=self.fetched([bar(first), bar(first + 3600)])):
+            status, body = self.get(self.history_url())
+        self.assertEqual(status, 200)
+        self.assertEqual([b["time"] for b in body["bars"]], [first + 3600, first])
+        self.assertEqual((body["count"], body["source"], body["stale"]), (2, "coinbase", False))
+
+    def test_history_csv_matches_the_json_view(self):
+        import http.client
+        first = hs.parse_day("2020-01-01", "x")
+        with mock.patch.object(srv.rest, "candles_between", return_value=self.fetched([bar(first), bar(first + 3600)])):
+            conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+            conn.request("GET", self.history_url(format="csv"))
+            response = conn.getresponse()
+            text = response.read().decode("utf-8")
+            conn.close()
+        self.assertEqual(response.status, 200)
+        self.assertIn("text/csv", response.getheader("Content-Type"))
+        self.assertIn("BTC-USD_1H_2020-01-01_to_2020-01-02.csv", response.getheader("Content-Disposition"))
+        lines = text.strip().split("\r\n")
+        self.assertEqual(lines[0], ",".join(hs.COLUMNS))
+        self.assertEqual(len(lines), 3)
+        self.assertTrue(lines[1].startswith(hs.iso_utc(first + 3600)))
+
+    def test_history_empty_range_is_an_empty_answer(self):
+        with mock.patch.object(srv.rest, "candles_between", return_value=self.fetched()):
+            status, body = self.get(self.history_url())
+        self.assertEqual((status, body["bars"], body["count"]), (200, [], 0))
+
+    def test_history_input_errors_explain_themselves(self):
+        for change in ({"source": "other"}, {"interval": "4H"}, {"interval": "7X"}, {"start": "bad"}, {"start": "2020-01-03"}, {"format": "xml"},
+                       {"symbol": "AAPL"}, {"symbol": "=A1", "source": "yahoo", "interval": "1D"}):
+            status, body = self.get(self.history_url(**change))
+            self.assertEqual(status, 400, change)
+            self.assertTrue(body["error"], change)
+
+    def test_history_provider_errors_keep_their_status(self):
+        for code in (404, 429, 502):
+            srv.cache.items.clear()
+            with mock.patch.object(srv.rest, "candles_between", side_effect=cf.ProviderError(code, "fixture")):
+                self.assertEqual(self.get(self.history_url()), (code, {"error": "fixture"}))
+
+    def test_history_last_good_copy_is_flagged_stale(self):
+        first = hs.parse_day("2020-01-01", "x")
+        with mock.patch.object(srv.rest, "candles_between", return_value=self.fetched([bar(first)])):
+            self.get(self.history_url())
+        for key in list(srv.cache.items):
+            srv.cache.items[key] = (0, srv.cache.items[key][1])
+        with mock.patch.object(srv.rest, "candles_between", side_effect=cf.ProviderError(502, "fixture")):
+            status, body = self.get(self.history_url())
+        self.assertEqual((status, body["stale"], body["count"]), (200, True, 1))
+
+    def test_yahoo_history_validates_and_keeps_what_the_provider_sent(self):
+        import pandas as pd
+        first = hs.parse_day("2020-01-01", "x")
+        index = pd.to_datetime([first, first + 86400, first + 2 * 86400], unit="s", utc=True)
+        frame = pd.DataFrame({"Open": [2.0, 2.0, 2.0], "High": [4.0, 1.0, 4.0], "Low": [1.0, 1.0, 1.0], "Close": [3.0, 3.0, 3.0], "Volume": [0.0, 5.0, 7.0]}, index=index)
+        with mock.patch.object(srv.yf, "Ticker") as ticker:
+            ticker.return_value.history.return_value = frame
+            out = srv.yahoo_history("AAPL", "1D", first, first + 3 * 86400)
+        self.assertEqual([b["time"] for b in out["bars"]], [first, first + 2 * 86400])
+        self.assertEqual(out["bars"][0]["volume"], 0.0)
+        self.assertEqual(out["rejected"], 1)
+        self.assertFalse(ticker.return_value.history.call_args.kwargs["auto_adjust"])
 
     def test_watch_and_book_set_the_feed(self):
         status, body = self.get("/api/crypto/watch?symbols=BTC-USD,bad!,ETH-USD")

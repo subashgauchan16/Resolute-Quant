@@ -5,6 +5,7 @@ import { pushWatch, resolveSymbol } from "../data/markets.js";
 import { store } from "../store/localStorage.js";
 import { FRIENDLY, grans, isY, MAX_WATCH, S, validPair, validY } from "../store/state.js";
 import { addAlert, clearAlerts } from "./alert.js";
+import { closeHistory, openHistory } from "./history.js";
 import { select, setGran } from "./selection.js";
 import { addRow, removeRow } from "./watchlist.js";
 
@@ -118,6 +119,7 @@ function run(raw) {
   const gran = grans().find((x) => x[0] === a);
   if (gran) return setGran(gran[1]);
   if (a === "HELP") return showHelp();
+  if (a === "HISTORY") return openHistory();
   if (a === "STK" && b) return addMarket(b);
   if (a === "ADD" && b) return openSymbol(b);
   if ((a === "DEL" || a === "REMOVE") && b) return removeSymbol(isY(b) ? b : norm(b));
@@ -140,8 +142,11 @@ function fullscreen() {
 }
 
 function onGlobalKey(e) {
-  if (e.key === "Escape") $("help").hidden = true;
-  if (e.target.tagName === "INPUT") return;
+  if (e.key === "Escape") {
+    $("help").hidden = true;
+    closeHistory();
+  }
+  if (e.target.tagName === "INPUT" || !$("history").hidden) return;
   if (e.key === "/") {
     e.preventDefault();
     $("cmd").focus();

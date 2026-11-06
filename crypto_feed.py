@@ -18,8 +18,11 @@ import urllib.error
 import urllib.request
 from bisect import bisect_left, insort
 from datetime import datetime
+from urllib.parse import urlencode
 
 from websockets.sync.client import connect as ws_connect
+
+from history import iso_utc, page_windows
 
 REST = "https://api.exchange.coinbase.com"
 WS = "wss://ws-feed.exchange.coinbase.com"
@@ -208,6 +211,23 @@ class Rest:
         if not bars:
             raise ProviderError(502, "Coinbase returned no candles for that request.")
         return bars
+
+    def candles_between(self, symbol, granularity, start, end):
+        """Candles for a date range, page by page. Any failed page fails the whole request,
+        so a partial range is never presented as complete."""
+        windows, truncated = page_windows(start, end, granularity)
+        rows = []
+        for begin, stop in windows:
+            query = urlencode({"granularity": granularity, "start": iso_utc(begin), "end": iso_utc(stop)})
+            page = self.get(f"{REST}/products/{symbol}/candles?{query}")
+            if not isinstance(page, list):
+                raise ProviderError(502, "Coinbase returned an unexpected answer.")
+            rows.extend(page)
+        bars, rejected = normalise_candles(rows)
+        self.rejected += rejected
+        first = windows[-1][0] if windows else start
+        return {"bars": [b for b in bars if first <= b["time"] < end], "rejected": rejected,
+                "truncated": truncated, "downloaded_at": int(time.time())}
 
     def stats(self, symbol):
         return normalise_stats(self.get(f"{REST}/products/{symbol}/stats"))

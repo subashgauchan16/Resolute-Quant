@@ -58,6 +58,8 @@ function clearChart() {
   sCandle.setData([]);
   sVol.setData([]);
   sEma.setData([]);
+  C.lines.forEach((l) => sCandle.removePriceLine(l));
+  C.lines = [];
   C.last = null;
   C.dirty = false;
   $("legend").innerHTML = "";

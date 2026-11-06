@@ -68,6 +68,7 @@ Lightweight Charts 4.2.0 is vendored in `assets/lib/`. It is Apache 2.0, copyrig
 | `/api/crypto/candles?symbol=&granularity=` | Coinbase bars at 60, 300, 900, 3600, 21600 or 86400 seconds. `{bars, stale}` |
 | `/api/crypto/stats?symbol=` | `{last, open, high, low, volume, stale}` |
 | `/api/sentiment/feargreed` | `{value, classification, time, stale}` |
+| `/api/history?symbol=&interval=&source=&start=&end=` | Past bars, newest first, with coverage facts. `source` is `coinbase` or `yahoo`, and dates are UTC `YYYY-MM-DD`. Add `&format=csv` for a CSV file |
 
 `stale: true` means the provider refused and this is the last good copy. Errors are `{error}` with
 status 400, 403, 404, 429 or 502. Bad provider values are dropped and counted, never repaired.
@@ -89,6 +90,17 @@ python tests/launcher_check.py <empty-folder> <output.json> 8801
 The last two use live providers. They need Edge and an internet connection, and they exit with a failure code if any check fails. The port `8801` keeps the launcher test away from a terminal you already have running.
 
 Dependencies are pinned in `requirements.txt` for repeatable installs, tested on Python 3.13. The packages the project uses directly are listed in `requirements.in`. To update, install from `requirements.in` into a clean environment, retest, then freeze the versions into `requirements.txt`.
+
+## History and CSV export
+
+Press **HISTORY**, or type `HISTORY`, to see past bars for the open symbol. Choose a timeframe and UTC dates, and read the bars newest first. **Export CSV** saves the same rows.
+
+CSV columns: `time_utc, symbol, interval, open, high, low, close, volume, source, downloaded_at_utc`. Times are UTC. Yahoo prices are unadjusted, and a Yahoo daily bar's time is midnight in the exchange's own timezone, so it often shows a non-zero UTC hour.
+
+- Up to 5,000 bars per request. If a range holds more, the newest are returned and the page says so.
+- Missing bars are reported and never filled. Invalid rows and the bar still in progress are left out and counted.
+- History is fetched from the provider when requested and cached briefly. Only the files you export are kept.
+- Exports are for your own use. Do not share them or publish anything derived from them. Coinbase's terms also bar using its data to build or test models without written consent. See `docs/architecture/phase-0-audit.md`.
 
 ## Saved in the browser
 
