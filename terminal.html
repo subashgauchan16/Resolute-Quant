@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/brand.css">
 <link rel="stylesheet" href="assets/css/history.css">
+<link rel="stylesheet" href="assets/css/research.css">
 </head>
 <body>
 <div class="app" id="app">
@@ -47,6 +48,25 @@
     </div>
     <div class="legend" id="legend"></div>
     <div id="chart"><div class="msg" id="chartmsg" hidden></div></div>
+    <section class="research-panel" id="research-panel" aria-label="Live predictive research models">
+      <div class="rq-left">
+        <div class="rq-title"><b>LIVE RESEARCH ENGINE</b><button id="rq-refresh" type="button">RECALCULATE</button></div>
+        <div id="rq-model-status" data-state="wait" role="status" aria-live="polite">WAITING FOR MARKET DATA</div>
+        <div class="rq-metrics">
+          <div class="rq-metric"><label>RIDGE · NEXT BAR</label><strong id="rq-ridge">—</strong><small>Est. price <span id="rq-ridge-price">—</span></small></div>
+          <div class="rq-metric"><label>SGD · NEXT BAR</label><strong id="rq-sgd">—</strong><small>Est. price <span id="rq-sgd-price">—</span></small></div>
+          <div class="rq-metric"><label>HOLDOUT RMSE</label><strong id="rq-rmse">—</strong><small>Zero baseline <span id="rq-baseline-rmse">—</span></small></div>
+        </div>
+        <div class="rq-note" id="rq-validation">Forecasts run when Yahoo market candles load or refresh.</div>
+      </div>
+      <div class="rq-chart">
+        <div class="rq-chart-head"><span>MONTE CARLO · 24-BAR FAN</span><span>5–95% / 25–75% / MEDIAN</span></div>
+        <svg id="rq-fan" viewBox="0 0 600 94" role="img" aria-label="Monte Carlo simulated price range">
+          <path id="rq-fan-outer" d=""></path><path id="rq-fan-inner" d=""></path><path id="rq-fan-median" d=""></path>
+        </svg>
+        <div class="rq-note" id="rq-disclaimer">Simulation bands are conditional on historical-return assumptions; forecasts are not guarantees.</div>
+      </div>
+    </section>
   </main>
 
   <aside class="side">

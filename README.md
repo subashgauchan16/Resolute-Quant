@@ -91,6 +91,19 @@ The last two use live providers. They need Edge and an internet connection, and 
 
 Dependencies are pinned in `requirements.txt` for repeatable installs, tested on Python 3.13. The packages the project uses directly are listed in `requirements.in`. To update, install from `requirements.in` into a clean environment, retest, then freeze the versions into `requirements.txt`.
 
+## Live predictive research models
+
+The research panel runs automatically when Yahoo Finance market candles load or refresh. It shows a next-bar Ridge estimate, a deterministic SGD estimate, chronological holdout metrics against a zero-return benchmark, and a 24-bar Monte Carlo fan chart.
+
+- API: `GET /api/research/forecast?symbol=AAPL&interval=1D` (Yahoo market symbols only).
+- Requires at least 80 valid candles; insufficient history returns an explicit model-status error instead of a fabricated forecast.
+- Model validation uses a chronological 80/20 holdout. Final next-bar estimates are refit on available feature rows; displayed RMSE/MAE/directional accuracy describe the holdout, not future performance.
+- Monte Carlo bands use historical log-return mean and volatility and are conditional on those assumptions. They are not confidence guarantees.
+- Coinbase candles are deliberately excluded from model research until written provider permission is available. The terminal's existing history panel documents this restriction.
+- Forecasts are research outputs only. There is no broker connection, order execution, or claim of profitability.
+
+The model checks are in `tests/test_research_models.py` and run through the Research model checks GitHub Actions workflow.
+
 ## History and CSV export
 
 Press **HISTORY**, or type `HISTORY`, to see past bars for the open symbol. Choose a timeframe and UTC dates, and read the bars newest first. **Export CSV** saves the same rows.

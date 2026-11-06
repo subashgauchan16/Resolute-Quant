@@ -5,6 +5,7 @@ import { followBook } from "../data/crypto.js";
 import { store } from "../store/localStorage.js";
 import { granLabel, grans, isY, label, Q, S } from "../store/state.js";
 import { loadDetails } from "./details.js";
+import { refreshResearch } from "./research.js";
 import { highlight } from "./watchlist.js";
 
 export function paintGrans() {
@@ -52,5 +53,6 @@ export function select(p) {
   paintHeader();
   highlight();
   loadChart();
+  refreshResearch(true);
   loadDetails();
 }

@@ -1,0 +1,44 @@
+name: Research model checks
+
+on:
+  pull_request:
+    paths:
+      - "research_models.py"
+      - "server.py"
+      - "assets/js/ui/research.js"
+      - "assets/js/ui/selection.js"
+      - "assets/js/chart/ohlc.js"
+      - "assets/js/main.js"
+      - "terminal.html"
+      - "assets/css/research.css"
+      - "tests/test_research_models.py"
+      - ".github/workflows/research-model-tests.yml"
+  push:
+    branches: ["feat/live-research-models"]
+    paths:
+      - "research_models.py"
+      - "server.py"
+      - "assets/js/ui/research.js"
+      - "assets/js/chart/ohlc.js"
+      - "assets/js/main.js"
+      - "terminal.html"
+      - "assets/css/research.css"
+      - "tests/test_research_models.py"
+      - ".github/workflows/research-model-tests.yml"
+
+jobs:
+  research-models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install "numpy>=2.0,<3"
+      - run: python -m py_compile server.py research_models.py tests/test_research_models.py
+      - run: node --input-type=module --check < assets/js/ui/research.js
+      - run: node --input-type=module --check < assets/js/ui/selection.js
+      - run: node --input-type=module --check < assets/js/chart/ohlc.js
+      - run: node --input-type=module --check < assets/js/main.js
+      - run: PYTHONPATH=. python -m unittest discover -s tests -p "test_research_models.py" -v
