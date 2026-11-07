@@ -23,6 +23,39 @@
 
 namespace {
 
+// Times everything the window thread does, to tell slow app code from Windows not scheduling the app.
+class TimingApplication : public QApplication {
+ public:
+  using QApplication::QApplication;
+
+  bool notify(QObject* receiver, QEvent* event) override {
+    if (depth_ > 0) return QApplication::notify(receiver, event);
+    ++depth_;
+    QElapsedTimer clock;
+    clock.start();
+    const int type = event->type();
+    const QString name = QString::fromLatin1(receiver->metaObject()->className());
+    const bool result = QApplication::notify(receiver, event);
+    const qint64 elapsed = clock.elapsed();
+    busyMs += elapsed;
+    if (elapsed > slowestMs) {
+      slowestMs = elapsed;
+      slowestWhat = QStringLiteral("%1, event type %2").arg(name).arg(type);
+    }
+    if (elapsed >= 50) ++slowEvents;
+    --depth_;
+    return result;
+  }
+
+  qint64 busyMs = 0;
+  qint64 slowestMs = 0;
+  int slowEvents = 0;
+  QString slowestWhat;
+
+ private:
+  int depth_ = 0;
+};
+
 bool waitUntil(const std::function<bool()>& condition, int timeoutMs) {
   QElapsedTimer clock;
   clock.start();
@@ -42,7 +75,7 @@ double memoryMb() {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  QApplication app(argc, argv);
+  TimingApplication app(argc, argv);
   rq::loadFonts();
   app.setStyleSheet(rq::applicationStyleSheet());
   const int seconds = argc > 1 ? QString::fromLocal8Bit(argv[1]).toInt() : 30;
@@ -88,6 +121,9 @@ int main(int argc, char* argv[]) {
   QTimer gapTimer;
   QElapsedTimer runClock;
   runClock.start();
+  app.busyMs = 0;
+  app.slowestMs = 0;
+  app.slowEvents = 0;
   QObject::connect(&gapTimer, &QTimer::timeout, &app, [&] {
     const qint64 gap = gapClock.restart();
     // The window's first full draw, as the data arrives, is reported but held to no limit.
@@ -96,7 +132,10 @@ int main(int argc, char* argv[]) {
     } else {
       largestGap = std::max(largestGap, gap);
     }
-    if (gap >= 100) std::printf("INFO a gap of %lld ms at %.1f s\n", gap, runClock.elapsed() / 1000.0);
+    if (gap >= 100) {
+      std::printf("INFO a gap of %lld ms at %.1f s; slowest window event so far %lld ms (%s)\n", gap, runClock.elapsed() / 1000.0, app.slowestMs, qPrintable(app.slowestWhat));
+      std::fflush(stdout);
+    }
     if (!terminal->isLive()) ++notLiveChecks;
   });
   gapTimer.start(20);
@@ -144,6 +183,7 @@ int main(int argc, char* argv[]) {
   std::printf("INFO longest gap in the first 5 s, while the window first draws: %lld ms\n", startupGap);
   report(largestGap < 250, QStringLiteral("longest gap between window updates after that was %1 ms").arg(largestGap));
   std::printf("INFO not-live checks: %d of about %d\n", notLiveChecks, seconds * 50);
+  std::printf("INFO window thread busy %.1f%% of the time. Slowest event %lld ms (%s). Events of 50 ms or more: %d\n", app.busyMs / 10.0 / std::max(runClock.elapsed() / 1000, 1LL), app.slowestMs, qPrintable(app.slowestWhat), app.slowEvents);
   std::printf("INFO memory %.1f MB at start and %.1f MB at the end, over %d s\n", memoryStart, memoryMb(), seconds);
 
   if (argc > 2) {
