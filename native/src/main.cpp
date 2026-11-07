@@ -29,6 +29,7 @@ void runSmokeTest(rq::PythonEngine& engine) {
   auto* healthJob = new quint64(0);
   auto* calculationJob = new quint64(0);
   auto* packagesJob = new quint64(0);
+  auto* storageJob = new quint64(0);
   auto* report = new QJsonObject;
 
   QObject::connect(&engine, &rq::PythonEngine::started, &engine, [&engine, healthJob] {
@@ -39,9 +40,9 @@ void runSmokeTest(rq::PythonEngine& engine) {
     QApplication::exit(kExitPythonUnavailable);
   });
   QObject::connect(&engine, &rq::PythonEngine::jobFinished, &engine,
-                   [&engine, healthJob, calculationJob, packagesJob, report](const rq::JobResult& result) {
+                   [&engine, healthJob, calculationJob, packagesJob, storageJob, report](const rq::JobResult& result) {
                      if (result.status != rq::JobStatus::Ok &&
-                         (result.id == *healthJob || result.id == *calculationJob || result.id == *packagesJob)) {
+                         (result.id == *healthJob || result.id == *calculationJob || result.id == *packagesJob || result.id == *storageJob)) {
                        printLine({{"python", "running"}, {"ok", false}, {"job", result.job}, {"error", result.message}});
                        QApplication::exit(kExitSmokeFailed);
                      } else if (result.id == *healthJob) {
@@ -58,7 +59,10 @@ void runSmokeTest(rq::PythonEngine& engine) {
                        // Quitting with these libraries loaded proves shutdown still works.
                        *packagesJob = engine.submit(QStringLiteral("_import_market_for_test"));
                      } else if (result.id == *packagesJob) {
-                       const bool ok = (*report)["ok"].toBool();
+                       (*report)["packages"] = result.value;
+                       *storageJob = engine.submit(QStringLiteral("_storage_self_test_for_test"));
+                     } else if (result.id == *storageJob) {
+                       const bool ok = (*report)["ok"].toBool() && result.value["ok"].toBool();
                        printLine({{"python", "running"},
                                   {"ok", ok},
                                   {"prefix", (*report)["prefix"]},
@@ -66,7 +70,8 @@ void runSmokeTest(rq::PythonEngine& engine) {
                                   {"numpy_version", (*report)["numpy_version"]},
                                   {"isolated", (*report)["isolated"]},
                                   {"calculation", (*report)["calculation"]},
-                                  {"packages", result.value}});
+                                  {"packages", (*report)["packages"]},
+                                  {"storage", result.value}});
                        QApplication::exit(ok ? 0 : kExitSmokeFailed);
                      }
                    });
