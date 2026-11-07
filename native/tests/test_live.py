@@ -13,8 +13,10 @@ NATIVE = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(NATIVE / "python"), str(NATIVE.parent)]
 sys.modules["_rq_host"] = types.SimpleNamespace(report_progress=lambda *_: None, is_cancelled=lambda: False, publish_event=lambda _: None)
 
+import pandas as pd  # noqa: E402
+import server  # noqa: E402  The browser terminal's backend, to check both give the same answer.
 from crypto_feed import ProviderError  # noqa: E402
-from rq_engine import live  # noqa: E402
+from rq_engine import live, market_history as mh, markets  # noqa: E402
 from rq_engine.market_history import history  # noqa: E402
 
 STEP = 60
@@ -86,6 +88,13 @@ class FakeRest:
         self.urls.append(url)
         return {}
 
+    def stats(self, symbol):
+        self.urls.append(f"stats/{symbol}")
+        return {"last": 10.0, "open": 9.0, "high": 11.0, "low": 8.0, "volume": 5.0}
+
+    def fear_greed(self):
+        return {"value": 50, "classification": "Neutral", "time": 0}
+
 
 class FakeFeed:
     instances = []
@@ -94,10 +103,14 @@ class FakeFeed:
         self.publish = publish
         self.stop_event = stop
         self.watch = None
+        self.book = None
         FakeFeed.instances.append(self)
 
     def set_watch(self, symbols):
         self.watch = symbols
+
+    def set_book(self, symbol):
+        self.book = symbol
 
     def run(self):
         self.stop_event.wait()
@@ -106,7 +119,7 @@ class FakeFeed:
 class Base(unittest.TestCase):
     def make(self, rest=None):
         self.sent = []
-        self.live = live.Live(lambda text: self.sent.append(json.loads(text)), rest or FakeRest(), FakeFeed)
+        self.live = live.Live(lambda text: self.sent.append(json.loads(text)), rest or FakeRest(), FakeFeed, seed=False)
         self.addCleanup(self.live.stop)
         return self.live
 
@@ -233,16 +246,249 @@ class Validation(Base):
         with self.assertRaises(history.BadRequest):
             self.live.set_chart("BTC-USD", "7H")
 
-    def test_an_unlisted_pair_is_refused_and_a_listed_one_added(self):
+    def test_resolve_checks_coinbase_first_then_yahoo(self):
         rest = FakeRest()
         self.make(rest)
-        with mock.patch.object(live, "_live", self.live):
-            result = live.add_symbol({"symbols": ["BTC-USD"], "symbol": "ltc-usd"}, None)
-            self.assertEqual(result["symbols"], ["BTC-USD", "LTC-USD"])
-            self.assertTrue(rest.urls[-1].endswith("/products/LTC-USD"))
-            rest.get = mock.Mock(side_effect=ProviderError(404, "Coinbase does not list that symbol."))
+        provider = mock.Mock()
+        provider.quote.return_value = (1.0, {})
+        markets_stub = types.SimpleNamespace(provider=provider)
+        with mock.patch.object(live, "_live", self.live), mock.patch.object(live, "_markets", markets_stub):
+            self.assertEqual(live.resolve({"symbol": "pepe"}, None), {"kind": "crypto", "symbol": "PEPE-USD"})
+            self.assertEqual(rest.urls[-1], "stats/PEPE-USD")
+            provider.quote.assert_not_called()
+
+            rest.stats = mock.Mock(side_effect=ProviderError(404, "Coinbase does not list that symbol."))
+            self.assertEqual(live.resolve({"symbol": "aapl"}, None), {"kind": "market", "symbol": "AAPL"})
+            self.assertEqual(live.resolve({"symbol": "BTC", "kind": "market"}, None), {"kind": "market", "symbol": "BTC"})
             with self.assertRaises(ProviderError):
-                live.add_symbol({"symbols": ["BTC-USD"], "symbol": "NOPE-USD"}, None)
+                live.resolve({"symbol": "NOPE", "kind": "crypto"}, None)
+
+            provider.quote.side_effect = ValueError("no price")
+            with self.assertRaisesRegex(ProviderError, "Neither Coinbase nor Yahoo"):
+                live.resolve({"symbol": "NOPE"}, None)
+            with self.assertRaisesRegex(ProviderError, "Yahoo has no price"):
+                live.resolve({"symbol": "NOPE", "kind": "market"}, None)
+            with self.assertRaises(history.BadRequest):
+                live.resolve({"symbol": "not a symbol"}, None)
+
+
+def trade_tick(symbol="BTC-USD", price=100.0, size=2.0, side="buy", trade=1):
+    return dict(tick(symbol, price, int(time.time() * 1000), size, trade), side=side)
+
+
+class Session(Base):
+    def setUp(self):
+        self.make()
+        patcher = mock.patch.object(live, "FLUSH_SECONDS", 3600)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.live.start(["BTC-USD", "ETH-USD"])
+        self.feed = FakeFeed.instances[-1]
+        self.live.follow("BTC-USD")
+
+    def test_follow_chooses_the_book_and_clears_the_last_one(self):
+        self.assertEqual(self.feed.book, "BTC-USD")
+        self.live.on_message({"type": "cb", "id": "BTC-USD", "bids": [[1.0, 2.0]], "asks": [[2.0, 3.0]], "depth": 2})
+        self.assertEqual(self.live.flush()["book"]["id"], "BTC-USD")
+        self.live.on_message({"type": "cb", "id": "BTC-USD", "bids": [], "asks": [], "depth": 0})
+        self.live.follow("ETH-USD")
+        self.assertEqual(self.feed.book, "ETH-USD")
+        self.assertNotIn("book", self.live.flush() or {})
+        self.live.follow(None)
+        self.assertIsNone(self.feed.book)
+
+    def test_a_book_for_another_pair_is_ignored(self):
+        self.live.on_message({"type": "cb", "id": "ETH-USD", "bids": [], "asks": [], "depth": 0})
+        self.assertNotIn("book", self.live.flush() or {})
+
+    def test_the_book_is_cut_to_ten_levels(self):
+        levels = [[float(i), 1.0] for i in range(1, 15)]
+        self.live.on_message({"type": "cb", "id": "BTC-USD", "bids": levels, "asks": levels, "depth": 28})
+        message = self.live.flush()["book"]
+        self.assertEqual((len(message["bids"]), len(message["asks"]), message["depth"]), (10, 10, 28))
+
+    def test_session_figures_match_a_hand_calculation(self):
+        self.live.on_message(trade_tick(price=100.0, size=2.0, side="buy", trade=1))
+        self.live.on_message(trade_tick(price=110.0, size=1.0, side="sell", trade=2))
+        self.live.on_message(trade_tick(price=90.0, size=1.0, side="buy", trade=3))
+        session = self.live.flush()["session"]
+        self.assertEqual(session["vwap"], (200.0 + 110.0 + 90.0) / 4.0)
+        self.assertEqual(session["buyPercent"], 75.0)
+        self.assertEqual(session["trades"], 3)
+        self.assertEqual(session["tradesPerMinute"], 3)
+        self.assertEqual(session["last"], 90.0)
+        self.assertEqual([t["p"] for t in session["tape"]], [90.0, 110.0, 100.0])  # Newest first.
+
+    def test_a_tick_without_a_trade_adds_nothing_to_the_session(self):
+        self.live.on_message(tick(trade=None))
+        session = self.live._session_summary("BTC-USD")
+        self.assertIsNone(session["vwap"])
+        self.assertEqual(session["trades"], 0)
+        self.assertEqual(session["tape"], [])
+
+    def test_old_trades_leave_the_per_minute_count_and_the_tape_is_capped(self):
+        old = int(time.time() * 1000) - 120000
+        for trade in range(1, 80):
+            self.live.on_message(dict(trade_tick(trade=trade), time=old))
+        session = self.live._session_summary("BTC-USD")
+        self.assertEqual(session["tradesPerMinute"], 0)
+        self.assertEqual(session["trades"], 79)
+        self.assertEqual(len(session["tape"]), live.TAPE_SENT)
+        self.assertEqual(len(self.live.sessions["BTC-USD"]["tape"]), live.TAPE_KEPT)
+
+    def test_session_is_only_sent_for_the_selected_pair(self):
+        self.live.on_message(trade_tick("ETH-USD"))
+        self.assertNotIn("session", self.live.flush() or {})
+
+    def test_rate_reports_messages_per_second(self):
+        for trade in range(1, 11):
+            self.live.on_message(trade_tick(trade=trade))
+        self.live.rate_sent = time.monotonic() - 2.0
+        rate = self.live.flush()["rate"]
+        self.assertEqual(rate["perSecond"], 5)
+        self.assertIsNotNone(rate["lag"])
+
+    def test_seed_sends_stats_and_a_sparkline(self):
+        self.live.seed_one("BTC-USD")
+        seed = self.sent[-1]["seed"]
+        self.assertEqual(seed["id"], "BTC-USD")
+        self.assertEqual(seed["open"], 9.0)
+        self.assertEqual(seed["spark"], [11.0, 11.0])
+
+    def test_a_failed_seed_sends_only_what_worked(self):
+        self.live.rest.stats = mock.Mock(side_effect=ProviderError(502, "No."))
+        self.live.seed_one("BTC-USD")
+        self.assertNotIn("open", self.sent[-1]["seed"])
+        count = len(self.sent)
+        self.live.rest.candles = mock.Mock(side_effect=ProviderError(502, "No."))
+        self.live.seed_one("BTC-USD")
+        self.assertEqual(len(self.sent), count)  # Nothing to report at all.
+
+    def test_fear_and_greed_failure_is_reported_as_none(self):
+        self.live.seed_fear_greed()
+        self.assertEqual(self.sent[-1]["fearGreed"]["value"], 50)
+        self.live.rest.fear_greed = mock.Mock(side_effect=ProviderError(502, "No."))
+        self.live.seed_fear_greed()
+        self.assertIsNone(self.sent[-1]["fearGreed"])
+
+    def test_new_pairs_are_queued_for_seeding(self):
+        self.live.seed_queue.clear()
+        self.live.set_watch(["BTC-USD", "ETH-USD", "LTC-USD"])
+        self.assertEqual(list(self.live.seed_queue), ["LTC-USD"])
+        self.assertEqual(self.feed.watch, ["BTC-USD", "ETH-USD", "LTC-USD"])
+
+
+class FakeTicker:
+    def __init__(self, _symbol):
+        self.fast_info = {"previousClose": 90.0, "dayHigh": 105.0, "dayLow": float("nan"), "lastVolume": 1000.0, "yearHigh": 200.0,
+                          "yearLow": 50.0, "marketCap": 5e9, "currency": "USD", "lastPrice": 100.0}
+        self.info = {"longName": "A Company", "marketState": "POST", "exchangeDataDelayedBy": 15, "fullExchangeName": "NASDAQ", "sector": "Tech",
+                     "industry": "Software", "country": "US", "website": "https://example.com", "currency": "USD", "quoteType": "EQUITY", "trailingPE": 20.0,
+                     "forwardPE": 18.0, "trailingEps": 3.0, "dividendYield": 1.2, "beta": 1.1, "averageVolume": 5000.0, "marketCap": 5e9,
+                     "fiftyTwoWeekHigh": 200.0, "fiftyTwoWeekLow": float("inf")}
+        self.news = [{"content": {"title": "Kept", "clickThroughUrl": {"url": "https://example.com/a"}, "pubDate": "2026-01-01T00:00:00Z", "provider": {"displayName": "Wire"}}},
+                     {"title": "Not secure", "canonicalUrl": {"url": "http://example.com/b"}},
+                     {"content": {"title": "", "clickThroughUrl": {"url": "https://example.com/c"}}}]
+
+    def history(self, **_kwargs):
+        index = pd.date_range("2026-01-05 09:30", periods=30, freq="h", tz="America/New_York")
+        values = [100.0 + i for i in range(30)]
+        values[3] = float("nan")
+        return pd.DataFrame({"Open": values, "High": [v + 1 for v in values], "Low": [v - 1 for v in values], "Close": values, "Volume": [10.0] * 29 + [float("nan")]}, index=index)
+
+
+class MarketsParity(unittest.TestCase):
+    """markets.py holds short copies of functions in server.py, so both must give the same answer."""
+
+    def test_copies_match_the_browser_backend(self):
+        with mock.patch("yfinance.Ticker", FakeTicker):
+            self.assertEqual(markets.fast_quote("A"), server.fast_quote("A"))
+            self.assertEqual(markets.meta("A"), server.meta("A"))
+            self.assertEqual(markets.profile("A"), server.profile("A"))
+            self.assertEqual(markets.news("A"), server.news("A"))
+            self.assertEqual(len(markets.news("A")), 1)
+            for name in server.INTERVALS:
+                self.assertEqual(markets.candles("A", name), server.candles("A", name))
+
+    def test_periods_match_the_browser_backend(self):
+        self.assertEqual({k: v[1] for k, v in server.INTERVALS.items()}, markets.PERIODS)
+        self.assertEqual({k: v[0] for k, v in server.INTERVALS.items()}, mh.YAHOO_INTERVALS)
+
+
+class MarketsLoop(unittest.TestCase):
+    def provider(self):
+        provider = mock.Mock()
+        provider.quote.side_effect = lambda symbol: (100.0, {"prev": 90.0, "high": None})
+        provider.meta.return_value = {"state": "REGULAR", "name": None, "spark": [1.0, 2.0]}
+        provider.limited.return_value = False
+        return provider
+
+    def make(self, provider):
+        self.sent = []
+        return markets.Markets(lambda text: self.sent.append(json.loads(text)), provider)
+
+    def quotes(self):
+        return [m["quote"] for m in self.sent if "quote" in m]
+
+    def test_a_cycle_sends_quotes_then_details_and_status(self):
+        loop = self.make(self.provider())
+        loop.set_watch(["A"])
+        loop.cycle()
+        first, second = self.quotes()
+        self.assertEqual((first["id"], first["price"], first["prev"]), ("A", 100.0, 90.0))
+        self.assertNotIn("high", first)  # Missing values aren't sent as nulls.
+        self.assertEqual((second["id"], second["state"], second["spark"]), ("A", "REGULAR", [1.0, 2.0]))
+        self.assertEqual(self.sent[-1]["status"], {"limited": False})
+
+    def test_details_are_only_fetched_when_due(self):
+        provider = self.provider()
+        loop = self.make(provider)
+        loop.set_watch(["A"])
+        loop.cycle()
+        loop.cycle()
+        self.assertEqual(provider.quote.call_count, 2)
+        self.assertEqual(provider.meta.call_count, 1)
+
+    def test_one_bad_symbol_does_not_stop_the_others(self):
+        provider = self.provider()
+        provider.quote.side_effect = lambda symbol: (_ for _ in ()).throw(ValueError("no price")) if symbol == "BAD" else (100.0, {})
+        loop = self.make(provider)
+        loop.set_watch(["BAD", "GOOD"])
+        loop.cycle()
+        self.assertEqual({q["id"] for q in self.quotes()}, {"GOOD"})
+
+    def test_a_rate_limit_ends_the_round_and_is_reported(self):
+        provider = self.provider()
+        provider.quote.side_effect = ProviderError(429, "Slow down.")
+        provider.limited.return_value = True
+        loop = self.make(provider)
+        loop.set_watch(["A", "B"])
+        loop.cycle()
+        self.assertEqual(provider.quote.call_count, 1)
+        self.assertEqual(self.sent[-1]["status"], {"limited": True})
+
+    def test_stop_ends_the_thread(self):
+        loop = self.make(self.provider())
+        loop.start(["A"])
+        thread = loop.thread
+        loop.stop()
+        self.assertFalse(thread.is_alive())
+        self.assertFalse(loop.running)
+        loop.stop()  # Stopping twice is harmless.
+
+    def test_throttle_pauses_after_a_rate_limit(self):
+        from yfinance.exceptions import YFRateLimitError
+
+        mh._yahoo_blocked_until = 0.0
+        mh._yahoo_strikes = 0
+        self.addCleanup(lambda: setattr(mh, "_yahoo_blocked_until", 0.0))
+        with self.assertRaisesRegex(ProviderError, "slow down"):
+            mh.yahoo_call(mock.Mock(side_effect=YFRateLimitError()))
+        self.assertTrue(mh.yahoo_limited())
+        waiting = mock.Mock()
+        with self.assertRaisesRegex(ProviderError, "slow down"):
+            mh.yahoo_call(waiting)
+        waiting.assert_not_called()
 
 
 class StoppableFeedTests(unittest.TestCase):

@@ -87,6 +87,7 @@ int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
   QApplication::setApplicationName(QStringLiteral("ResoluteQuant"));
   rq::installFileLogging();
+  rq::loadFonts();
   app.setStyleSheet(rq::applicationStyleSheet());
 
   QCommandLineParser parser;
@@ -95,13 +96,18 @@ int main(int argc, char* argv[]) {
                                      QStringLiteral("Open the window, run Python jobs, print the result and exit."));
   const QCommandLineOption stuckTest(QStringLiteral("test-stuck-shutdown"),
                                      QStringLiteral("Quit during a job that ignores cancel."));
+  const QCommandLineOption offline(QStringLiteral("offline"),
+                                   QStringLiteral("Open without contacting any data provider."));
   const QCommandLineOption runtime(QStringLiteral("python-runtime"),
                                    QStringLiteral("Use the private Python in this folder."), QStringLiteral("folder"));
-  parser.addOptions({smokeTest, stuckTest, runtime});
+  parser.addOptions({smokeTest, stuckTest, offline, runtime});
   parser.process(app);
 
   rq::PythonEngine engine(rq::PythonEngine::locate(parser.value(runtime)));
-  rq::MainWindow window(engine);
+  rq::TerminalOptions options;
+  options.connect = !parser.isSet(offline);
+  options.showIntro = !parser.isSet(offline) && !parser.isSet(smokeTest) && !parser.isSet(stuckTest);
+  rq::MainWindow window(engine, options);
   window.show();
 
   if (parser.isSet(smokeTest)) runSmokeTest(engine);

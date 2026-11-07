@@ -2,27 +2,34 @@
 
 #include <QMainWindow>
 
-class QLabel;
-class QListWidget;
+#include "app/TerminalPage.h"
+
 class QStackedWidget;
 
 namespace rq {
 
+class HealthPanel;
+class HistoryPanel;
 class PythonEngine;
 
-// The shell: sidebar navigation on the left, the selected page on the right, and a status bar.
+// The terminal fills the window. History and Python Health open over it, and close back to it.
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit MainWindow(PythonEngine& engine, QWidget* parent = nullptr);
+  explicit MainWindow(PythonEngine& engine, TerminalOptions options = {}, QWidget* parent = nullptr);
+
+  TerminalPage* terminal() const { return terminal_; }
+  void showTerminal();
+  void showHistory(const QString& symbol, bool isMarket);
+  void showHealth();
+  QWidget* currentPage() const;
 
  private:
-  void addPage(const QString& title, QWidget* page);
-
-  QListWidget* navigation_;
   QStackedWidget* pages_;
-  QLabel* pythonState_;
+  TerminalPage* terminal_;
+  HistoryPanel* history_;
+  QWidget* health_;
 };
 
 }  // namespace rq

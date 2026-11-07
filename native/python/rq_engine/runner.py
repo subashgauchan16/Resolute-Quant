@@ -29,12 +29,16 @@ JOBS = {
     "history_options": market_history.options,
     "history": market_history.load,
     "history_export": market_history.export_csv,
-    "live_start": live.start,
-    "live_stop": live.stop,
-    "live_watch": live.watch,
-    "live_add": live.add_symbol,
+    "terminal_start": live.start,
+    "terminal_stop": live.shutdown,
+    "terminal_select": live.select,
+    "terminal_watch": live.watch,
+    "terminal_resolve": live.resolve,
     "live_chart": live.chart,
-    "_live_start_fixture_for_test": live.start_fixture_for_test,
+    "market_chart": live.market_chart,
+    "market_profile": live.market_profile,
+    "market_news": live.market_news,
+    "_terminal_start_fixture_for_test": live.start_fixture_for_test,
     "_live_drop_fixture_for_test": live.drop_fixture_for_test,
     "_live_rest_calls_for_test": live.fixture_rest_calls_for_test,
     "_history_fixture_for_test": market_history.fixture_for_test,
@@ -49,3 +53,8 @@ def run(name, args_json):
     if job is None:
         raise ValueError(f"Unknown job: {name}")
     return json.dumps(job(json.loads(args_json), Host()), allow_nan=False)
+
+
+def shutdown():
+    """Called by the bridge just before the interpreter closes."""
+    live.shutdown()

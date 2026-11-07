@@ -16,7 +16,7 @@ try {
   $env:PYTHONPATH = 'C:\bogus-python-path'
   Remove-Item Env:QT_QPA_PLATFORM -ErrorAction SilentlyContinue
 
-  $run = Invoke-App $exe @('--smoke-test')
+  $run = Invoke-App $exe @('--smoke-test', '--offline')
   Assert-True ($run.ExitCode -eq 0) "The deployed app exited with $($run.ExitCode). Output: $($run.Output)"
   $report = $run.Output | ConvertFrom-Json
   Assert-True ($report.ok -eq $true) "The deployed app reported failure: $($run.Output)"
@@ -27,7 +27,7 @@ try {
 
   # With no python313.dll anywhere, a directly linked exe could not even start.
   Rename-Item (Join-Path $folder 'runtime') 'runtime-hidden'
-  $run = Invoke-App $exe @('--smoke-test')
+  $run = Invoke-App $exe @('--smoke-test', '--offline')
   Assert-True ($run.ExitCode -eq 2) "With no runtime the deployed app exited with $($run.ExitCode). Output: $($run.Output)"
   Assert-True ($run.Output -match 'was not found') "With no runtime the message was: $($run.Output)"
   Assert-NoneRunning $exe 'after the no-runtime run'
