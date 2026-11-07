@@ -8,6 +8,16 @@
 
 > **Prototype.** A working single-chart research terminal with backend-only market data. The multi-chart dashboard, indicators and resizable panels are not built yet, and no predictive model exists. It places no orders. The logo's word "trade" is branding; this program has no execution layer.
 
+## Why Resolute
+
+Resolute means determined: firm in purpose, and patient when progress is slow. The name goes back to
+[Resoluters](https://www.instagram.com/resoluters_official/), a clothing brand I started when I was about 16.
+Resoluter isn't a dictionary word. I made it up to mean someone who is resolute: a person who decides, stays
+patient and follows through. In markets, that means evidence before excitement, rules fixed before the results
+are known, and accepting "no edge found" as an honest answer.
+
+## What it is
+
 A local research and monitoring terminal for crypto, stocks, indices, FX and gold.
 It places no orders and connects to no broker or exchange account. See `README.txt` for
 the short user guide.
