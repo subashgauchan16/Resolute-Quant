@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Marcellus&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
 <header class="hero" id="hero">
@@ -31,6 +32,29 @@
 </header>
 
 <main>
+  <section class="why" id="why-resolute">
+    <h2>Why Resolute</h2>
+    <div class="lexicon">
+      <dl class="entry">
+        <dt><span class="word">Resolute</span> <span class="say">/ˈrez.ə.luːt/</span> <span class="kind">adjective</span></dt>
+        <dd>Determined. Firm in purpose, and patient while the work takes time.</dd>
+      </dl>
+      <dl class="entry coined">
+        <dt><span class="word">Resoluter</span> <span class="kind">noun, my own word</span></dt>
+        <dd>Someone who is resolute: a person who decides, stays patient and follows through.</dd>
+      </dl>
+      <p class="origin">Resoluter isn't in any dictionary. I coined it for Resoluters, the clothing brand I started when I was about&nbsp;16. It described who I was then, and it's the attitude this project needs now.</p>
+    </div>
+    <div class="tenets">
+      <h3>What it means here</h3>
+      <ul>
+        <li><b>Decide first.</b> Questions and pass marks are written down before any results exist, so they can't be bent to fit.</li>
+        <li><b>Stay patient.</b> Honest evidence takes months, and no test is skipped to get there sooner.</li>
+        <li><b>Follow through.</b> Failures are recorded with the results, and “no edge found” counts as an honest answer.</li>
+      </ul>
+    </div>
+  </section>
+
   <section class="prose">
     <h2>What it is</h2>
     <p>Resolute Quant is a terminal for studying markets. It runs on your own computer and brings crypto, stocks, indices, currencies and gold into one screen, with a watchlist, a price chart, an order book, a live trade tape and price alerts.</p>
@@ -61,17 +85,84 @@
     </div>
   </section>
 
-  <section class="road">
+  <section class="road" id="road">
     <h2>Where it is heading</h2>
-    <ol class="candles">
-      <li class="done" style="--h:22%"><span class="candle" aria-hidden="true"></span><b>A working terminal</b><small>Done</small></li>
-      <li class="done" style="--h:32%"><span class="candle" aria-hidden="true"></span><b>All data through the backend</b><small>Done</small></li>
-      <li class="done" style="--h:42%"><span class="candle" aria-hidden="true"></span><b>Research plan written</b><small>Done</small></li>
-      <li class="now" style="--h:53%"><span class="candle" aria-hidden="true"></span><b>A permitted data source</b><small>In progress</small></li>
-      <li class="later" style="--h:64%"><span class="candle" aria-hidden="true"></span><b>Multi-chart dashboard</b><small>Next</small></li>
-      <li class="later" style="--h:76%"><span class="candle" aria-hidden="true"></span><b>Volatility benchmarks</b><small>Not started</small></li>
-      <li class="later" style="--h:90%"><span class="candle" aria-hidden="true"></span><b>Paper observation</b><small>Only if research passes</small></li>
-    </ol>
+    <p class="hint">Select a candle to open the plan for that stage.</p>
+    <div class="candles" role="tablist" aria-label="Project stages">
+      <button type="button" class="rung done" role="tab" id="tab-1" aria-controls="plan-1" aria-selected="false" style="--h:22%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A working terminal</b><small>Done</small></button>
+      <button type="button" class="rung done" role="tab" id="tab-2" aria-controls="plan-2" aria-selected="false" style="--h:32%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>All data through the backend</b><small>Done</small></button>
+      <button type="button" class="rung done" role="tab" id="tab-3" aria-controls="plan-3" aria-selected="false" style="--h:42%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Research plan written</b><small>Done</small></button>
+      <button type="button" class="rung now" role="tab" id="tab-4" aria-controls="plan-4" aria-selected="true" style="--h:53%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A permitted data source</b><small>In progress</small></button>
+      <button type="button" class="rung later" role="tab" id="tab-5" aria-controls="plan-5" aria-selected="false" style="--h:64%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Multi-chart dashboard</b><small>Next</small></button>
+      <button type="button" class="rung later" role="tab" id="tab-6" aria-controls="plan-6" aria-selected="false" style="--h:76%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Volatility benchmarks</b><small>Not started</small></button>
+      <button type="button" class="rung later" role="tab" id="tab-7" aria-controls="plan-7" aria-selected="false" style="--h:90%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Paper observation</b><small>Only if research passes</small></button>
+    </div>
+
+    <div class="plans" id="plans">
+      <div class="plan done" role="tabpanel" id="plan-1" aria-labelledby="tab-1" tabindex="0">
+        <p class="step">Stage 1 of 7, done</p>
+        <h3>A working terminal</h3>
+        <div class="plan-body">
+          <p>One command starts it on your own computer, and it brings crypto, stocks, indices, currencies and gold into one screen.</p>
+          <ul><li>A watchlist, a price chart, an order book and a live trade tape</li><li>Price alerts</li><li>A clear message if its port is already taken</li></ul>
+          <p class="means"><b>Done means</b> it starts with one command and its acceptance checks run in a real browser. Two are still open: frame smoothness under load, and a memory growth limit.</p>
+        </div>
+      </div>
+      <div class="plan done" role="tabpanel" id="plan-2" aria-labelledby="tab-2" tabindex="0">
+        <p class="step">Stage 2 of 7, done</p>
+        <h3>All data through the backend</h3>
+        <div class="plan-body">
+          <p>The page never contacts a data provider itself. A local Python backend fetches every price, checks it, and passes it on.</p>
+          <ul><li>Bad values are dropped and counted, never repaired or invented</li><li>Timeframes from one minute to one month, only where the provider really supplies them</li><li>If the backend stops, the page says so and recovers when it returns</li></ul>
+          <p class="means"><b>Done means</b> the page's only requests go to its own backend, plus the web fonts.</p>
+        </div>
+      </div>
+      <div class="plan done" role="tabpanel" id="plan-3" aria-labelledby="tab-3" tabindex="0">
+        <p class="step">Stage 3 of 7, done</p>
+        <h3>Research plan written</h3>
+        <div class="plan-body">
+          <p>The first question is deliberately modest: how volatile will Bitcoin be over the next 24&nbsp;hours?</p>
+          <ul><li>A simple historical benchmark first, then a transparent rule, then an interpretable statistical model</li><li>Walk-forward tests in time order, on data each model has never seen</li><li>Fees, spread and slippage counted in any strategy test</li></ul>
+          <p class="means"><b>Done means</b> the questions, tests and pass marks were written down before any model was trained.</p>
+        </div>
+      </div>
+      <div class="plan now" role="tabpanel" id="plan-4" aria-labelledby="tab-4" tabindex="0">
+        <p class="step">Stage 4 of 7, in progress</p>
+        <h3>A permitted data source</h3>
+        <div class="plan-body">
+          <p>Today's sources allow personal use, not building or testing models. The research waits for historical data whose terms clearly allow it.</p>
+          <ul><li>Read each provider's terms before using its data</li><li>Ask in writing where the terms are unclear</li><li>Compare free and paid options</li></ul>
+          <p class="means"><b>Done means</b> a source is chosen whose terms allow model research. No model work starts before then.</p>
+        </div>
+      </div>
+      <div class="plan later" role="tabpanel" id="plan-5" aria-labelledby="tab-5" tabindex="0">
+        <p class="step">Stage 5 of 7, next</p>
+        <h3>Multi-chart dashboard</h3>
+        <div class="plan-body">
+          <p>Several charts on one screen, so related markets can be read side by side.</p>
+          <ul><li>Charts arranged side by side</li><li>Technical indicators</li><li>Panels you can resize</li></ul>
+          <p class="means"><b>Done means</b> it runs on the same validated backend, and every existing check still passes.</p>
+        </div>
+      </div>
+      <div class="plan later" role="tabpanel" id="plan-6" aria-labelledby="tab-6" tabindex="0">
+        <p class="step">Stage 6 of 7, not started</p>
+        <h3>Volatility benchmarks</h3>
+        <div class="plan-body">
+          <p>Run the research plan's tests on permitted data, from the simplest benchmark upward.</p>
+          <ul><li>Each model must beat the simpler ones on data it has never seen</li><li>Results are reported whether they pass or fail</li></ul>
+          <p class="means"><b>Done means</b> every model has a recorded result against pass marks fixed in advance. “No edge found” is a valid outcome.</p>
+        </div>
+      </div>
+      <div class="plan later" role="tabpanel" id="plan-7" aria-labelledby="tab-7" tabindex="0">
+        <p class="step">Stage 7 of 7, only if research passes</p>
+        <h3>Paper observation</h3>
+        <div class="plan-body">
+          <p>If a model passes, its forecasts are watched against live markets with no money at risk.</p>
+          <ul><li>Forecasts are recorded before the outcome is known</li><li>Predictions, simulated results and real market outcomes are kept apart</li><li>No orders are placed</li></ul>
+          <p class="means"><b>Done means</b> months of recorded forecasts, judged by rules set beforehand.</p>
+        </div>
+      </div>
+    </div>
     <p class="note">The candles show project stages, not prices. Live trading is not on this roadmap. It would need separate approval, risk limits, monitoring and a tested kill switch.</p>
   </section>
 
