@@ -27,6 +27,9 @@ class CandleChart : public QWidget {
 
   void setCandles(QVector<Candle> candles, bool intraday);  // Oldest first.
   void clear(const QString& emptyMessage = {});
+  // Replaces the newest candle, or adds a newer one, keeping the zoom. Stays on the newest candle
+  // if it was showing, and otherwise leaves the view where the person moved it.
+  void updateLatest(const Candle& candle);
 
   int candleCount() const { return static_cast<int>(candles_.size()); }
   int firstVisible() const { return first_; }

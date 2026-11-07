@@ -48,6 +48,8 @@ qt_add_library(rq_core STATIC
   src/app/HealthPanel.h
   src/app/HistoryPanel.cpp
   src/app/HistoryPanel.h
+  src/app/LivePanel.cpp
+  src/app/LivePanel.h
   src/app/Logging.cpp
   src/app/Logging.h
   src/app/MainWindow.cpp
@@ -97,15 +99,21 @@ endfunction()
 rq_add_test(test_bridge)
 rq_add_test(test_ui)
 rq_add_test(test_history_ui)
+rq_add_test(test_live_ui)
 
 # Contacts real providers, so it is built but deliberately not registered with ctest.
 qt_add_executable(live_history_check tests/live_history_check.cpp)
 target_link_libraries(live_history_check PRIVATE rq_core Qt6::Test)
 set_target_properties(live_history_check PROPERTIES WIN32_EXECUTABLE OFF)
 add_dependencies(live_history_check ResoluteQuant)
+qt_add_executable(live_feed_check tests/live_feed_check.cpp)
+target_link_libraries(live_feed_check PRIVATE rq_core Qt6::Test psapi)
+set_target_properties(live_feed_check PROPERTIES WIN32_EXECUTABLE OFF)
+add_dependencies(live_feed_check ResoluteQuant)
 
 # Runs the Python history code directly on the private Python, against a fake provider.
 add_test(NAME python_tests COMMAND "${RQ_PYTHON_DIR}/python.exe" -I "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_market_history.py")
+add_test(NAME python_live_tests COMMAND "${RQ_PYTHON_DIR}/python.exe" -I "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_live.py")
 
 set(RQ_POWERSHELL powershell -NoProfile -ExecutionPolicy Bypass -File)
 add_test(NAME process_tests COMMAND ${RQ_POWERSHELL} "${CMAKE_CURRENT_SOURCE_DIR}/tests/process_tests.ps1"

@@ -30,7 +30,9 @@ QString applicationStyleSheet() {
     QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
     QScrollBar::add-page, QScrollBar::sub-page { background: none; }
     QComboBox QAbstractItemView { background: #101114; selection-background-color: #24262b; selection-color: #e3c374; }
-    QTableView { background: #101114; gridline-color: #24262b; border: 1px solid #33363c; selection-background-color: #24262b; selection-color: #e3c374; }
+    QTableView { outline: 0; background: #101114; gridline-color: #24262b; border: 1px solid #33363c; selection-background-color: #24262b; selection-color: #e3c374; }
+    QTableView::item { border: none; padding: 0 4px; }
+    QTableView::item:selected { background: #24262b; color: #e3c374; border: none; }
     QHeaderView::section { background: #17181b; color: #aeb2b9; border: none; border-bottom: 1px solid #33363c; padding: 5px; }
     QSplitter::handle { background: #24262b; height: 3px; }
     QProgressBar { background: #101114; border: 1px solid #3a3d44; border-radius: 3px; text-align: center; }

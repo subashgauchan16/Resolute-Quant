@@ -59,11 +59,11 @@ void UiTest::navigationSwitchesPages() {
   auto* navigation = find<QListWidget>(*window_, "navigation");
   auto* pages = window_->findChild<QStackedWidget*>();
   QVERIFY(pages != nullptr);
-  QCOMPARE(navigation->count(), 3);
+  QCOMPARE(navigation->count(), 4);
   navigation->setCurrentRow(1);
   QCOMPARE(pages->currentIndex(), 1);
-  navigation->setCurrentRow(2);  // The Python Health page, which the tests below use.
-  QCOMPARE(pages->currentIndex(), 2);
+  navigation->setCurrentRow(3);  // The Python Health page, which the tests below use.
+  QCOMPARE(pages->currentIndex(), 3);
 }
 
 void UiTest::healthPanelShowsPythonState() {

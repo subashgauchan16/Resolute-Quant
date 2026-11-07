@@ -18,6 +18,8 @@ struct RunningJob {
 
 RunningJob* g_job = nullptr;           // Only touched while holding the GIL.
 PyThreadState* g_idleThread = nullptr;  // Set while idle, when the GIL is released.
+RqEventFn g_onEvent = nullptr;          // Set once, before Python starts.
+void* g_eventContext = nullptr;
 
 std::wstring join(const std::wstring& base, const wchar_t* child) { return base + L"\\" + child; }
 
@@ -65,6 +67,17 @@ PYBIND11_EMBEDDED_MODULE(_rq_host, module) {
     if (g_job != nullptr) g_job->onProgress(g_job->context, fraction, message.c_str());
   });
   module.def("is_cancelled", [] { return g_job != nullptr && g_job->isCancelled(g_job->context) != 0; });
+  module.def(
+      "publish_event",
+      [](const std::string& json) {
+        if (g_onEvent != nullptr) g_onEvent(g_eventContext, json.c_str());
+      },
+      py::call_guard<py::gil_scoped_release>());
+}
+
+RQ_HOST_API void rq_py_set_event_handler(RqEventFn onEvent, void* context) {
+  g_onEvent = onEvent;
+  g_eventContext = context;
 }
 
 RQ_HOST_API int rq_py_start(const wchar_t* runtimeDir, const wchar_t* engineDir, RqErrorFn onError,
@@ -116,5 +129,12 @@ RQ_HOST_API void rq_py_run(const char* job, const char* argsJson, RqProgressFn o
 RQ_HOST_API void rq_py_stop() {
   PyEval_RestoreThread(g_idleThread);
   g_idleThread = nullptr;
+  try {
+    // Lets background threads, such as the live feed, stop while the interpreter still works.
+    py::object runner = py::module_::import("sys").attr("modules").attr("get")("rq_engine.runner");
+    if (!runner.is_none()) runner.attr("shutdown")();
+  } catch (const std::exception&) {
+    // Closing the interpreter below is still the right next step.
+  }
   py::finalize_interpreter();
 }

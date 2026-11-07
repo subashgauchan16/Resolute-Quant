@@ -72,6 +72,24 @@ void CandleChart::clear(const QString& emptyMessage) {
   update();
 }
 
+void CandleChart::updateLatest(const Candle& candle) {
+  if (candles_.isEmpty() || candle.time < candles_.last().time) return;
+  anyVolume_ = anyVolume_ || candle.hasVolume;
+  if (candle.time == candles_.last().time) {
+    candles_.last() = candle;
+  } else {
+    const bool followNewest = first_ + count_ == candleCount();
+    const bool showingAll = followNewest && first_ == 0;
+    candles_.push_back(candle);
+    if (showingAll) {
+      ++count_;
+    } else if (followNewest) {
+      ++first_;
+    }
+  }
+  update();
+}
+
 QRect CandleChart::plotRect() const {
   return QRect(0, kReadoutHeight, std::max(width() - kAxisWidth, 1), std::max(height() - kReadoutHeight - kTimeAxisHeight, 1));
 }

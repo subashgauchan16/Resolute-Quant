@@ -4,7 +4,7 @@ import json
 
 import _rq_host
 
-from . import calculations, health, market_history
+from . import calculations, health, live, market_history
 
 
 class JobCancelled(Exception):
@@ -29,6 +29,14 @@ JOBS = {
     "history_options": market_history.options,
     "history": market_history.load,
     "history_export": market_history.export_csv,
+    "live_start": live.start,
+    "live_stop": live.stop,
+    "live_watch": live.watch,
+    "live_add": live.add_symbol,
+    "live_chart": live.chart,
+    "_live_start_fixture_for_test": live.start_fixture_for_test,
+    "_live_drop_fixture_for_test": live.drop_fixture_for_test,
+    "_live_rest_calls_for_test": live.fixture_rest_calls_for_test,
     "_history_fixture_for_test": market_history.fixture_for_test,
     "_import_market_for_test": market_history.import_for_test,
     "_stuck_for_test": calculations.stuck_for_test,
