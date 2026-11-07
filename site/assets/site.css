@@ -45,6 +45,8 @@ main>section{max-width:68rem;margin:0 auto;padding:clamp(48px,8vw,88px) 0;border
 .prose>*{max-width:41rem}
 .note{color:var(--mute);font-size:.92em}
 .prose .note{border-left:2px solid var(--gold);padding-left:1em}
+.rqm>p{max-width:41rem}
+.rqm .note{border-left:2px solid var(--gold);padding-left:1em;margin-top:2rem}
 .ledger{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:clamp(32px,6vw,72px)}
 .ledger ul{list-style:none;margin:0;padding:0}
 .ledger li{padding:.75em 0;border-top:1px solid var(--line)}
