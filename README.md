@@ -10,11 +10,16 @@
 
 ## Why Resolute
 
-Resolute means determined: firm in purpose, and patient when progress is slow. The name goes back to
-[Resoluters](https://www.instagram.com/resoluters_official/), a clothing brand I started when I was about 16.
-Resoluter isn't a dictionary word. I made it up to mean someone who is resolute: a person who decides, stays
-patient and follows through. In markets, that means evidence before excitement, rules fixed before the results
-are known, and accepting "no edge found" as an honest answer.
+**Resolute** (adjective): determined. Firm in purpose, and patient while the work takes time.
+
+**Resoluter** (noun, my own word): someone who is resolute, a person who decides, stays patient and follows through.
+
+Resoluter isn't in any dictionary. I coined it for Resoluters, the clothing brand I started when I was about 16.
+It described who I was then, and it's the attitude this project needs now:
+
+- **Decide first.** Questions and pass marks are written down before any results exist, so they can't be bent to fit.
+- **Stay patient.** Honest evidence takes months, and no test is skipped to get there sooner.
+- **Follow through.** Failures are recorded with the results, and "no edge found" counts as an honest answer.
 
 ## What it is
 
