@@ -8,6 +8,14 @@ Every version here is exact. `tools/setup_runtime.ps1` and `CMakeLists.txt` refu
 | Python packages, including NumPy 2.5.4, pandas 3.1.1 and yfinance 1.8.0 | The 22 pins in `requirements.txt` at the repository root | PyPI | Every wheel's hash is in [python/requirements.lock](python/requirements.lock) | Each package's own licence |
 | pybind11 | 3.1.0 | `https://github.com/pybind/pybind11/archive/refs/tags/v3.1.0.tar.gz` | `EF712655692A2E9BF7BB7874C022564A45F91D847DDEE987E720CD9E28849665` | BSD-style |
 
+## SQLite
+
+`tools/setup_runtime.ps1` replaces the SQLite library inside the private Python. Python 3.13.17 ships 3.50.4, which is in the range of [a documented WAL reset bug](https://www.sqlite.org/wal.html) fixed in 3.51.3 and backported to 3.50.7. SQLite is in the public domain.
+
+| Version | Source | SHA-256 |
+| --- | --- | --- |
+| 3.54.1 | `https://www.sqlite.org/2026/sqlite-dll-win-x64-3540100.zip` | `F436F53AD8F965AF43F3817B42C99C0689E6787F6B7ACE208FE38DAB7FFC4971` |
+
 ## Bundled fonts
 
 Committed in `assets/fonts/`, from `https://github.com/google/fonts` (`ofl/ibmplexmono` and `ofl/ibmplexsanscondensed`). IBM Plex is under the SIL Open Font License 1.1, in `assets/fonts/OFL.txt`.

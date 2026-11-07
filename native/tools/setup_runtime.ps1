@@ -40,6 +40,27 @@ if (-not (Test-Path $target)) {
   }
 }
 
+# Python 3.13.17 ships SQLite 3.50.4, which has a documented WAL bug. This replaces it with a fixed release.
+$sqliteVersion = '3.54.1'
+$sqliteSha256 = 'F436F53AD8F965AF43F3817B42C99C0689E6787F6B7ACE208FE38DAB7FFC4971'
+$sqliteUrl = 'https://www.sqlite.org/2026/sqlite-dll-win-x64-3540100.zip'
+$current = (& $python -I -B -c "import sqlite3; print(sqlite3.sqlite_version)").Trim()
+if ($current -ne $sqliteVersion) {
+  $work = Join-Path $runtime "sqlite-$PID"
+  New-Item -ItemType Directory $work | Out-Null
+  try {
+    "Installing SQLite $sqliteVersion in place of $current"
+    $package = Join-Path $work 'sqlite.zip'
+    Invoke-WebRequest $sqliteUrl -OutFile $package -UseBasicParsing
+    $actual = (Get-FileHash $package -Algorithm SHA256).Hash
+    if ($actual -ne $sqliteSha256) { throw "Checksum mismatch for SQLite ${sqliteVersion}: got $actual" }
+    Expand-Archive $package -DestinationPath (Join-Path $work 'unpacked')
+    Copy-Item (Join-Path $work 'unpacked\sqlite3.dll') (Join-Path $target 'DLLs\sqlite3.dll') -Force
+  } finally {
+    Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue
+  }
+}
+
 $installed = if (Test-Path $marker) { (Get-Content $marker -Raw).Trim() } else { '' }
 if ($installed -ne $lockHash) {
   "Installing pinned packages"
@@ -54,5 +75,5 @@ if ($installed -ne $lockHash) {
   'Pinned packages are already installed.'
 }
 
-& $python -I -c "import sys, numpy, pandas, yfinance, websockets; print('Python', sys.version.split()[0], 'NumPy', numpy.__version__, 'pandas', pandas.__version__, 'yfinance', yfinance.__version__, 'websockets', websockets.__version__)"
+& $python -I -c "import sys, sqlite3, numpy, pandas, yfinance, websockets; print('Python', sys.version.split()[0], 'SQLite', sqlite3.sqlite_version, 'NumPy', numpy.__version__, 'pandas', pandas.__version__, 'yfinance', yfinance.__version__, 'websockets', websockets.__version__)"
 if ($LASTEXITCODE -ne 0) { throw 'The runtime failed its import check' }

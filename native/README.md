@@ -116,6 +116,43 @@ Window (UI thread)  --submit, cancel-->  PythonEngine (one background thread)
 - **`history.py` and `crypto_feed.py`** at the repository root are shared with the browser terminal, and the build copies them in. Fetching from Yahoo is in `server.py`, which the app doesn't load, so `market_history.py` and `markets.py` have short copies. Tests check that both give the same answer.
 - **`assets/`** holds the terminal's fonts, under the SIL Open Font License in `assets/fonts/OFL.txt`, and PNG copies of its logos, because this Qt has no WebP plugin.
 
+## Local storage
+
+Research records and market bars are stored in SQLite, on this PC only, at `%LOCALAPPDATA%\ResoluteQuant\data`. The foundation is in place, with a status job, and the terminal doesn't read or write research data yet.
+
+| File or folder | Holds | Durability |
+| --- | --- | --- |
+| `research.sqlite` | Data sources, datasets, experiments, audit trail | `synchronous=FULL` |
+| `market.sqlite` | Historical bars only | `synchronous=NORMAL`, as bars can be downloaded again |
+| `artifacts\` | Reserved for model files | |
+| `backups\` | Verified snapshots. The newest 10 of each database are kept | |
+
+**How it stays safe:**
+
+- **One library.** Only Python opens these files. Qt asks through `PythonEngine` jobs, so Qt's SQL module isn't used.
+- **The fixed SQLite.** `setup_runtime.ps1` installs a pinned SQLite, because the one in Python 3.13.17 has a documented WAL bug. Older versions are refused.
+- **Local drives only.** Network drives and cloud-synced folders such as OneDrive are refused, because file locks and paired files can't be relied on there. Don't copy the live files by hand, and don't delete `-wal` or `-shm` files.
+- **All or nothing.** A change and its audit event commit together. Audit events can't be edited or deleted.
+- **Data rights.** An experiment is refused unless its dataset is complete, and its source is marked as allowing model work. That label is a person's judgement, so check the provider's terms first.
+- **Plans are fixed.** An experiment's hypothesis, plan, splits and costs can't change after registration.
+- **Two files, one order.** Writes across the two files can't commit together, so bars are written first and the dataset is marked ready last, with a hash. After a crash, a dataset stays pending and is never falsely complete.
+- **No secrets.** No table holds passwords, keys or tokens. Those belong in Windows Credential Manager.
+
+**Backup and restore:**
+
+```python
+from rq_engine.storage import Storage, RESEARCH
+storage = Storage()
+backup_file = storage.backup(RESEARCH)     # Safe while the app is running. The copy is verified.
+storage.restore(backup_file, RESEARCH)     # Close the app first. It refuses if the database is in use.
+```
+
+Restore keeps the replaced files beside the database, named `.before-restore-…`. Keep backups off cloud-synced folders if they hold market data, as syncing may count as sharing under a provider's terms.
+
+**Migrations** are numbered SQL files in `python/rq_engine/migrations`. Each runs in one transaction, with a verified backup first if the database already exists. They only go forward, so going back means restoring a backup. Never edit one that has been applied: the app refuses it, and refuses a database newer than itself.
+
+**Limits:** one writer at a time, as others queue for up to 5 seconds. These files aren't encrypted, so turn on Windows disk encryption if your edition supports it. There are no user roles, so anyone using your Windows account can read them. **PostgreSQL becomes justified** when outside users need accounts or server-enforced access, when several computers share data, or when many processes must write at once. The desktop app would reach it only through a backend API, never directly.
+
 ## Known limits
 
 - **A native crash closes the app.** Python exceptions are caught and shown, but a crash inside a native library, such as NumPy, can't be caught when Python runs in the same process. Risky future work should run in a child process launched from Python, behind `PythonEngine`, without changing any screens.
@@ -153,7 +190,7 @@ None of this is built. Each still has open questions about data sources and thei
 
 | Future work | Where it goes |
 | --- | --- |
-| Settings and provenance storage | SQLite through Qt's SQL module, which is the proposed next task |
+| Models, predictions, backtests and paper trading | New migrations and tables in `research.sqlite`, added when something uses them |
 | Yahoo's tick stream | A background thread in `markets.py`, using `yf.WebSocket` as `server.py` does |
 | Reports, disclosures, and the company and supplier graph | Background `rq_engine` jobs, with new screens beside the Python Health page |
 | Predictive models | An `rq_engine` module, ideally in a child process. Blocked on permitted data and agreed thresholds |
