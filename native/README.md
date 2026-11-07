@@ -1,20 +1,20 @@
 # Resolute Quant native app
 
-The Windows desktop version of Resolute Quant: C++20, Qt 6 Widgets, and an embedded private Python. The browser terminal is being rebuilt here one screen at a time. **It has no models or trading functions, it never places orders, and it opens no network ports.** The browser terminal at the repository root is still the full working product.
+The Windows desktop version of Resolute Quant: C++20, Qt 6 Widgets, and an embedded private Python. It rebuilds the browser terminal natively, with the same layout, colours, fonts and logo. **It has no models or trading functions, it never places orders, and it opens no network ports.**
 
 ## What it does
 
-- A window with sidebar navigation and a status bar.
-- **Live page:** press **Go live** to stream Coinbase prices into a watchlist, with a chart of the selected pair whose newest bar updates as trades arrive.
-  - Nothing connects until you press **Go live**. **Stop** disconnects.
-  - Every trade counts towards the forming bar, and a new bar opens at its first trade. The window updates at most about 5 times a second.
-  - Prices grey out and the status says so if the feed disconnects or goes quiet. It reconnects by itself, then reloads the chart, because trades were missed.
-  - The watchlist resets to the default pairs each time the app opens.
-- **History page:** choose Coinbase or Yahoo Finance, a symbol, a timeframe and dates, then read the bars as a candlestick chart and a table, and export them as CSV.
+- **The terminal screen:** the browser terminal's grid, with the animated logo, command box, status badges, watchlist with sparklines, chart, order book, time and sales, stats strip and footer. It connects to Coinbase and Yahoo when it opens.
+  - **Live chart:** candles, volume, EMA 20, last-price line, alert lines and crosshair. Every trade counts towards the forming bar, and a new bar opens at its first trade. The window updates at most about 5 times a second.
+  - **Commands:** the same as the browser. Type `HELP` to see them, plus `HEALTH` for the Python Health page. Press `/` to focus the command box.
+  - **Saved on this PC:** watchlists, open symbol, timeframe and alerts.
+  - **Market symbols:** show a profile, news and market statistics in place of the book and tape.
+  - **Honest state:** badges show LIVE, RECONNECTING, NO DATA or CONNECTING, and prices dim when they aren't current. It reconnects by itself, then reloads the chart, because trades were missed.
+- **History page:** press **HISTORY**, choose Coinbase or Yahoo Finance, a symbol, a timeframe and dates, then read the bars as a candlestick chart and a table, and export them as CSV.
   - Scroll over the chart to zoom, and drag to pan. The arrow keys, `+`, `-` and Home also work once the chart has focus.
   - Missing bars are reported and never filled. Unfinished bars are left out and counted. If any page of a request fails, nothing is shown, so a partial range can't pass as complete.
   - Export writes exactly the bars on screen, without downloading them again.
-- **Python Health page:** Python version and location, whether isolation is active, and the NumPy version.
+- **Python Health page:** type `HEALTH`. Python version and location, whether isolation is active, and the NumPy version.
 - **A real calculation:** type numbers, and NumPy returns the mean and sample standard deviation.
 - **Error display:** errors appear as a plain message, with the Python traceback behind **Show details**.
 - **A long job:** Python stays busy for 5 seconds with progress and Cancel, while the window keeps updating.
@@ -87,6 +87,12 @@ powershell -ExecutionPolicy Bypass -File native\tools\deploy.ps1
 native\dist\ResoluteQuant\ResoluteQuant.exe
 ```
 
+Add `--offline` to open it without contacting any provider.
+
+### How close it is to the browser terminal
+
+The colours, sizes, fonts, layout, wording, number formats and logo come straight from the browser terminal's own files. It isn't pixel-identical, because Qt draws text and shapes differently from a browser, the chart is hand-built rather than Lightweight Charts, and the logo's shine uses a different blend that gives a similar look. It also doesn't rearrange itself for narrow windows, as the page does.
+
 ### Starting again
 
 `native\build`, `native\runtime` and `native\dist` are all ignored by Git and safe to delete. Delete them, and run steps 2 to 4 again.
@@ -107,7 +113,8 @@ Window (UI thread)  --submit, cancel-->  PythonEngine (one background thread)
 - **`src/bridge/PythonHost`** is the only file that includes Python. The app loads this DLL at runtime, after checking the private Python exists, so a missing runtime gives a message in the window rather than a Windows loader error.
 - **`python/rq_engine/`** holds the jobs. To add one, write a function taking `(args, host)` that returns a JSON-friendly dictionary, and register it in `runner.py`.
 - **The live feed** runs on its own Python threads and reaches the window through `PythonEngine::pythonEvent`, so jobs such as a history load can still run while it streams. `live.py` subclasses `CoinbaseFeed` only to add a way to stop.
-- **`history.py` and `crypto_feed.py`** at the repository root are shared with the browser terminal, and the build copies them in. Fetching from Yahoo is in `server.py`, which the app doesn't load, so `market_history.py` has its own short copy. A test checks that both give the same answer.
+- **`history.py` and `crypto_feed.py`** at the repository root are shared with the browser terminal, and the build copies them in. Fetching from Yahoo is in `server.py`, which the app doesn't load, so `market_history.py` and `markets.py` have short copies. Tests check that both give the same answer.
+- **`assets/`** holds the terminal's fonts, under the SIL Open Font License in `assets/fonts/OFL.txt`, and PNG copies of its logos, because this Qt has no WebP plugin.
 
 ## Known limits
 
@@ -116,7 +123,8 @@ Window (UI thread)  --submit, cancel-->  PythonEngine (one background thread)
 - **One job at a time.** Other jobs wait in the queue.
 - **A provider request can't be interrupted.** Cancel takes effect once the current request ends, or between requests. Closing the app during one can end the process after 3 seconds, as above.
 - **The forming bar's volume is partial.** It counts only trades seen since the chart loaded, on top of what Coinbase had reported by then.
-- **Live prices are Coinbase only.** Yahoo symbols aren't streamed yet, and the order book and trade tape from the browser terminal aren't built yet.
+- **Yahoo prices refresh every 90 seconds.** The browser terminal also uses Yahoo's tick stream, which isn't ported yet. The badge shows YAHOO 90S, as the page does when that stream is down.
+- **Alerts only fire on data the app receives,** so a market symbol's alert is only checked every 90 seconds.
 - **The chart is deliberately simple.** It has no indicators or drawing tools. Bars sit side by side, so a gap shows as a jump in the date axis.
 - **Yahoo gaps are counted only within trading days.** A whole missing day isn't detected, because trading calendars aren't known here.
 - **Python can't restart within a running app.** If it fails to start, close and reopen the app.
@@ -136,7 +144,7 @@ Warnings and errors go to `%LOCALAPPDATA%\ResoluteQuant\native.log`, which resta
 | GitHub Pages site | Unchanged |
 | Render deployment draft | Unaffected. This is a desktop program and can't deploy to Render. A hosted version would stay browser-based, with the provider-terms questions already raised on that draft |
 | Ports and credentials | The app opens no ports, and stores and needs no credentials |
-| Network | The app contacts Coinbase or Yahoo only when you load history, go live or add a pair. Repeat history requests within 5 minutes use saved results. While live, the app and a running browser terminal each hold their own Coinbase connection |
+| Network | Unless started with `--offline`, the app contacts Coinbase, Yahoo and alternative.me (Fear & Greed) from when it opens. While both run, the app and a browser terminal each hold their own Coinbase connection, and each makes its own Yahoo requests, which adds to the chance of Yahoo slowing them down |
 | Market data | Provider data is for personal research. Exported CSV files and screenshots of real data stay out of this public repository, and the data must not be shared or used for model work where a provider's terms forbid it |
 
 ## Where later work plugs in
@@ -146,7 +154,7 @@ None of this is built. Each still has open questions about data sources and thei
 | Future work | Where it goes |
 | --- | --- |
 | Settings and provenance storage | SQLite through Qt's SQL module, which is the proposed next task |
-| The rest of the terminal | Order book, trade tape, Yahoo prices, company details and alerts, as further `rq_engine` modules and screens. `CoinbaseFeed` already supports the order book |
+| Yahoo's tick stream | A background thread in `markets.py`, using `yf.WebSocket` as `server.py` does |
 | Reports, disclosures, and the company and supplier graph | Background `rq_engine` jobs, with new screens beside the Python Health page |
 | Predictive models | An `rq_engine` module, ideally in a child process. Blocked on permitted data and agreed thresholds |
 | Enterprise and procurement integrations | A new service layer, with credentials kept in Windows Credential Manager |

@@ -14,7 +14,7 @@ Assert-NoneRunning $Exe 'before the tests'
 
 $env:QT_QPA_PLATFORM = 'offscreen'
 foreach ($launch in 1..$Launches) {
-  $run = Invoke-App $Exe @('--smoke-test')
+  $run = Invoke-App $Exe @('--smoke-test', '--offline')
   Assert-True ($run.ExitCode -eq 0) "Launch $launch exited with $($run.ExitCode). Output: $($run.Output)"
   $report = $run.Output | ConvertFrom-Json
   Assert-True ($report.ok -eq $true) "Launch $launch reported failure: $($run.Output)"
@@ -23,21 +23,21 @@ foreach ($launch in 1..$Launches) {
 }
 "PASS $Launches launches each ran Python and exited with code 0, leaving no process behind"
 
-$run = Invoke-App $Exe @('--smoke-test', '--python-runtime', 'C:\rq-no-such-runtime')
+$run = Invoke-App $Exe @('--smoke-test', '--offline', '--python-runtime', 'C:\rq-no-such-runtime')
 Assert-True ($run.ExitCode -eq 2) "Missing runtime exited with $($run.ExitCode). Output: $($run.Output)"
 Assert-True ($run.Output -match 'rq-no-such-runtime') "Missing runtime message does not name the folder: $($run.Output)"
 Assert-NoneRunning $Exe 'after the missing-runtime test'
 "PASS A missing runtime gives exit code 2 and names the folder"
 
 $clock = [Diagnostics.Stopwatch]::StartNew()
-$run = Invoke-App $Exe @('--test-stuck-shutdown')
+$run = Invoke-App $Exe @('--test-stuck-shutdown', '--offline')
 Assert-True ($run.ExitCode -eq 4) "Stuck shutdown exited with $($run.ExitCode)"
 Assert-True ($clock.Elapsed.TotalSeconds -lt 15) "Stuck shutdown took $($clock.Elapsed.TotalSeconds) seconds"
 Assert-NoneRunning $Exe 'after the stuck-shutdown test'
 "PASS A job stuck in a native call ends the process with code 4 in $([math]::Round($clock.Elapsed.TotalSeconds, 1)) s rather than hanging"
 
 Remove-Item Env:QT_QPA_PLATFORM
-$process = Start-Process $Exe -PassThru
+$process = Start-Process $Exe -ArgumentList '--offline' -PassThru
 $null = $process.Handle  # PowerShell loses ExitCode unless the handle is read while running.
 $deadline = (Get-Date).AddSeconds(15)
 while ((Get-Date) -lt $deadline -and $process.MainWindowHandle -eq 0) { Start-Sleep -Milliseconds 100; $process.Refresh() }

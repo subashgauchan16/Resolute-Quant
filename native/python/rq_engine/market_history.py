@@ -24,6 +24,9 @@ _cache = {}  # key: (time stored, provider result)
 _last_view = None
 _yahoo_blocked_until = 0.0
 _yahoo_strikes = 0
+_yahoo_last = 0.0
+_yahoo_lock = threading.Lock()
+MIN_YAHOO_GAP = 0.3  # The same polite gap as the browser terminal.
 
 
 def options(_args, _host):
@@ -53,26 +56,42 @@ def _yahoo_rows(frame):
     return rows, day_of
 
 
-def fetch_yahoo(symbol, interval, start, end):
-    """Unadjusted Yahoo bars for a date range. A copy of server.yahoo_history, kept equal by a test."""
-    global _yahoo_blocked_until, _yahoo_strikes
+def yahoo_limited():
+    return _yahoo_blocked_until > time.time()
+
+
+def yahoo_call(fn):
+    """Every Yahoo request passes through here, one at a time, with a polite gap and backoff."""
+    global _yahoo_blocked_until, _yahoo_strikes, _yahoo_last
     wait = _yahoo_blocked_until - time.time()
     if wait > 0:
         raise ProviderError(429, f"Yahoo asked this PC to slow down. Try again in {math.ceil(wait)} seconds.")
 
-    import yfinance as yf  # Slow to import, so only loaded when first needed.
-    from yfinance.exceptions import YFRateLimitError
+    from yfinance.exceptions import YFRateLimitError  # Slow to import, so only loaded when first needed.
+
+    with _yahoo_lock:
+        gap = MIN_YAHOO_GAP - (time.time() - _yahoo_last)
+        if gap > 0:
+            time.sleep(gap)
+        _yahoo_last = time.time()
+        try:
+            result = fn()
+        except YFRateLimitError as error:
+            _yahoo_strikes += 1
+            pause = min(900, 60 * 2 ** (_yahoo_strikes - 1))
+            _yahoo_blocked_until = time.time() + pause
+            raise ProviderError(429, f"Yahoo asked this PC to slow down. Try again in {pause} seconds.") from error
+        _yahoo_strikes = 0
+        return result
+
+
+def fetch_yahoo(symbol, interval, start, end):
+    """Unadjusted Yahoo bars for a date range. A copy of server.yahoo_history, kept equal by a test."""
+    import yfinance as yf
 
     begin = datetime.fromtimestamp(start, timezone.utc)
     finish = datetime.fromtimestamp(end, timezone.utc)
-    try:
-        frame = yf.Ticker(symbol).history(start=begin, end=finish, interval=YAHOO_INTERVALS[interval], auto_adjust=False)
-    except YFRateLimitError as error:
-        _yahoo_strikes += 1
-        pause = min(900, 60 * 2 ** (_yahoo_strikes - 1))
-        _yahoo_blocked_until = time.time() + pause
-        raise ProviderError(429, f"Yahoo asked this PC to slow down. Try again in {pause} seconds.") from error
-    _yahoo_strikes = 0
+    frame = yahoo_call(lambda: yf.Ticker(symbol).history(start=begin, end=finish, interval=YAHOO_INTERVALS[interval], auto_adjust=False))
     rows, day_of = _yahoo_rows(frame)
     bars, rejected = normalise_candles(rows, market=True)
     kept = bars[-history.MAX_BARS:]

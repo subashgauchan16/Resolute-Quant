@@ -1,90 +1,74 @@
 #include "app/MainWindow.h"
 
 #include <QHBoxLayout>
-#include <QLabel>
-#include <QListWidget>
+#include <QIcon>
+#include <QPushButton>
 #include <QScrollArea>
+#include <QShortcut>
 #include <QStackedWidget>
-#include <QStatusBar>
 #include <QVBoxLayout>
 
 #include "app/HealthPanel.h"
 #include "app/HistoryPanel.h"
-#include "app/LivePanel.h"
 
 namespace rq {
 
-namespace {
-
-QWidget* makeHomePage() {
-  auto* page = new QWidget;
-  auto* layout = new QVBoxLayout(page);
-  layout->setContentsMargins(24, 20, 24, 20);
-  auto* title = new QLabel(QStringLiteral("Resolute Quant"));
-  title->setObjectName(QStringLiteral("pageTitle"));
-  auto* body = new QLabel(QStringLiteral(
-      "The native app is being built one screen at a time. Live Coinbase prices and market-price "
-      "history are available now. It has no models or trading functions, and it never places orders. "
-      "The browser terminal remains the full working product."));
-  body->setWordWrap(true);
-  layout->addWidget(title);
-  layout->addWidget(body);
-  layout->addStretch();
-  return page;
-}
-
-}  // namespace
-
-MainWindow::MainWindow(PythonEngine& engine, QWidget* parent)
+MainWindow::MainWindow(PythonEngine& engine, TerminalOptions options, QWidget* parent)
     : QMainWindow(parent),
-      navigation_(new QListWidget),
       pages_(new QStackedWidget),
-      pythonState_(new QLabel(QStringLiteral("Python: starting"))) {
+      terminal_(new TerminalPage(engine, std::move(options))),
+      history_(new HistoryPanel(engine)),
+      health_(new QWidget) {
   setWindowTitle(QStringLiteral("Resolute Quant"));
   setWindowIcon(QIcon(QStringLiteral(":/assets/img/favicon.png")));
-  resize(1000, 680);
-
-  navigation_->setObjectName(QStringLiteral("navigation"));
-  auto* brand = new QLabel(QStringLiteral("Resolute Quant"));
-  brand->setObjectName(QStringLiteral("brand"));
-
-  auto* sidebar = new QWidget;
-  sidebar->setFixedWidth(190);
-  auto* sidebarLayout = new QVBoxLayout(sidebar);
-  sidebarLayout->setContentsMargins(0, 0, 0, 0);
-  sidebarLayout->setSpacing(0);
-  sidebarLayout->addWidget(brand);
-  sidebarLayout->addWidget(navigation_);
-
-  auto* central = new QWidget;
-  auto* layout = new QHBoxLayout(central);
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->setSpacing(0);
-  layout->addWidget(sidebar);
-  layout->addWidget(pages_, 1);
-  setCentralWidget(central);
-
-  connect(navigation_, &QListWidget::currentRowChanged, pages_, &QStackedWidget::setCurrentIndex);
+  setMinimumSize(1000, 640);
+  resize(1500, 900);
+  setCentralWidget(pages_);
 
   auto* healthPanel = new HealthPanel(engine);
-  addPage(QStringLiteral("Home"), makeHomePage());
-  addPage(QStringLiteral("Live"), new LivePanel(engine));
-  addPage(QStringLiteral("History"), new HistoryPanel(engine));
   auto* healthScroll = new QScrollArea;
   healthScroll->setWidget(healthPanel);
   healthScroll->setWidgetResizable(true);
   healthScroll->setFrameShape(QFrame::NoFrame);
-  addPage(QStringLiteral("Python Health"), healthScroll);
-  navigation_->setCurrentRow(0);
+  auto* healthLayout = new QVBoxLayout(health_);
+  healthLayout->setContentsMargins(0, 0, 0, 0);
+  healthLayout->setSpacing(0);
+  auto* closeRow = new QHBoxLayout;
+  closeRow->setContentsMargins(0, 10, 24, 0);
+  auto* closeHealth = new QPushButton(QStringLiteral("Close"));
+  closeHealth->setObjectName(QStringLiteral("healthClose"));
+  closeRow->addStretch();
+  closeRow->addWidget(closeHealth);
+  healthLayout->addLayout(closeRow);
+  healthLayout->addWidget(healthScroll, 1);
 
-  pythonState_->setObjectName(QStringLiteral("pythonState"));
-  statusBar()->addPermanentWidget(pythonState_);
-  connect(healthPanel, &HealthPanel::pythonStateChanged, pythonState_, &QLabel::setText);
+  pages_->addWidget(terminal_);
+  pages_->addWidget(history_);
+  pages_->addWidget(health_);
+
+  connect(terminal_, &TerminalPage::historyRequested, this, &MainWindow::showHistory);
+  connect(terminal_, &TerminalPage::healthRequested, this, &MainWindow::showHealth);
+  connect(history_, &HistoryPanel::closeRequested, this, &MainWindow::showTerminal);
+  connect(closeHealth, &QPushButton::clicked, this, &MainWindow::showTerminal);
+  auto* escape = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+  escape->setContext(Qt::WindowShortcut);
+  connect(escape, &QShortcut::activatedAmbiguously, this, &MainWindow::showTerminal);
+  connect(escape, &QShortcut::activated, this, &MainWindow::showTerminal);
+  terminal_->setFocus();
 }
 
-void MainWindow::addPage(const QString& title, QWidget* page) {
-  navigation_->addItem(title);
-  pages_->addWidget(page);
+void MainWindow::showTerminal() {
+  pages_->setCurrentWidget(terminal_);
+  terminal_->setFocus();
 }
+
+void MainWindow::showHistory(const QString& symbol, bool isMarket) {
+  history_->openFor(symbol, isMarket);
+  pages_->setCurrentWidget(history_);
+}
+
+void MainWindow::showHealth() { pages_->setCurrentWidget(health_); }
+
+QWidget* MainWindow::currentPage() const { return pages_->currentWidget(); }
 
 }  // namespace rq
