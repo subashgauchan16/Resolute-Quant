@@ -55,6 +55,7 @@ class PythonEngine : public QObject {
   void startFailed(const QString& reason);
   void progress(quint64 id, double fraction, const QString& message);
   void jobFinished(const rq::JobResult& result);
+  void pythonEvent(const QJsonObject& message);  // Sent by Python's background work, such as the live feed.
 
  private:
   struct Job {

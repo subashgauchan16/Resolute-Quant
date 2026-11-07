@@ -28,6 +28,11 @@ class HistoryPanel : public QWidget {
 
   // Writes the bars on screen to path. The Export CSV button asks for the path, then calls this.
   void exportTo(const QString& path);
+  // Opens on the terminal's current symbol. It loads when the person presses Load history.
+  void openFor(const QString& symbol, bool isMarket);
+
+ signals:
+  void closeRequested();
 
  private:
   void onStarted();

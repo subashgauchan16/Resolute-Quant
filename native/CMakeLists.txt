@@ -40,10 +40,14 @@ set_target_properties(rq_python_host PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAK
 
 # Everything except main(), shared with the tests.
 qt_add_library(rq_core STATIC
+  src/app/BrandMark.cpp
+  src/app/BrandMark.h
   src/app/CandleChart.cpp
   src/app/CandleChart.h
   src/app/ErrorDisplay.cpp
   src/app/ErrorDisplay.h
+  src/app/Format.cpp
+  src/app/Format.h
   src/app/HealthPanel.cpp
   src/app/HealthPanel.h
   src/app/HistoryPanel.cpp
@@ -52,6 +56,11 @@ qt_add_library(rq_core STATIC
   src/app/Logging.h
   src/app/MainWindow.cpp
   src/app/MainWindow.h
+  src/app/Palette.h
+  src/app/TerminalPage.cpp
+  src/app/TerminalPage.h
+  src/app/TerminalWidgets.cpp
+  src/app/TerminalWidgets.h
   src/app/Theme.cpp
   src/app/Theme.h
   src/bridge/PythonEngine.cpp
@@ -61,6 +70,18 @@ qt_add_library(rq_core STATIC
 )
 target_include_directories(rq_core PUBLIC src)
 target_link_libraries(rq_core PUBLIC Qt6::Widgets)
+# The terminal's own fonts and logo. The logos are PNG copies of assets/img, because this Qt has no WebP plugin.
+qt_add_resources(rq_core "native_assets"
+  PREFIX "/native"
+  FILES
+    assets/fonts/IBMPlexMono-Regular.ttf
+    assets/fonts/IBMPlexMono-Medium.ttf
+    assets/fonts/IBMPlexMono-SemiBold.ttf
+    assets/fonts/IBMPlexSansCondensed-Medium.ttf
+    assets/fonts/IBMPlexSansCondensed-SemiBold.ttf
+    assets/img/rq-mark.png
+    assets/img/resolute-quant-logo.png
+)
 
 qt_add_executable(ResoluteQuant WIN32 src/main.cpp)
 target_link_libraries(ResoluteQuant PRIVATE rq_core)
@@ -97,15 +118,21 @@ endfunction()
 rq_add_test(test_bridge)
 rq_add_test(test_ui)
 rq_add_test(test_history_ui)
+rq_add_test(test_terminal_ui)
 
 # Contacts real providers, so it is built but deliberately not registered with ctest.
 qt_add_executable(live_history_check tests/live_history_check.cpp)
 target_link_libraries(live_history_check PRIVATE rq_core Qt6::Test)
 set_target_properties(live_history_check PROPERTIES WIN32_EXECUTABLE OFF)
 add_dependencies(live_history_check ResoluteQuant)
+qt_add_executable(live_feed_check tests/live_feed_check.cpp)
+target_link_libraries(live_feed_check PRIVATE rq_core Qt6::Test psapi)
+set_target_properties(live_feed_check PROPERTIES WIN32_EXECUTABLE OFF)
+add_dependencies(live_feed_check ResoluteQuant)
 
 # Runs the Python history code directly on the private Python, against a fake provider.
 add_test(NAME python_tests COMMAND "${RQ_PYTHON_DIR}/python.exe" -I "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_market_history.py")
+add_test(NAME python_live_tests COMMAND "${RQ_PYTHON_DIR}/python.exe" -I "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_live.py")
 
 set(RQ_POWERSHELL powershell -NoProfile -ExecutionPolicy Bypass -File)
 add_test(NAME process_tests COMMAND ${RQ_POWERSHELL} "${CMAKE_CURRENT_SOURCE_DIR}/tests/process_tests.ps1"

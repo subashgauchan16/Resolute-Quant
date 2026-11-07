@@ -18,6 +18,9 @@ using RqCancelledFn = int (*)(void* context);
 using RqResultFn = void (*)(void* context, int status, const char* payload, const char* errorType,
                             const char* message, const char* traceback);
 using RqErrorFn = void (*)(void* context, const char* message);
+// Called on Python's own background threads, for messages that are not the result of a job.
+using RqEventFn = void (*)(void* context, const char* json);
+using RqSetEventHandlerFn = void (*)(RqEventFn onEvent, void* context);
 
 using RqStartFn = int (*)(const wchar_t* runtimeDir, const wchar_t* engineDir, RqErrorFn onError,
                           void* context);
@@ -31,4 +34,5 @@ RQ_HOST_API int rq_py_start(const wchar_t* runtimeDir, const wchar_t* engineDir,
 RQ_HOST_API void rq_py_run(const char* job, const char* argsJson, RqProgressFn onProgress,
                            RqCancelledFn isCancelled, RqResultFn onResult, void* context);
 RQ_HOST_API void rq_py_stop();
+RQ_HOST_API void rq_py_set_event_handler(RqEventFn onEvent, void* context);
 #endif
