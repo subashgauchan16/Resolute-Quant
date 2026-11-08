@@ -6,13 +6,13 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
-#include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <algorithm>
 
+#include "app/ErrorDisplay.h"
 #include "bridge/PythonEngine.h"
 
 namespace rq {
@@ -27,24 +27,6 @@ QLabel* makeValue(const QString& objectName, const QString& text = QStringLitera
   label->setWordWrap(true);
   label->setTextInteractionFlags(Qt::TextSelectableByMouse);
   return label;
-}
-
-QLabel* makeError(const QString& objectName) {
-  auto* label = new QLabel;
-  label->setObjectName(objectName);
-  label->setStyleSheet(QStringLiteral("color: #ef9a8f;"));
-  label->setWordWrap(true);
-  label->hide();
-  return label;
-}
-
-QPlainTextEdit* makeDetails(const QString& objectName) {
-  auto* details = new QPlainTextEdit;
-  details->setObjectName(objectName);
-  details->setReadOnly(true);
-  details->setMaximumHeight(110);
-  details->hide();
-  return details;
 }
 
 QPushButton* makeButton(const QString& objectName, const QString& text) {
@@ -64,13 +46,11 @@ HealthPanel::HealthPanel(PythonEngine& engine, QWidget* parent)
       prefixValue_(makeValue(QStringLiteral("pythonPrefix"))),
       isolationValue_(makeValue(QStringLiteral("pythonIsolation"))),
       numpyValue_(makeValue(QStringLiteral("numpyVersion"))),
-      healthError_(makeError(QStringLiteral("healthError"))),
-      healthDetails_(makeDetails(QStringLiteral("healthDetails"))),
+      healthError_(new ErrorDisplay(QStringLiteral("healthError"))),
       calculationInput_(new QLineEdit(QStringLiteral("2, 4, 4, 4, 5, 5, 7, 9"))),
       calculationButton_(makeButton(QStringLiteral("calculate"), QStringLiteral("Calculate in Python"))),
       calculationResult_(makeValue(QStringLiteral("calculationResult"), QString())),
-      calculationError_(makeError(QStringLiteral("calculationError"))),
-      calculationDetails_(makeDetails(QStringLiteral("calculationDetails"))),
+      calculationError_(new ErrorDisplay(QStringLiteral("calculationError"))),
       longStartButton_(makeButton(QStringLiteral("longStart"), QStringLiteral("Start 5-second job"))),
       longCancelButton_(makeButton(QStringLiteral("longCancel"), QStringLiteral("Cancel"))),
       longProgress_(new QProgressBar),
@@ -83,6 +63,10 @@ HealthPanel::HealthPanel(PythonEngine& engine, QWidget* parent)
   auto* title = new QLabel(QStringLiteral("Python health"));
   title->setObjectName(QStringLiteral("pageTitle"));
   layout->addWidget(title);
+  auto* state = new QLabel(QStringLiteral("Python: starting"));
+  state->setObjectName(QStringLiteral("pythonState"));
+  connect(this, &HealthPanel::pythonStateChanged, state, &QLabel::setText);
+  layout->addWidget(state);
   layout->addWidget(buildHealthGroup());
   layout->addWidget(buildCalculationGroup());
   layout->addWidget(buildLongJobGroup());
@@ -109,7 +93,6 @@ QWidget* HealthPanel::buildHealthGroup() {
   auto* layout = new QVBoxLayout(group);
   layout->addLayout(form);
   layout->addWidget(healthError_);
-  layout->addWidget(healthDetails_);
   layout->addWidget(healthButton_, 0, Qt::AlignLeft);
   connect(healthButton_, &QPushButton::clicked, this, &HealthPanel::runHealthCheck);
   return group;
@@ -134,7 +117,6 @@ QWidget* HealthPanel::buildCalculationGroup() {
   layout->addLayout(row);
   layout->addWidget(calculationResult_);
   layout->addWidget(calculationError_);
-  layout->addWidget(calculationDetails_);
 
   connect(calculationButton_, &QPushButton::clicked, this, &HealthPanel::runCalculation);
   connect(calculationInput_, &QLineEdit::returnPressed, this, &HealthPanel::runCalculation);
@@ -212,8 +194,7 @@ void HealthPanel::onStartFailed(const QString& reason) {
   prefixValue_->setText(unavailable);
   isolationValue_->setText(unavailable);
   numpyValue_->setText(unavailable);
-  healthError_->setText(reason);
-  healthError_->show();
+  healthError_->showError(reason);
 }
 
 void HealthPanel::onProgress(quint64 id, double fraction, const QString& message) {
@@ -235,14 +216,11 @@ void HealthPanel::onJobFinished(const JobResult& result) {
 void HealthPanel::showHealth(const JobResult& result) {
   healthJob_ = 0;
   healthButton_->setEnabled(true);
-  const bool ok = result.status == JobStatus::Ok;
-  healthError_->setVisible(!ok);
-  healthDetails_->setVisible(!ok && !result.traceback.isEmpty());
-  if (!ok) {
-    healthError_->setText(QStringLiteral("%1: %2").arg(result.errorType, result.message));
-    healthDetails_->setPlainText(result.traceback);
+  if (result.status != JobStatus::Ok) {
+    healthError_->showError(QStringLiteral("%1: %2").arg(result.errorType, result.message), result.traceback);
     return;
   }
+  healthError_->clearError();
 
   const QJsonObject& value = result.value;
   versionValue_->setText(value[QStringLiteral("python_version")].toString());
@@ -263,13 +241,11 @@ void HealthPanel::showCalculation(const JobResult& result) {
   calculationButton_->setEnabled(true);
   const bool ok = result.status == JobStatus::Ok;
   calculationResult_->setVisible(ok);
-  calculationError_->setVisible(!ok);
-  calculationDetails_->setVisible(!ok && !result.traceback.isEmpty());
   if (!ok) {
-    calculationError_->setText(QStringLiteral("%1: %2").arg(result.errorType, result.message));
-    calculationDetails_->setPlainText(result.traceback);
+    calculationError_->showError(QStringLiteral("%1: %2").arg(result.errorType, result.message), result.traceback);
     return;
   }
+  calculationError_->clearError();
   const QJsonObject& value = result.value;
   calculationResult_->setText(QStringLiteral("Count %1, mean %2, sample standard deviation %3")
                                   .arg(value[QStringLiteral("count")].toInt())

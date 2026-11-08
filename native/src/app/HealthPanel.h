@@ -5,13 +5,13 @@
 
 class QLabel;
 class QLineEdit;
-class QPlainTextEdit;
 class QProgressBar;
 class QPushButton;
 class QTimer;
 
 namespace rq {
 
+class ErrorDisplay;
 class PythonEngine;
 struct JobResult;
 
@@ -57,14 +57,12 @@ class HealthPanel : public QWidget {
   QLabel* prefixValue_;
   QLabel* isolationValue_;
   QLabel* numpyValue_;
-  QLabel* healthError_;
-  QPlainTextEdit* healthDetails_;
+  ErrorDisplay* healthError_;
 
   QLineEdit* calculationInput_;
   QPushButton* calculationButton_;
   QLabel* calculationResult_;
-  QLabel* calculationError_;
-  QPlainTextEdit* calculationDetails_;
+  ErrorDisplay* calculationError_;
 
   QPushButton* longStartButton_;
   QPushButton* longCancelButton_;

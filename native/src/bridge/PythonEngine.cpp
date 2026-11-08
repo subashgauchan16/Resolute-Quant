@@ -89,6 +89,11 @@ void onProgress(void* context, double fraction, const char* message) {
   emit run->engine->progress(run->result->id, std::clamp(fraction, 0.0, 1.0), QString::fromUtf8(message));
 }
 
+void onEvent(void* context, const char* json) {
+  const QJsonDocument document = QJsonDocument::fromJson(QByteArray(json));
+  if (document.isObject()) emit static_cast<PythonEngine*>(context)->pythonEvent(document.object());
+}
+
 int isCancelled(void* context) {
   auto* run = static_cast<RunContext*>(context);
   return run->engine->isCancelRequested(run->result->id) ? 1 : 0;
@@ -215,9 +220,11 @@ void PythonEngine::threadMain() {
     const auto startFn = reinterpret_cast<RqStartFn>(GetProcAddress(host.module, "rq_py_start"));
     host.run = reinterpret_cast<RqRunFn>(GetProcAddress(host.module, "rq_py_run"));
     host.stop = reinterpret_cast<RqStopFn>(GetProcAddress(host.module, "rq_py_stop"));
-    if (startFn == nullptr || host.run == nullptr || host.stop == nullptr) {
+    const auto setEventHandler = reinterpret_cast<RqSetEventHandlerFn>(GetProcAddress(host.module, "rq_py_set_event_handler"));
+    if (startFn == nullptr || host.run == nullptr || host.stop == nullptr || setEventHandler == nullptr) {
       failure = QStringLiteral("rq_python_host.dll does not match this version of the app.");
     } else {
+      setEventHandler(onEvent, this);
       const std::wstring runtime = nativePath(paths_.runtimeDir);
       const std::wstring engine = nativePath(paths_.engineDir);
       running = startFn(runtime.c_str(), engine.c_str(), onStartError, &failure) != 0;
