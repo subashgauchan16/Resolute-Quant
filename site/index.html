@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Marcellus&display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/rq-method.css">
 <script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
@@ -173,9 +174,123 @@
     <p>Strategy tests must also survive fees, spread and slippage, because exchange fees can be large next to short-term price moves. The most likely outcome is that no tradable edge is found, and that would be a valid result.</p>
   </section>
 
-  <section class="prose">
+  <section class="rqm" id="method">
+    <h2>How the project is run</h2>
+    <p class="rqm-sub">I run this project with the frameworks I learned on my BSc in Applied Management, applied to software. A stage-gate process decides whether the project continues, and with what. Inside each stage the work moves in short PDCA cycles: plan, do, check, act. Disciplined Agile joins the two, keeping the process light where the risk is low, and strict wherever data rights, models or money are involved.</p>
+
+    <h3 class="rqm-h">Every iteration is one PDCA cycle</h3>
+    <div class="rqm-pdca">
+      <svg class="rqm-wheel" viewBox="0 0 240 240" role="img" aria-label="The PDCA cycle: plan, do, check and act, repeated in every iteration.">
+        <path class="rqm-base" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
+        <path class="rqm-base" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
+        <path class="rqm-base" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
+        <path class="rqm-base" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
+        <path class="rqm-fill" pathLength="1" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
+        <path class="rqm-fill k1" pathLength="1" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
+        <path class="rqm-fill k2" pathLength="1" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
+        <path class="rqm-fill k3" pathLength="1" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
+        <text class="rqm-letter" x="162.4" y="77.6">P</text>
+        <text class="rqm-letter k1" x="162.4" y="162.4">D</text>
+        <text class="rqm-letter k2" x="77.6" y="162.4">C</text>
+        <text class="rqm-letter k3" x="77.6" y="77.6">A</text>
+        <text class="rqm-hub" x="120" y="114">one iteration,</text>
+        <text class="rqm-hub" x="120" y="130">one to two weeks</text>
+        <g class="rqm-orbit"><circle cx="120" cy="28" r="6"/></g>
+      </svg>
+      <ol class="rqm-steps">
+        <li><span>P</span><div><b>Plan.</b> Write the goal and the tests before any code.</div></li>
+        <li class="k1"><span>D</span><div><b>Do.</b> Build in small steps, on a separate branch.</div></li>
+        <li class="k2"><span>C</span><div><b>Check.</b> Run every test, compare the result with the plan, and label the evidence.</div></li>
+        <li class="k3"><span>A</span><div><b>Act.</b> Keep what worked, or fix it and go round again.</div></li>
+      </ol>
+    </div>
+
+    <h3 class="rqm-h">Nine stages, each closed by a gate</h3>
+    <p class="rqm-sub">After the foundation, two tracks run side by side. Both must pass before paper trading starts. Gates, not dates, decide progress.</p>
+    <div class="rqm-map">
+      <div class="rqm-phase">
+        <p class="rqm-phase-name">Inception</p>
+        <div class="rqm-row">
+          <div class="rqm-node"><span>S1</span>Discovery and charter</div>
+          <i class="rqm-gate" style="--i:0"><b></b><em>G1</em></i>
+          <div class="rqm-node"><span>S2</span>Foundation</div>
+          <i class="rqm-gate" style="--i:1"><b></b><em>G2</em></i>
+        </div>
+      </div>
+      <div class="rqm-phase rqm-construction">
+        <p class="rqm-phase-name">Construction, two tracks in parallel</p>
+        <div class="rqm-track">
+          <span class="rqm-track-name">Research</span>
+          <div class="rqm-row">
+            <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
+            <div class="rqm-node"><span>S3</span>Data and rights</div>
+            <i class="rqm-gate" style="--i:2"><b></b><em>G3</em></i>
+            <div class="rqm-node"><span>S4</span>Research harness</div>
+            <i class="rqm-gate" style="--i:3"><b></b><em>G4</em></i>
+            <div class="rqm-node"><span>S5</span>Models and validation</div>
+            <i class="rqm-gate" style="--i:4"><b></b><em>G5</em></i>
+          </div>
+        </div>
+        <div class="rqm-track">
+          <span class="rqm-track-name">Platform</span>
+          <div class="rqm-row">
+            <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
+            <div class="rqm-node"><span>S6</span>Agents and interface</div>
+            <i class="rqm-gate" style="--i:2.5"><b></b><em>G6</em></i>
+            <div class="rqm-node"><span>S7</span>Deployment and operations</div>
+            <i class="rqm-gate" style="--i:4"><b></b><em>G7</em></i>
+          </div>
+        </div>
+      </div>
+      <div class="rqm-phase">
+        <p class="rqm-phase-name">Transition, once both tracks pass</p>
+        <div class="rqm-row">
+          <i class="rqm-gate rqm-plain" style="--i:4.5"></i>
+          <div class="rqm-node"><span>S8</span>Paper trading</div>
+          <i class="rqm-gate" style="--i:5"><b></b><em>G8</em></i>
+          <div class="rqm-node"><span>S9</span>Controlled launch</div>
+          <i class="rqm-gate" style="--i:6"><b></b><em>G9</em></i>
+        </div>
+      </div>
+    </div>
+    <p class="rqm-note">After the last gate, the project keeps operating and improving in the same PDCA cycles.</p>
+
+    <h3 class="rqm-h">What can happen at a gate</h3>
+    <ul class="rqm-outcomes">
+      <li style="--i:0"><b>Go</b>On to the next stage.</li>
+      <li class="cond" style="--i:1"><b>Conditional go</b>On, with named conditions to close.</li>
+      <li class="hold" style="--i:2"><b>Hold</b>Wait for an outside blocker.</li>
+      <li class="recycle" style="--i:3"><b>Recycle</b>Back to the stage that caused the fault.</li>
+      <li class="kill" style="--i:4"><b>Kill</b>Stop, and record why.</li>
+    </ul>
+    <ul class="rqm-rules">
+      <li>Pass marks are fixed before the work starts, and never changed after the results are seen.</li>
+      <li>A fault goes back to the stage that caused it, and every later stage that used it is checked again.</li>
+      <li>Procurement is gated too. Nothing is bought, licensed or signed before the gate that needs it, and I approve each item myself.</li>
+    </ul>
+    <p class="note">This is the outline of the plan, not all of it. Its last stage, a controlled live launch, would need its own approval, risk limits and a tested kill switch. Nothing in the plan authorises trading, and the roadmap above covers the nearer stages only.</p>
+  </section>
+
+  <section class="rqm" id="built">
     <h2>How it is built</h2>
-    <p>The backend is Python, with Coinbase Exchange and Yahoo Finance as its sources. The page is plain JavaScript modules with TradingView Lightweight Charts. Tests cover the backend, the launcher and the whole terminal in a real browser.</p>
+    <p class="rqm-sub">Python sits at the centre. It's the only code that talks to the data providers, so everything on screen has passed its checks.</p>
+    <div class="rqm-pipe">
+      <div class="rqm-box"><small>Sources</small><b>Coinbase Exchange and Yahoo Finance</b><span>Market data, for personal research use</span></div>
+      <i class="rqm-flow" style="--i:0"></i>
+      <div class="rqm-box rqm-core"><small>Backend</small><b>Python</b><span>Fetches and validates every value, and drops and counts bad ones</span></div>
+      <i class="rqm-flow" style="--i:1"></i>
+      <div class="rqm-box"><small>Delivery</small><b>HTTP and a live stream</b><span>Served only to this computer</span></div>
+      <i class="rqm-flow" style="--i:2"></i>
+      <div class="rqm-box"><small>Screen</small><b>Browser terminal</b><span>JavaScript modules and Lightweight Charts</span></div>
+      <i class="rqm-flow rqm-down" style="--i:1"></i>
+      <div class="rqm-box rqm-wip"><small>In progress</small><b>Native desktop app</b><span>C++20 and Qt 6, with the same Python embedded and SQLite for research storage</span></div>
+    </div>
+    <div class="rqm-tools">
+      <div class="rqm-toolrow"><span>Languages</span><ul><li>Python</li><li>JavaScript</li><li>C++20</li><li>SQL</li></ul></div>
+      <div class="rqm-toolrow"><span>Libraries</span><ul><li>Lightweight Charts</li><li>Qt 6</li><li>SQLite</li></ul></div>
+      <div class="rqm-toolrow"><span>Testing</span><ul><li>Python unit tests</li><li>End-to-end checks in Edge</li><li>Qt tests</li></ul></div>
+      <div class="rqm-toolrow"><span>Workflow</span><ul><li>Git and GitHub</li><li>GitHub Pages</li><li>Claude Code</li></ul></div>
+    </div>
     <p>I build it with AI assistance and stay responsible for the result: I set the goals, review the changes and decide what ships. The reports in the repository record what passed, what failed and what was not tested.</p>
   </section>
 </main>
