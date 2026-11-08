@@ -159,9 +159,16 @@ HistoryPanel::HistoryPanel(PythonEngine& engine, QString loadJob, QWidget* paren
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(24, 20, 24, 12);
 
-  auto* title = new QLabel(QStringLiteral("History"));
+  auto* title = new QLabel(QStringLiteral("HISTORY"));
   title->setObjectName(QStringLiteral("pageTitle"));
-  layout->addWidget(title);
+  auto* titleRow = new QHBoxLayout;
+  auto* closeButton = new QPushButton(QStringLiteral("Close"));
+  closeButton->setObjectName(QStringLiteral("historyClose"));
+  connect(closeButton, &QPushButton::clicked, this, &HistoryPanel::closeRequested);
+  titleRow->addWidget(title);
+  titleRow->addStretch();
+  titleRow->addWidget(closeButton);
+  layout->addLayout(titleRow);
 
   auto* controls = new QHBoxLayout;
   controls->addWidget(labelled(QStringLiteral("Source"), source_));
@@ -201,6 +208,12 @@ HistoryPanel::HistoryPanel(PythonEngine& engine, QString loadJob, QWidget* paren
   connect(&engine_, &PythonEngine::started, this, &HistoryPanel::onStarted);
   connect(&engine_, &PythonEngine::startFailed, this, &HistoryPanel::onStartFailed);
   connect(&engine_, &PythonEngine::jobFinished, this, &HistoryPanel::onJobFinished);
+}
+
+void HistoryPanel::openFor(const QString& symbol, bool isMarket) {
+  if (!haveOptions_) return;
+  source_->setCurrentIndex(std::max(source_->findData(isMarket ? QStringLiteral("yahoo") : QStringLiteral("coinbase")), 0));
+  symbol_->setText(symbol);
 }
 
 void HistoryPanel::setBusy(bool busy) {

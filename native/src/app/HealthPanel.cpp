@@ -63,6 +63,10 @@ HealthPanel::HealthPanel(PythonEngine& engine, QWidget* parent)
   auto* title = new QLabel(QStringLiteral("Python health"));
   title->setObjectName(QStringLiteral("pageTitle"));
   layout->addWidget(title);
+  auto* state = new QLabel(QStringLiteral("Python: starting"));
+  state->setObjectName(QStringLiteral("pythonState"));
+  connect(this, &HealthPanel::pythonStateChanged, state, &QLabel::setText);
+  layout->addWidget(state);
   layout->addWidget(buildHealthGroup());
   layout->addWidget(buildCalculationGroup());
   layout->addWidget(buildLongJobGroup());

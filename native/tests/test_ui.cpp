@@ -1,11 +1,10 @@
 // Drives the real window in Qt's offscreen mode, with the real Python behind it.
 #include <QLabel>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QStackedWidget>
+#include <QTemporaryDir>
 #include <QtTest>
 
 #include "app/HealthPanel.h"
@@ -40,6 +39,7 @@ class UiTest : public QObject {
   void cleanupTestCase();
 
  private:
+  QTemporaryDir folder_;
   std::unique_ptr<rq::PythonEngine> engine_;
   std::unique_ptr<rq::MainWindow> window_;
 };
@@ -47,7 +47,11 @@ class UiTest : public QObject {
 void UiTest::initTestCase() {
   qApp->setStyleSheet(rq::applicationStyleSheet());
   engine_ = std::make_unique<rq::PythonEngine>(rq::PythonEngine::locate());
-  window_ = std::make_unique<rq::MainWindow>(*engine_);
+  rq::TerminalOptions options;
+  options.connect = false;  // These tests contact no provider.
+  options.showIntro = false;
+  options.settingsPath = folder_.filePath(QStringLiteral("terminal.ini"));
+  window_ = std::make_unique<rq::MainWindow>(*engine_, options);
   window_->show();
   QVERIFY(QTest::qWaitForWindowExposed(window_.get()));
   QCOMPARE(find<QLabel>(*window_, "pythonState")->text(), QStringLiteral("Python: starting"));
@@ -56,14 +60,13 @@ void UiTest::initTestCase() {
 }
 
 void UiTest::navigationSwitchesPages() {
-  auto* navigation = find<QListWidget>(*window_, "navigation");
-  auto* pages = window_->findChild<QStackedWidget*>();
-  QVERIFY(pages != nullptr);
-  QCOMPARE(navigation->count(), 3);
-  navigation->setCurrentRow(1);
-  QCOMPARE(pages->currentIndex(), 1);
-  navigation->setCurrentRow(2);  // The Python Health page, which the tests below use.
-  QCOMPARE(pages->currentIndex(), 2);
+  QCOMPARE(window_->currentPage(), window_->terminal());
+  window_->showHistory(QStringLiteral("BTC-USD"), false);
+  QVERIFY(window_->currentPage() != window_->terminal());
+  window_->showTerminal();
+  QCOMPARE(window_->currentPage(), window_->terminal());
+  window_->showHealth();  // The Python Health page, which the tests below use.
+  QVERIFY(window_->currentPage() != window_->terminal());
 }
 
 void UiTest::healthPanelShowsPythonState() {
