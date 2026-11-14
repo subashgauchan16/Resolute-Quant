@@ -170,3 +170,21 @@ footer p:first-child{color:var(--ink)}
   .front::after{display:none}
   .js .plan.open{animation:none}
 }
+
+/* The workspace screenshots and the model table. */
+.prose.wide>*{max-width:72rem}
+.prose h3{font-family:var(--display);font-weight:400;color:#fff;font-size:1.3rem;margin:1.6em 0 .6em}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr));gap:28px 32px;margin-top:1.6rem}
+.shots figure{margin:0}
+.shots img{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.shots figcaption{margin-top:.7em;color:var(--mute);font-size:.92em}
+.shots figcaption b{color:var(--ink);font-weight:600}
+.steps{padding-left:1.3em}
+.steps li{margin-bottom:.6em}
+.steps b{color:#fff;font-weight:600}
+.tablewrap{overflow-x:auto;margin:1.4rem 0}
+.models{border-collapse:collapse;width:100%;font-size:.92em}
+.models th,.models td{text-align:left;vertical-align:top;padding:.7em .9em;border-bottom:1px solid var(--line)}
+.models thead th{color:var(--mute);font-weight:500}
+.models tbody th{color:#fff;font-weight:600;min-width:9rem}
+.models td:last-child{color:var(--gold-hi);min-width:10rem}
