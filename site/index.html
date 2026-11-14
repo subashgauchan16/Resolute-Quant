@@ -72,14 +72,16 @@
         <li>Bad provider values are dropped and counted, never repaired or invented.</li>
         <li>Timeframes from one minute to one month, where the provider really supplies them.</li>
         <li>If the backend stops, the page says so and recovers by itself when it returns.</li>
+        <li>A research workspace with indicators, risk scenarios, Monte Carlo ranges and six chart styles.</li>
+        <li>Five forecasting experiments, run with pass marks fixed in advance. None passed.</li>
       </ul>
     </div>
     <div>
       <h2>Not done yet</h2>
       <ul>
-        <li>The multi-chart dashboard, indicators and resizable panels.</li>
-        <li>Any predictive model. None exists, and no backtest has been run.</li>
-        <li>A historical dataset whose terms allow model research.</li>
+        <li>A model that has passed its tests. None has, so there is no evidence of any edge.</li>
+        <li>The main five-day volatility test: designed, but not yet frozen or started.</li>
+        <li>Resizable panels, and a longer history whose terms allow model training.</li>
         <li>Two acceptance checks are still open: frame smoothness under load, and a memory growth limit.</li>
         <li>Testing on other computers and against a real provider outage.</li>
       </ul>
@@ -93,9 +95,9 @@
       <button type="button" class="rung done" role="tab" id="tab-1" aria-controls="plan-1" aria-selected="false" style="--h:22%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A working terminal</b><small>Done</small></button>
       <button type="button" class="rung done" role="tab" id="tab-2" aria-controls="plan-2" aria-selected="false" style="--h:32%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>All data through the backend</b><small>Done</small></button>
       <button type="button" class="rung done" role="tab" id="tab-3" aria-controls="plan-3" aria-selected="false" style="--h:42%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Research plan written</b><small>Done</small></button>
-      <button type="button" class="rung now" role="tab" id="tab-4" aria-controls="plan-4" aria-selected="true" style="--h:53%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A permitted data source</b><small>In progress</small></button>
-      <button type="button" class="rung later" role="tab" id="tab-5" aria-controls="plan-5" aria-selected="false" style="--h:64%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Multi-chart dashboard</b><small>Next</small></button>
-      <button type="button" class="rung later" role="tab" id="tab-6" aria-controls="plan-6" aria-selected="false" style="--h:76%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Volatility benchmarks</b><small>Not started</small></button>
+      <button type="button" class="rung done" role="tab" id="tab-4" aria-controls="plan-4" aria-selected="false" style="--h:53%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A permitted data source</b><small>Done</small></button>
+      <button type="button" class="rung done" role="tab" id="tab-5" aria-controls="plan-5" aria-selected="false" style="--h:64%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Research workspace</b><small>Done</small></button>
+      <button type="button" class="rung now" role="tab" id="tab-6" aria-controls="plan-6" aria-selected="true" style="--h:76%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Forecast tests</b><small>In progress</small></button>
       <button type="button" class="rung later" role="tab" id="tab-7" aria-controls="plan-7" aria-selected="false" style="--h:90%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Paper observation</b><small>Only if research passes</small></button>
     </div>
 
@@ -127,29 +129,29 @@
           <p class="means"><b>Done means</b> the questions, tests and pass marks were written down before any model was trained.</p>
         </div>
       </div>
-      <div class="plan now" role="tabpanel" id="plan-4" aria-labelledby="tab-4" tabindex="0">
-        <p class="step">Stage 4 of 7, in progress</p>
+      <div class="plan done" role="tabpanel" id="plan-4" aria-labelledby="tab-4" tabindex="0">
+        <p class="step">Stage 4 of 7, done</p>
         <h3>A permitted data source</h3>
         <div class="plan-body">
-          <p>Today's sources allow personal use, not building or testing models. The research waits for historical data whose terms clearly allow it.</p>
+          <p>Daily and 5-minute US stock bars, whose provider confirmed in writing that private research use is allowed. Publishing the data, or figures derived from it, is not.</p>
           <ul><li>Read each provider's terms before using its data</li><li>Ask in writing where the terms are unclear</li><li>Compare free and paid options</li></ul>
-          <p class="means"><b>Done means</b> a source is chosen whose terms allow model research. No model work starts before then.</p>
+          <p class="means"><b>Done means</b> a source is chosen whose terms allow model research. A longer history for training is still being looked for.</p>
         </div>
       </div>
-      <div class="plan later" role="tabpanel" id="plan-5" aria-labelledby="tab-5" tabindex="0">
-        <p class="step">Stage 5 of 7, next</p>
-        <h3>Multi-chart dashboard</h3>
+      <div class="plan done" role="tabpanel" id="plan-5" aria-labelledby="tab-5" tabindex="0">
+        <p class="step">Stage 5 of 7, done</p>
+        <h3>Research workspace</h3>
         <div class="plan-body">
-          <p>Several charts on one screen, so related markets can be read side by side.</p>
-          <ul><li>Charts arranged side by side</li><li>Technical indicators</li><li>Panels you can resize</li></ul>
+          <p>A workspace beside the terminal, with sections for forecasts, models, risk, news, company analysis and data sources.</p>
+          <ul><li>Technical indicators and six chart styles</li><li>Risk scenarios and Monte Carlo ranges</li><li>Resizable panels are still to come</li></ul>
           <p class="means"><b>Done means</b> it runs on the same validated backend, and every existing check still passes.</p>
         </div>
       </div>
-      <div class="plan later" role="tabpanel" id="plan-6" aria-labelledby="tab-6" tabindex="0">
-        <p class="step">Stage 6 of 7, not started</p>
-        <h3>Volatility benchmarks</h3>
+      <div class="plan now" role="tabpanel" id="plan-6" aria-labelledby="tab-6" tabindex="0">
+        <p class="step">Stage 6 of 7, in progress</p>
+        <h3>Forecast tests</h3>
         <div class="plan-body">
-          <p>Run the research plan's tests on permitted data, from the simplest benchmark upward.</p>
+          <p>Run the research plan's tests on permitted data, from the simplest benchmark upward. Five experiments have run and none passed. The main five-day volatility test is being designed.</p>
           <ul><li>Each model must beat the simpler ones on data it has never seen</li><li>Results are reported whether they pass or fail</li></ul>
           <p class="means"><b>Done means</b> every model has a recorded result against pass marks fixed in advance. “No edge found” is a valid outcome.</p>
         </div>
@@ -168,10 +170,63 @@
   </section>
 
   <section class="prose">
-    <h2>How the research will work</h2>
-    <p>The first question is deliberately modest: how volatile will Bitcoin be over the next 24 hours? It tests the whole pipeline without being mistaken for a trading edge, and any later strategy would need that estimate to size its risk.</p>
+    <h2>How the research works</h2>
+    <p>The first questions were deliberately modest: how much will a price move, rather than which way. Volatility tests the whole pipeline without being mistaken for a trading edge, and any later strategy would need that estimate to size its risk.</p>
     <p>Models must earn their complexity. A simple historical benchmark comes first, then a transparent rule, then an interpretable statistical model. Anything more complex has to beat those on data it has never seen, using walk-forward tests in time order and pass marks fixed before the results exist.</p>
     <p>Strategy tests must also survive fees, spread and slippage, because exchange fees can be large next to short-term price moves. The most likely outcome is that no tradable edge is found, and that would be a valid result.</p>
+  </section>
+
+  <section class="prose wide" id="workspace">
+    <h2>Built since: the research workspace</h2>
+    <p>The terminal now has a research workspace, with sections for forecasts, models, risk, news, company analysis and data sources. Its code is kept private for now, because it works with data whose terms allow private research only.</p>
+    <p class="note">These screenshots run the terminal's own backend code on prices generated from a seeded random walk, for fictional companies. Panels that need saved research results show invented placeholders or say they are unavailable, and a banner marks every screen. None of it is real market data or a real model result.</p>
+    <div class="shots">
+      <figure>
+        <img loading="lazy" src="assets/img/workspace-overview.webp" width="1600" height="1000" alt="Workspace overview with simulated data: a daily chart with indicators, a readout table, next-day volatility, a live Monte Carlo fan, a regime dial and the bot pipeline.">
+        <figcaption><b>Overview.</b> The chart with indicators, a readout of where the company stands, next-day volatility, a live Monte Carlo fan, the regime dial and the bot pipeline. The signal row stays empty until a model passes every gate.</figcaption>
+      </figure>
+      <figure>
+        <img loading="lazy" src="assets/img/markets-heikin-ashi.webp" width="1600" height="1000" alt="Markets chart with simulated data, drawn as Heikin-Ashi candles, with the chart style menu above it.">
+        <figcaption><b>Chart styles.</b> Candles, hollow candles, Heikin-Ashi, OHLC bars, line or area, drawn from the same bars. The legend always shows the real bar.</figcaption>
+      </figure>
+      <figure>
+        <img loading="lazy" src="assets/img/workspace-risk.webp" width="1600" height="1000" alt="Risk page with simulated data: scenarios, a Monte Carlo price range and a histogram of where the paths ended.">
+        <figcaption><b>Risk.</b> Scenarios and a block bootstrap of the company's own returns, with the spread of where the paths ended.</figcaption>
+      </figure>
+      <figure>
+        <img loading="lazy" src="assets/img/workspace-bots.webp" width="1600" height="1000" alt="Bot office with simulated data: a 3D office with labelled desks and an office log.">
+        <figcaption><b>Bot office.</b> Each desk is one program and lights up only when it is working. Planned desks are dark and do nothing yet.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="prose wide" id="models">
+    <h2>The models, step by step</h2>
+    <p>The research uses daily and 5-minute bars for 41 large US companies, for private research only. The data terms don't allow figures derived from that data to be published, so this page gives the method and the verdict for each model, not the scores. None of the results has been independently reviewed yet.</p>
+    <h3>Every model goes through the same eight steps</h3>
+    <ol class="steps">
+      <li><b>Write the question down.</b> One target and one horizon, before any data is read for it.</li>
+      <li><b>Fix the pass marks.</b> The benchmarks to beat, the statistical bar and the costs are set in code before the run, and never changed after.</li>
+      <li><b>Seal the final period.</b> The latest data is locked away. A guard stops any run whose dates would reach it.</li>
+      <li><b>Build features that can't see the future.</b> A test changes future prices and checks that no earlier row changes.</li>
+      <li><b>Walk forward in time order.</b> Train on the past, test on the next block, and leave a gap so the two never overlap.</li>
+      <li><b>Beat simple rules after costs.</b> “No change”, the past average and similar rules are the bar. Spread, slippage and fees are taken off, and the test is repeated at double cost.</li>
+      <li><b>Count every attempt.</b> Each variant tried is recorded, so a lucky one can't be picked quietly.</li>
+      <li><b>Check the checker.</b> On invented markets, the test must find nothing where nothing exists, and find an edge that was planted on purpose.</li>
+    </ol>
+    <p>A model that passes all eight faces the sealed period once, then a forward record of forecasts saved before the day, then at least 50 days of paper trading. Real money stays blocked after that, until a separate review.</p>
+    <div class="tablewrap"><table class="models">
+      <thead><tr><th scope="col">Model</th><th scope="col">Question and method</th><th scope="col">Verdict</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Next-day direction</th><td>Will tomorrow's price be higher or lower? Twelve features; LightGBM, XGBoost, CatBoost and a small neural network against no change, the past average, the last return and ridge regression.</td><td>Failed: no edge found</td></tr>
+        <tr><th scope="row">Next 5-minute bar</th><td>The same models on 5-minute bars, with the last fifth sealed and split conformal prediction intervals.</td><td>Failed: worse than no change</td></tr>
+        <tr><th scope="row">Market regime</th><td>Is the market calm, normal or stressed? A Gaussian hidden Markov model and a Gaussian mixture, with states chosen by BIC, judged as a volatility forecast.</td><td>Failed: kept on screen, marked unproven</td></tr>
+        <tr><th scope="row">Next-day volatility</th><td>How much will the price move tomorrow? HAR regression on realised variance from 5-minute bars, against last value, past average, 20-day average and EWMA.</td><td>Failed: beat the rules, missed the t mark</td></tr>
+        <tr><th scope="row">Take-profit or stop</th><td>Is a profit target or a stop hit first within the next hour? A triple-barrier label; LightGBM, CatBoost and a 1D convolutional network, walked forward with purging and an embargo.</td><td>Failed: no model passed</td></tr>
+        <tr><th scope="row">Five-day volatility, the main test</th><td>Pooled log-HAR, LightGBM and a blend of EWMA and HAR, against EWMA. The real test is 78 weeks of forecasts saved before each week.</td><td>Not started: design not yet frozen</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">The paper trading simulator is built and tested on invented prices only, with position and exposure limits, a 3% daily loss limit, a 10% drawdown limit and a kill switch. It isn't connected to any broker or bot, and it is waiting for review.</p>
   </section>
 
   <section class="rqm" id="method">
