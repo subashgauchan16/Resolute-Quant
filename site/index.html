@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Resolute Quant, a market research terminal in progress</title>
-<meta name="description" content="Resolute Quant is a personal market research terminal, built in the open by Subash Gauchan. A work in progress. It places no orders.">
+<meta name="description" content="Resolute Quant is a personal market research terminal, built in the open by Subash Gauchan. Five forecasting experiments have been run and none has passed its tests. It places no orders.">
 <meta property="og:title" content="Resolute Quant">
-<meta property="og:description" content="A personal market research terminal, built in the open. A work in progress.">
+<meta property="og:description" content="A personal market research terminal that tests its own forecasts against pass marks fixed in advance. A work in progress. It places no orders.">
 <meta property="og:image" content="https://subashgauchan16.github.io/Resolute-Quant/assets/resolute-quant-logo.webp">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,25 +17,393 @@
 <script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
-<header class="hero" id="hero">
-  <div class="stage" id="stage">
-    <img class="logo" src="assets/resolute-quant-logo.webp" width="1672" height="941" alt="Resolute Quant logo: the letters R and Q with rising candlesticks and the words analyse, model, trade.">
-    <div class="shine" aria-hidden="true"></div>
-    <div class="shine second" aria-hidden="true"></div>
-    <svg class="orbit" viewBox="0 0 1672 941" aria-hidden="true"><path pathLength="1000" d="M838 238C960 170 1180 110 1245 140C1262 150 1266 180 1262 205C1262 290 1040 400 760 480C590 530 440 565 437 525C436 495 490 430 555 398"/></svg>
-    <div class="ember" aria-hidden="true"></div>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topnav" aria-label="Sections">
+  <a class="brand" href="#top"><img src="assets/favicon.png" width="28" height="28" alt=""><span>Resolute Quant</span></a>
+  <div class="navlinks"><a href="#terminal">Terminal</a><a href="#roadmap">Roadmap</a><a href="#evidence">Evidence</a><a href="#engineering">Engineering</a><a href="https://github.com/subashgauchan16/Resolute-Quant" rel="noopener noreferrer">Source</a></div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <p class="status"><span class="dot" aria-hidden="true"></span>Work in progress. Places no orders.</p>
+    <h1><span class="wordmark">Resolute Quant</span><span class="tagline">A market research terminal that tests its own forecasts, and records the ones that fail.</span></h1>
+    <p class="lede">It brings stocks, crypto, indices, currencies and gold onto one screen, through a local backend that checks every value. Beside it sits a research workspace where every forecast has to beat simple rules, after costs, against pass marks written down before the run.</p>
+    <dl class="facts">
+      <div><dt>Forecasting experiments</dt><dd><b>0 of 5</b> passed their tests</dd></div>
+      <div><dt>Acceptance checks</dt><dd><b>53 of 55</b> passing, 2 open</dd></div>
+      <div><dt>Where it runs</dt><dd><b>Locally</b>on your own computer, not hosted</dd></div>
+    </dl>
+    <div class="actions"><a class="button" href="#evidence">See the evidence</a><a class="button ghost" href="https://github.com/subashgauchan16/Resolute-Quant" rel="noopener noreferrer">View the source</a></div>
   </div>
-  <div class="intro">
-    <h1>A market research terminal, being built in the open.</h1>
-    <p>Work in progress. It displays markets and places no orders.</p>
-    <a class="button" href="https://github.com/subashgauchan16/Resolute-Quant" rel="noopener noreferrer">View the source on GitHub</a>
-  </div>
+  <figure class="preview">
+    <div class="window">
+      <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i><span>Research workspace</span></div>
+      <img src="assets/img/workspace-overview.webp" width="1600" height="1000" alt="The research workspace with simulated data: a daily chart with indicators, a readout table, next-day volatility, a live Monte Carlo fan, a regime dial and the bot pipeline.">
+    </div>
+    <figcaption><b>Simulated data.</b> The terminal's own code running on generated prices for fictional companies. Not real market data or a real model result.</figcaption>
+  </figure>
 </header>
 
-<main>
-  <section class="why" id="why-resolute">
-    <h2>Why Resolute</h2>
-    <div class="lexicon">
+<main id="main">
+
+  <section id="terminal" class="band">
+    <div class="section-head">
+      <h2>What the terminal does</h2>
+      <p>Watch many markets, study one in depth, and see how much a price might move, never a promise of which way. Every reading says where it came from, and the signal row stays empty until a model has passed every gate.</p>
+    </div>
+    <div class="gallery">
+      <figure>
+        <img loading="lazy" src="assets/img/markets-heikin-ashi.webp" width="1600" height="1000" alt="Markets chart with simulated data, drawn as Heikin-Ashi candles, with the chart style menu above it.">
+        <figcaption><b>Markets.</b> Six chart styles drawn from the same bars. The legend always shows the real bar, even when Heikin-Ashi draws averaged prices.</figcaption>
+      </figure>
+      <figure>
+        <img loading="lazy" src="assets/img/workspace-risk.webp" width="1600" height="1000" alt="Risk page with simulated data: scenarios, a Monte Carlo price range and a histogram of where the paths ended.">
+        <figcaption><b>Risk.</b> Worst and best days, two-standard-deviation moves, and a block bootstrap of the company's own returns. It describes risk; it doesn't forecast.</figcaption>
+      </figure>
+      <figure>
+        <img loading="lazy" src="assets/img/workspace-bots.webp" width="1600" height="1000" alt="Bot office with simulated data: a 3D office with labelled desks and an office log.">
+        <figcaption><b>Bot office.</b> Each desk is one program, lit only when it is actually working. Planned desks stay dark and do nothing.</figcaption>
+      </figure>
+    </div>
+    <p class="disclose">Every screenshot here uses fictional companies and generated prices, marked by a banner. The data providers' terms allow private research, not public display. The research workspace's code is kept in a private repository for the same reason; this repository holds the earlier terminal.</p>
+
+    <div class="ledger">
+      <div>
+        <h3>Working now</h3>
+        <ul>
+          <li>One command starts the terminal, and it reports clearly if its port is taken.</li>
+          <li>All market data passes through a local backend that validates it. The page connects to no provider directly.</li>
+          <li>Bad provider values are dropped and counted, never repaired or invented.</li>
+          <li>If the backend stops, the page says so and recovers by itself when it returns.</li>
+          <li>A research workspace with indicators, risk scenarios, Monte Carlo ranges and six chart styles.</li>
+          <li>Five forecasting experiments, run with pass marks fixed in advance.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Not done yet</h3>
+        <ul class="open">
+          <li>A model that has passed its tests. None has, so there is no evidence of any edge.</li>
+          <li>The main five-day volatility test: designed, but not yet frozen or started.</li>
+          <li>Two acceptance checks: frame smoothness under load, and a memory growth limit.</li>
+          <li>Resizable panels, and a longer history whose terms allow model training.</li>
+          <li>Testing on other computers and against a real provider outage.</li>
+          <li>Any live trading. It isn't on this roadmap, and no execution layer exists.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="band">
+    <div class="section-head">
+      <h2>Seven stages, in order</h2>
+      <p>Each stage closes only when its "done means" holds. Gates, not dates, decide progress.</p>
+    </div>
+    <ul class="legend" aria-label="Key">
+      <li><i class="mark done" aria-hidden="true"></i>Done</li>
+      <li><i class="mark now" aria-hidden="true"></i>In progress</li>
+      <li><i class="mark cond" aria-hidden="true"></i>Only if research passes</li>
+    </ul>
+    <ol class="track" aria-label="Project stages">
+      <li class="done"><i class="mark done" aria-hidden="true"></i><span class="n">Stage 1</span><b>A working terminal</b><small>Done</small></li>
+      <li class="done"><i class="mark done" aria-hidden="true"></i><span class="n">Stage 2</span><b>All data through the backend</b><small>Done</small></li>
+      <li class="done"><i class="mark done" aria-hidden="true"></i><span class="n">Stage 3</span><b>Research plan written</b><small>Done</small></li>
+      <li class="done"><i class="mark done" aria-hidden="true"></i><span class="n">Stage 4</span><b>A permitted data source</b><small>Done</small></li>
+      <li class="done"><i class="mark done" aria-hidden="true"></i><span class="n">Stage 5</span><b>Research workspace</b><small>Done</small></li>
+      <li class="now"><i class="mark now" aria-hidden="true"></i><span class="n">Stage 6</span><b>Forecast tests</b><small>In progress</small></li>
+      <li class="cond"><i class="mark cond" aria-hidden="true"></i><span class="n">Stage 7</span><b>Paper observation</b><small>Only if research passes</small></li>
+    </ol>
+
+    <div class="stages">
+      <h3 class="group">Completed</h3>
+      <article class="stage done">
+        <p class="sn"><i class="mark done" aria-hidden="true"></i>Stage 1</p>
+        <h4>A working terminal</h4>
+        <p>A watchlist, a price chart, an order book, a live trade tape and price alerts, started with one command.</p>
+        <p class="means"><b>Done means</b> it starts with one command and its acceptance checks run in a real browser. Two are still open: frame smoothness under load, and a memory growth limit.</p>
+      </article>
+      <article class="stage done">
+        <p class="sn"><i class="mark done" aria-hidden="true"></i>Stage 2</p>
+        <h4>All data through the backend</h4>
+        <p>The page never contacts a provider. A local Python backend fetches every price, checks it and passes it on. Timeframes are offered only where the provider really supplies them.</p>
+        <p class="means"><b>Done means</b> the page's only requests go to its own backend, plus the web fonts.</p>
+      </article>
+      <article class="stage done">
+        <p class="sn"><i class="mark done" aria-hidden="true"></i>Stage 3</p>
+        <h4>Research plan written</h4>
+        <p>Modest questions first: how much a price will move, not which way. A simple benchmark first, then transparent rules, then statistical models, all walked forward in time order.</p>
+        <p class="means"><b>Done means</b> the questions, tests and pass marks were written down before any model was trained.</p>
+      </article>
+      <article class="stage done">
+        <p class="sn"><i class="mark done" aria-hidden="true"></i>Stage 4</p>
+        <h4>A permitted data source</h4>
+        <p>Daily and 5-minute US stock bars, whose provider confirmed in writing that private research use is allowed. Publishing the data, or figures derived from it, is not.</p>
+        <p class="means"><b>Done means</b> a source is chosen whose terms allow model research. A longer history for training is still being looked for.</p>
+      </article>
+      <article class="stage done">
+        <p class="sn"><i class="mark done" aria-hidden="true"></i>Stage 5</p>
+        <h4>Research workspace</h4>
+        <p>Sections for forecasts, models, risk, news, company analysis and data sources, with indicators and six chart styles. Resizable panels are still to come.</p>
+        <p class="means"><b>Done means</b> it runs on the same validated backend, and every existing check still passes.</p>
+      </article>
+
+      <h3 class="group">Ongoing research</h3>
+      <article class="stage now">
+        <p class="sn"><i class="mark now" aria-hidden="true"></i>Stage 6</p>
+        <h4>Forecast tests</h4>
+        <p>Five experiments have run, and none passed. The main five-day volatility test is designed but not frozen, and it hasn't started. <a href="#evidence">See each verdict.</a></p>
+        <p class="means"><b>Done means</b> every model has a recorded result against pass marks fixed in advance. "No edge found" is a valid outcome.</p>
+      </article>
+
+      <h3 class="group">Conditional</h3>
+      <article class="stage cond">
+        <p class="sn"><i class="mark cond" aria-hidden="true"></i>Stage 7</p>
+        <h4>Paper observation</h4>
+        <p>Only if a model passes: its forecasts are watched against live markets with no money at risk. Forecasts are recorded before the outcome is known, and no orders are placed.</p>
+        <p class="means"><b>Done means</b> months of recorded forecasts, judged by rules set beforehand.</p>
+      </article>
+    </div>
+    <p class="disclose">The stages show project progress, not prices. Live trading is not on this roadmap. It would need separate approval, risk limits, monitoring and a tested kill switch.</p>
+  </section>
+
+  <section id="evidence" class="band">
+    <div class="section-head">
+      <h2>Research evidence</h2>
+      <p>Daily and 5-minute bars for 41 large US companies, used for private research only. The data terms don't allow figures derived from that data to be published, so each result below gives the method and the verdict, not the scores. None has been independently reviewed yet.</p>
+    </div>
+
+    <dl class="tally">
+      <div><dt>Experiments run</dt><dd>5</dd></div>
+      <div><dt>Passed their pre-set tests</dt><dd>0</dd></div>
+      <div><dt>Main test</dt><dd class="small">Designed, not started</dd></div>
+      <div><dt>Models in use for trading</dt><dd>None</dd></div>
+    </dl>
+
+    <h3 class="sub">The protocol every model follows</h3>
+    <div class="protocol">
+      <div class="phase">
+        <p class="phase-name">Before the run</p>
+        <ol start="1">
+          <li><b>Write the question down.</b> One target and one horizon, before any data is read for it.</li>
+          <li><b>Fix the pass marks.</b> Benchmarks, statistical bar and costs are set in code, and never changed after.</li>
+          <li><b>Seal the final period.</b> The latest data is locked away, and a guard stops any run that would reach it.</li>
+        </ol>
+      </div>
+      <div class="phase">
+        <p class="phase-name">During the run</p>
+        <ol start="4">
+          <li><b>Build features that can't see the future.</b> A test changes future prices and checks no earlier row changes.</li>
+          <li><b>Walk forward in time order.</b> Train on the past, test on the next block, with a gap between.</li>
+          <li><b>Beat simple rules after costs.</b> Spread, slippage and fees are taken off, and the test is repeated at double cost.</li>
+        </ol>
+      </div>
+      <div class="phase">
+        <p class="phase-name">After the run</p>
+        <ol start="7">
+          <li><b>Count every attempt.</b> Each variant tried is recorded, so a lucky one can't be picked quietly.</li>
+          <li><b>Check the checker.</b> On invented markets, the test must find nothing where nothing exists, and find an edge planted on purpose.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="after">A model that passes all eight faces the sealed period once, then a forward record of forecasts saved before the day, then at least 50 days of paper trading. Real money stays blocked after that, until a separate review.</p>
+
+    <h3 class="sub">Results, model by model</h3>
+    <div class="results">
+      <div class="rhead" aria-hidden="true"><span>Verdict</span><span>Question and method</span><span>Pass mark</span><span>Audit record</span></div>
+      <article class="result">
+        <p class="verdict fail">Failed<small>No edge found</small></p>
+        <div class="what"><h4>1. Next-day direction</h4><p>Will tomorrow's price be higher or lower? Twelve features from recent returns, volatility, trend, momentum and volume. LightGBM, XGBoost, CatBoost and a small neural network, against no change, the past average, the last return and ridge regression.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Beat every benchmark after costs, with a walk-forward t-statistic of at least 2.5.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Pre-registered plan and run record, private</p>
+      </article>
+      <article class="result">
+        <p class="verdict fail">Failed<small>Worse than no change</small></p>
+        <div class="what"><h4>2. Next 5-minute bar</h4><p>The same models and benchmarks on 5-minute bars, with the last fifth of the data sealed and split conformal prediction intervals.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Lower error than every benchmark, and a t-statistic of at least 3 on daily averages.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Pre-registered plan and run record, private</p>
+      </article>
+      <article class="result">
+        <p class="verdict fail">Failed<small>Shown on screen, marked unproven</small></p>
+        <div class="what"><h4>3. Market regime</h4><p>Is the market calm, normal or stressed? A Gaussian hidden Markov model and a Gaussian mixture on daily return, 20-day volatility and 20-day trend. States are chosen by BIC, and live readings use only data up to the latest bar.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Judged as a volatility forecast: beat the trailing 20-day level and a constant, at t of at least 2 and in at least 60% of companies.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Run record, private. Not re-checked by the forensic tests</p>
+      </article>
+      <article class="result">
+        <p class="verdict fail">Failed<small>Beat the rules, missed the t mark</small></p>
+        <div class="what"><h4>4. Next-day volatility</h4><p>How much will the price move tomorrow, either way? HAR regression on realised variance from 5-minute bars, per company and pooled, against last value, past average, 20-day average and EWMA.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Lower QLIKE and squared error than every benchmark, and a Newey-West t-statistic of at least 3.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Run record, private. A rerun with EWMA added also failed</p>
+      </article>
+      <article class="result">
+        <p class="verdict fail">Failed<small>No model passed</small></p>
+        <div class="what"><h4>5. Take-profit or stop</h4><p>Within the next hour, is a profit target or a stop hit first? A triple-barrier label: up two ATRs or down one within 12 five-minute bars. LightGBM, CatBoost and a 1D convolutional network, walked forward by whole sessions with purging and an embargo.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Five marks, including a net t of at least 3, beating "never trade" and "always buy", and staying profitable at double cost.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Pre-registered plan, run record and forensic review, private. The review found the network couldn't tell how recent a move was, so its result isn't counted</p>
+      </article>
+      <article class="result">
+        <p class="verdict pending">Not started<small>Design not yet frozen</small></p>
+        <div class="what"><h4>6. Five-day volatility, the main test</h4><p>How much will the price move over the next week? Pooled log-HAR, LightGBM and a blend of EWMA and HAR, all against EWMA. A comparison on past data chose the blend as the candidate.</p></div>
+        <p class="mark-text"><span class="lbl">Pass mark</span>Prospective: 78 weeks of forecasts saved before each week, judged by a test fixed when the design is frozen.</p>
+        <p class="audit"><span class="lbl">Audit record</span>Specification and freeze rule written, private. Forensic checks on invented data passed</p>
+      </article>
+    </div>
+    <p class="disclose">Audit records stay in the private repository, because they contain figures derived from licensed data. The method on this page is complete; only the scores are withheld. Monte Carlo ranges and the risk board describe risk and make no forecast. The paper trading simulator is built and tested on invented prices only, with position and exposure limits, a 3% daily loss limit, a 10% drawdown limit and a kill switch. It isn't connected to any broker or bot, and it is waiting for review.</p>
+  </section>
+
+  <section id="engineering" class="band">
+    <div class="section-head">
+      <h2>How it's engineered</h2>
+      <p>Four disciplines hold the project together: one path for data, rules for bad values, tests with their evidence published, and a process that decides when work may continue.</p>
+    </div>
+
+    <div class="pillar rqm" id="built">
+      <h3 class="pillar-h"><span>Architecture</span>Python at the centre</h3>
+      <p class="rqm-sub">Python is the only code that talks to the data providers, so everything on screen has passed its checks.</p>
+      <div class="rqm-pipe">
+        <div class="rqm-box"><small>Sources</small><b>Alpaca, Coinbase Exchange and Yahoo Finance</b><span>Market data, for personal research use</span></div>
+        <i class="rqm-flow" style="--i:0"></i>
+        <div class="rqm-box rqm-core"><small>Backend</small><b>Python</b><span>Fetches and validates every value, and drops and counts bad ones</span></div>
+        <i class="rqm-flow" style="--i:1"></i>
+        <div class="rqm-box"><small>Delivery</small><b>HTTP and a live stream</b><span>Served only to this computer</span></div>
+        <i class="rqm-flow" style="--i:2"></i>
+        <div class="rqm-box"><small>Screen</small><b>Browser terminal</b><span>JavaScript modules and Lightweight Charts</span></div>
+        <i class="rqm-flow rqm-down" style="--i:1"></i>
+        <div class="rqm-box rqm-wip"><small>In progress</small><b>Native desktop app</b><span>C++20 and Qt 6, with the same Python embedded and SQLite for research storage</span></div>
+      </div>
+      <div class="rqm-tools">
+        <div class="rqm-toolrow"><span>Languages</span><ul><li>Python</li><li>JavaScript</li><li>C++20</li><li>SQL</li></ul></div>
+        <div class="rqm-toolrow"><span>Libraries</span><ul><li>Lightweight Charts</li><li>Qt 6</li><li>SQLite</li><li>NumPy</li><li>scikit-learn</li><li>hmmlearn</li><li>LightGBM</li><li>XGBoost</li><li>CatBoost</li></ul></div>
+        <div class="rqm-toolrow"><span>Workflow</span><ul><li>Git and GitHub</li><li>GitHub Pages</li><li>Claude Code</li></ul></div>
+      </div>
+    </div>
+
+    <div class="pillar-pair">
+      <div class="pillar">
+        <h3 class="pillar-h"><span>Data validation</span>Bad values are counted, never repaired</h3>
+        <ul class="rules">
+          <li><b>Dropped and counted.</b> A value that fails a check is removed and the count is kept. Nothing is filled in or invented.</li>
+          <li><b>Only real timeframes.</b> A timeframe is offered only where the provider really supplies it.</li>
+          <li><b>Stale data says so.</b> If the backend stops, badges turn red and old prices dim, so they don't read as current.</li>
+          <li><b>Licences are checked in code.</b> A model can't be used if its data licence no longer allows it.</li>
+          <li><b>No future in the features.</b> Look-ahead tests and a seal guard protect every research run.</li>
+        </ul>
+      </div>
+      <div class="pillar">
+        <h3 class="pillar-h"><span>Testing</span>Results published, failures included</h3>
+        <dl class="tests">
+          <div><dt>Backend unit tests</dt><dd><b>31 of 31</b> pass</dd></div>
+          <div><dt>Launcher checks, fresh install</dt><dd><b>8 of 8</b> pass</dd></div>
+          <div><dt>Full browser acceptance run</dt><dd><b>53 of 55</b> pass, <b class="warn">2 open</b></dd></div>
+        </dl>
+        <p class="pillar-note">From the <a href="https://github.com/subashgauchan16/Resolute-Quant/blob/main/docs/sprint-1.1/REPORT.md" rel="noopener noreferrer">Stage 1.1 report</a>, 6 November 2026, on the terminal in this repository. The two open checks are frame smoothness under load and a memory growth limit. Raw results are in <a href="https://github.com/subashgauchan16/Resolute-Quant/tree/main/docs/sprint-1.1/evidence" rel="noopener noreferrer">the evidence folder</a>, and the <a href="https://github.com/subashgauchan16/Resolute-Quant/blob/main/docs/architecture/phase-0-audit.md" rel="noopener noreferrer">architecture audit</a> records how the code was reviewed. The research workspace has its own tests in the private repository.</p>
+      </div>
+    </div>
+
+    <div class="pillar rqm" id="method">
+      <h3 class="pillar-h"><span>Governance</span>Stage-gate, PDCA and Disciplined Agile</h3>
+      <p class="rqm-sub">I run this project with the frameworks I learned on my BSc in Applied Management, applied to software. A stage-gate process decides whether the project continues, and with what. Inside each stage the work moves in short PDCA cycles: plan, do, check, act. Disciplined Agile keeps the process light where the risk is low, and strict wherever data rights, models or money are involved.</p>
+
+      <h4 class="rqm-h">Every iteration is one PDCA cycle</h4>
+      <div class="rqm-pdca">
+        <svg class="rqm-wheel" viewBox="0 0 240 240" role="img" aria-label="The PDCA cycle: plan, do, check and act, repeated in every iteration.">
+          <path class="rqm-base" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
+          <path class="rqm-base" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
+          <path class="rqm-base" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
+          <path class="rqm-base" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
+          <path class="rqm-fill" pathLength="1" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
+          <path class="rqm-fill k1" pathLength="1" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
+          <path class="rqm-fill k2" pathLength="1" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
+          <path class="rqm-fill k3" pathLength="1" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
+          <text class="rqm-letter" x="162.4" y="77.6">P</text>
+          <text class="rqm-letter k1" x="162.4" y="162.4">D</text>
+          <text class="rqm-letter k2" x="77.6" y="162.4">C</text>
+          <text class="rqm-letter k3" x="77.6" y="77.6">A</text>
+          <text class="rqm-hub" x="120" y="114">one iteration,</text>
+          <text class="rqm-hub" x="120" y="130">one to two weeks</text>
+          <g class="rqm-orbit"><circle cx="120" cy="28" r="6"/></g>
+        </svg>
+        <ol class="rqm-steps">
+          <li><span>P</span><div><b>Plan.</b> Write the goal and the tests before any code.</div></li>
+          <li class="k1"><span>D</span><div><b>Do.</b> Build in small steps, on a separate branch.</div></li>
+          <li class="k2"><span>C</span><div><b>Check.</b> Run every test, compare the result with the plan, and label the evidence.</div></li>
+          <li class="k3"><span>A</span><div><b>Act.</b> Keep what worked, or fix it and go round again.</div></li>
+        </ol>
+      </div>
+
+      <h4 class="rqm-h">The full plan: nine stages, each closed by a gate</h4>
+      <p class="rqm-sub">The roadmap above covers the nearer stages. Behind it, after the foundation, two tracks run side by side, and both must pass before paper trading starts.</p>
+      <div class="rqm-map">
+        <div class="rqm-phase">
+          <p class="rqm-phase-name">Inception</p>
+          <div class="rqm-row">
+            <div class="rqm-node"><span>S1</span>Discovery and charter</div>
+            <i class="rqm-gate" style="--i:0"><b></b><em>G1</em></i>
+            <div class="rqm-node"><span>S2</span>Foundation</div>
+            <i class="rqm-gate" style="--i:1"><b></b><em>G2</em></i>
+          </div>
+        </div>
+        <div class="rqm-phase rqm-construction">
+          <p class="rqm-phase-name">Construction, two tracks in parallel</p>
+          <div class="rqm-track">
+            <span class="rqm-track-name">Research</span>
+            <div class="rqm-row">
+              <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
+              <div class="rqm-node"><span>S3</span>Data and rights</div>
+              <i class="rqm-gate" style="--i:2"><b></b><em>G3</em></i>
+              <div class="rqm-node"><span>S4</span>Research harness</div>
+              <i class="rqm-gate" style="--i:3"><b></b><em>G4</em></i>
+              <div class="rqm-node"><span>S5</span>Models and validation</div>
+              <i class="rqm-gate" style="--i:4"><b></b><em>G5</em></i>
+            </div>
+          </div>
+          <div class="rqm-track">
+            <span class="rqm-track-name">Platform</span>
+            <div class="rqm-row">
+              <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
+              <div class="rqm-node"><span>S6</span>Agents and interface</div>
+              <i class="rqm-gate" style="--i:2.5"><b></b><em>G6</em></i>
+              <div class="rqm-node"><span>S7</span>Deployment and operations</div>
+              <i class="rqm-gate" style="--i:4"><b></b><em>G7</em></i>
+            </div>
+          </div>
+        </div>
+        <div class="rqm-phase">
+          <p class="rqm-phase-name">Transition, once both tracks pass</p>
+          <div class="rqm-row">
+            <i class="rqm-gate rqm-plain" style="--i:4.5"></i>
+            <div class="rqm-node"><span>S8</span>Paper trading</div>
+            <i class="rqm-gate" style="--i:5"><b></b><em>G8</em></i>
+            <div class="rqm-node"><span>S9</span>Controlled launch</div>
+            <i class="rqm-gate" style="--i:6"><b></b><em>G9</em></i>
+          </div>
+        </div>
+      </div>
+      <p class="rqm-note">After the last gate, the project keeps operating and improving in the same PDCA cycles.</p>
+
+      <h4 class="rqm-h">What can happen at a gate</h4>
+      <ul class="rqm-outcomes">
+        <li style="--i:0"><b>Go</b>On to the next stage.</li>
+        <li class="cond" style="--i:1"><b>Conditional go</b>On, with named conditions to close.</li>
+        <li class="hold" style="--i:2"><b>Hold</b>Wait for an outside blocker.</li>
+        <li class="recycle" style="--i:3"><b>Recycle</b>Back to the stage that caused the fault.</li>
+        <li class="kill" style="--i:4"><b>Kill</b>Stop, and record why.</li>
+      </ul>
+      <ul class="rqm-rules">
+        <li>Pass marks are fixed before the work starts, and never changed after the results are seen.</li>
+        <li>A fault goes back to the stage that caused it, and every later stage that used it is checked again.</li>
+        <li>Procurement is gated too. Nothing is bought, licensed or signed before the gate that needs it, and I approve each item myself.</li>
+        <li>I build with AI assistance and stay responsible for the result: I set the goals, review the changes and decide what ships.</li>
+      </ul>
+      <p class="disclose">This is the outline of the plan, not all of it. Its last stage, a controlled live launch, would need its own approval, risk limits and a tested kill switch. Nothing in the plan authorises trading.</p>
+    </div>
+  </section>
+
+  <section class="why band" id="why-resolute">
+    <div class="stagebox" id="stage">
+      <img class="logo" loading="lazy" src="assets/resolute-quant-logo.webp" width="1672" height="941" alt="Resolute Quant logo: the letters R and Q with rising candlesticks and the words analyse, model, trade.">
+      <div class="shine" aria-hidden="true"></div>
+    </div>
+    <div class="why-text">
+      <h2>Why Resolute</h2>
       <dl class="entry">
         <dt><span class="word">Resolute</span> <span class="say">/ˈrez.ə.luːt/</span> <span class="kind">adjective</span></dt>
         <dd>Determined. Firm in purpose, and patient while the work takes time.</dd>
@@ -44,309 +412,8 @@
         <dt><span class="word">Resoluter</span> <span class="kind">noun, my own word</span></dt>
         <dd>Someone who is resolute: a person who decides, stays patient and follows through.</dd>
       </dl>
-      <p class="origin">Resoluter isn't in any dictionary. I coined it for Resoluters, the clothing brand I started when I was about&nbsp;16. It described who I was then, and it's the attitude this project needs now.</p>
+      <p class="origin">Resoluter isn't in any dictionary. I coined it for Resoluters, the clothing brand I started when I was about&nbsp;16. In this project it means deciding the pass marks first, staying patient while honest evidence takes months, and recording "no edge found" as an answer, not hiding it. The word "trade" in the logo is branding: no execution layer exists.</p>
     </div>
-    <div class="tenets">
-      <h3>What it means here</h3>
-      <ul>
-        <li><b>Decide first.</b> Questions and pass marks are written down before any results exist, so they can't be bent to fit.</li>
-        <li><b>Stay patient.</b> Honest evidence takes months, and no test is skipped to get there sooner.</li>
-        <li><b>Follow through.</b> Failures are recorded with the results, and “no edge found” counts as an honest answer.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="prose">
-    <h2>What it is</h2>
-    <p>Resolute Quant is a terminal for studying markets. It runs on your own computer and brings crypto, stocks, indices, currencies and gold into one screen, with a watchlist, a price chart, an order book, a live trade tape and price alerts.</p>
-    <p>I am building it to learn how a dependable market data system works, then how to test forecasts honestly. Getting reliable answers matters more here than getting attractive ones, so every stage has written acceptance checks, and failures are recorded with the results.</p>
-    <p class="note">This page is a project summary. The terminal itself runs locally and shows no market data here, because the data sources allow personal and research use, not public display.</p>
-  </section>
-
-  <section class="ledger" aria-label="Current state of the project">
-    <div>
-      <h2>Working now</h2>
-      <ul>
-        <li>One command starts the terminal, and it reports clearly if its port is taken.</li>
-        <li>All market data passes through a local backend that validates it. The page connects to no provider directly.</li>
-        <li>Bad provider values are dropped and counted, never repaired or invented.</li>
-        <li>Timeframes from one minute to one month, where the provider really supplies them.</li>
-        <li>If the backend stops, the page says so and recovers by itself when it returns.</li>
-        <li>A research workspace with indicators, risk scenarios, Monte Carlo ranges and six chart styles.</li>
-        <li>Five forecasting experiments, run with pass marks fixed in advance. None passed.</li>
-      </ul>
-    </div>
-    <div>
-      <h2>Not done yet</h2>
-      <ul>
-        <li>A model that has passed its tests. None has, so there is no evidence of any edge.</li>
-        <li>The main five-day volatility test: designed, but not yet frozen or started.</li>
-        <li>Resizable panels, and a longer history whose terms allow model training.</li>
-        <li>Two acceptance checks are still open: frame smoothness under load, and a memory growth limit.</li>
-        <li>Testing on other computers and against a real provider outage.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="road" id="road">
-    <h2>Where it is heading</h2>
-    <p class="hint">Select a candle to open the plan for that stage.</p>
-    <div class="candles" role="tablist" aria-label="Project stages">
-      <button type="button" class="rung done" role="tab" id="tab-1" aria-controls="plan-1" aria-selected="false" style="--h:22%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A working terminal</b><small>Done</small></button>
-      <button type="button" class="rung done" role="tab" id="tab-2" aria-controls="plan-2" aria-selected="false" style="--h:32%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>All data through the backend</b><small>Done</small></button>
-      <button type="button" class="rung done" role="tab" id="tab-3" aria-controls="plan-3" aria-selected="false" style="--h:42%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Research plan written</b><small>Done</small></button>
-      <button type="button" class="rung done" role="tab" id="tab-4" aria-controls="plan-4" aria-selected="false" style="--h:53%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>A permitted data source</b><small>Done</small></button>
-      <button type="button" class="rung done" role="tab" id="tab-5" aria-controls="plan-5" aria-selected="false" style="--h:64%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Research workspace</b><small>Done</small></button>
-      <button type="button" class="rung now" role="tab" id="tab-6" aria-controls="plan-6" aria-selected="true" style="--h:76%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Forecast tests</b><small>In progress</small></button>
-      <button type="button" class="rung later" role="tab" id="tab-7" aria-controls="plan-7" aria-selected="false" style="--h:90%"><span class="pit" aria-hidden="true"><span class="candle"><i class="wick"></i><i class="f back"></i><i class="f left"></i><i class="f bottom"></i><i class="f side"></i><i class="f top"></i><i class="f front"></i></span></span><b>Paper observation</b><small>Only if research passes</small></button>
-    </div>
-
-    <div class="plans" id="plans">
-      <div class="plan done" role="tabpanel" id="plan-1" aria-labelledby="tab-1" tabindex="0">
-        <p class="step">Stage 1 of 7, done</p>
-        <h3>A working terminal</h3>
-        <div class="plan-body">
-          <p>One command starts it on your own computer, and it brings crypto, stocks, indices, currencies and gold into one screen.</p>
-          <ul><li>A watchlist, a price chart, an order book and a live trade tape</li><li>Price alerts</li><li>A clear message if its port is already taken</li></ul>
-          <p class="means"><b>Done means</b> it starts with one command and its acceptance checks run in a real browser. Two are still open: frame smoothness under load, and a memory growth limit.</p>
-        </div>
-      </div>
-      <div class="plan done" role="tabpanel" id="plan-2" aria-labelledby="tab-2" tabindex="0">
-        <p class="step">Stage 2 of 7, done</p>
-        <h3>All data through the backend</h3>
-        <div class="plan-body">
-          <p>The page never contacts a data provider itself. A local Python backend fetches every price, checks it, and passes it on.</p>
-          <ul><li>Bad values are dropped and counted, never repaired or invented</li><li>Timeframes from one minute to one month, only where the provider really supplies them</li><li>If the backend stops, the page says so and recovers when it returns</li></ul>
-          <p class="means"><b>Done means</b> the page's only requests go to its own backend, plus the web fonts.</p>
-        </div>
-      </div>
-      <div class="plan done" role="tabpanel" id="plan-3" aria-labelledby="tab-3" tabindex="0">
-        <p class="step">Stage 3 of 7, done</p>
-        <h3>Research plan written</h3>
-        <div class="plan-body">
-          <p>The first question is deliberately modest: how volatile will Bitcoin be over the next 24&nbsp;hours?</p>
-          <ul><li>A simple historical benchmark first, then a transparent rule, then an interpretable statistical model</li><li>Walk-forward tests in time order, on data each model has never seen</li><li>Fees, spread and slippage counted in any strategy test</li></ul>
-          <p class="means"><b>Done means</b> the questions, tests and pass marks were written down before any model was trained.</p>
-        </div>
-      </div>
-      <div class="plan done" role="tabpanel" id="plan-4" aria-labelledby="tab-4" tabindex="0">
-        <p class="step">Stage 4 of 7, done</p>
-        <h3>A permitted data source</h3>
-        <div class="plan-body">
-          <p>Daily and 5-minute US stock bars, whose provider confirmed in writing that private research use is allowed. Publishing the data, or figures derived from it, is not.</p>
-          <ul><li>Read each provider's terms before using its data</li><li>Ask in writing where the terms are unclear</li><li>Compare free and paid options</li></ul>
-          <p class="means"><b>Done means</b> a source is chosen whose terms allow model research. A longer history for training is still being looked for.</p>
-        </div>
-      </div>
-      <div class="plan done" role="tabpanel" id="plan-5" aria-labelledby="tab-5" tabindex="0">
-        <p class="step">Stage 5 of 7, done</p>
-        <h3>Research workspace</h3>
-        <div class="plan-body">
-          <p>A workspace beside the terminal, with sections for forecasts, models, risk, news, company analysis and data sources.</p>
-          <ul><li>Technical indicators and six chart styles</li><li>Risk scenarios and Monte Carlo ranges</li><li>Resizable panels are still to come</li></ul>
-          <p class="means"><b>Done means</b> it runs on the same validated backend, and every existing check still passes.</p>
-        </div>
-      </div>
-      <div class="plan now" role="tabpanel" id="plan-6" aria-labelledby="tab-6" tabindex="0">
-        <p class="step">Stage 6 of 7, in progress</p>
-        <h3>Forecast tests</h3>
-        <div class="plan-body">
-          <p>Run the research plan's tests on permitted data, from the simplest benchmark upward. Five experiments have run and none passed. The main five-day volatility test is being designed.</p>
-          <ul><li>Each model must beat the simpler ones on data it has never seen</li><li>Results are reported whether they pass or fail</li></ul>
-          <p class="means"><b>Done means</b> every model has a recorded result against pass marks fixed in advance. “No edge found” is a valid outcome.</p>
-        </div>
-      </div>
-      <div class="plan later" role="tabpanel" id="plan-7" aria-labelledby="tab-7" tabindex="0">
-        <p class="step">Stage 7 of 7, only if research passes</p>
-        <h3>Paper observation</h3>
-        <div class="plan-body">
-          <p>If a model passes, its forecasts are watched against live markets with no money at risk.</p>
-          <ul><li>Forecasts are recorded before the outcome is known</li><li>Predictions, simulated results and real market outcomes are kept apart</li><li>No orders are placed</li></ul>
-          <p class="means"><b>Done means</b> months of recorded forecasts, judged by rules set beforehand.</p>
-        </div>
-      </div>
-    </div>
-    <p class="note">The candles show project stages, not prices. Live trading is not on this roadmap. It would need separate approval, risk limits, monitoring and a tested kill switch.</p>
-  </section>
-
-  <section class="prose">
-    <h2>How the research works</h2>
-    <p>The first questions were deliberately modest: how much will a price move, rather than which way. Volatility tests the whole pipeline without being mistaken for a trading edge, and any later strategy would need that estimate to size its risk.</p>
-    <p>Models must earn their complexity. A simple historical benchmark comes first, then a transparent rule, then an interpretable statistical model. Anything more complex has to beat those on data it has never seen, using walk-forward tests in time order and pass marks fixed before the results exist.</p>
-    <p>Strategy tests must also survive fees, spread and slippage, because exchange fees can be large next to short-term price moves. The most likely outcome is that no tradable edge is found, and that would be a valid result.</p>
-  </section>
-
-  <section class="prose wide" id="workspace">
-    <h2>Built since: the research workspace</h2>
-    <p>The terminal now has a research workspace, with sections for forecasts, models, risk, news, company analysis and data sources. Its code is kept private for now, because it works with data whose terms allow private research only.</p>
-    <p class="note">These screenshots run the terminal's own backend code on prices generated from a seeded random walk, for fictional companies. Panels that need saved research results show invented placeholders or say they are unavailable, and a banner marks every screen. None of it is real market data or a real model result.</p>
-    <div class="shots">
-      <figure>
-        <img loading="lazy" src="assets/img/workspace-overview.webp" width="1600" height="1000" alt="Workspace overview with simulated data: a daily chart with indicators, a readout table, next-day volatility, a live Monte Carlo fan, a regime dial and the bot pipeline.">
-        <figcaption><b>Overview.</b> The chart with indicators, a readout of where the company stands, next-day volatility, a live Monte Carlo fan, the regime dial and the bot pipeline. The signal row stays empty until a model passes every gate.</figcaption>
-      </figure>
-      <figure>
-        <img loading="lazy" src="assets/img/markets-heikin-ashi.webp" width="1600" height="1000" alt="Markets chart with simulated data, drawn as Heikin-Ashi candles, with the chart style menu above it.">
-        <figcaption><b>Chart styles.</b> Candles, hollow candles, Heikin-Ashi, OHLC bars, line or area, drawn from the same bars. The legend always shows the real bar.</figcaption>
-      </figure>
-      <figure>
-        <img loading="lazy" src="assets/img/workspace-risk.webp" width="1600" height="1000" alt="Risk page with simulated data: scenarios, a Monte Carlo price range and a histogram of where the paths ended.">
-        <figcaption><b>Risk.</b> Scenarios and a block bootstrap of the company's own returns, with the spread of where the paths ended.</figcaption>
-      </figure>
-      <figure>
-        <img loading="lazy" src="assets/img/workspace-bots.webp" width="1600" height="1000" alt="Bot office with simulated data: a 3D office with labelled desks and an office log.">
-        <figcaption><b>Bot office.</b> Each desk is one program and lights up only when it is working. Planned desks are dark and do nothing yet.</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="prose wide" id="models">
-    <h2>The models, step by step</h2>
-    <p>The research uses daily and 5-minute bars for 41 large US companies, for private research only. The data terms don't allow figures derived from that data to be published, so this page gives the method and the verdict for each model, not the scores. None of the results has been independently reviewed yet.</p>
-    <h3>Every model goes through the same eight steps</h3>
-    <ol class="steps">
-      <li><b>Write the question down.</b> One target and one horizon, before any data is read for it.</li>
-      <li><b>Fix the pass marks.</b> The benchmarks to beat, the statistical bar and the costs are set in code before the run, and never changed after.</li>
-      <li><b>Seal the final period.</b> The latest data is locked away. A guard stops any run whose dates would reach it.</li>
-      <li><b>Build features that can't see the future.</b> A test changes future prices and checks that no earlier row changes.</li>
-      <li><b>Walk forward in time order.</b> Train on the past, test on the next block, and leave a gap so the two never overlap.</li>
-      <li><b>Beat simple rules after costs.</b> “No change”, the past average and similar rules are the bar. Spread, slippage and fees are taken off, and the test is repeated at double cost.</li>
-      <li><b>Count every attempt.</b> Each variant tried is recorded, so a lucky one can't be picked quietly.</li>
-      <li><b>Check the checker.</b> On invented markets, the test must find nothing where nothing exists, and find an edge that was planted on purpose.</li>
-    </ol>
-    <p>A model that passes all eight faces the sealed period once, then a forward record of forecasts saved before the day, then at least 50 days of paper trading. Real money stays blocked after that, until a separate review.</p>
-    <div class="tablewrap"><table class="models">
-      <thead><tr><th scope="col">Model</th><th scope="col">Question and method</th><th scope="col">Verdict</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Next-day direction</th><td>Will tomorrow's price be higher or lower? Twelve features; LightGBM, XGBoost, CatBoost and a small neural network against no change, the past average, the last return and ridge regression.</td><td>Failed: no edge found</td></tr>
-        <tr><th scope="row">Next 5-minute bar</th><td>The same models on 5-minute bars, with the last fifth sealed and split conformal prediction intervals.</td><td>Failed: worse than no change</td></tr>
-        <tr><th scope="row">Market regime</th><td>Is the market calm, normal or stressed? A Gaussian hidden Markov model and a Gaussian mixture, with states chosen by BIC, judged as a volatility forecast.</td><td>Failed: kept on screen, marked unproven</td></tr>
-        <tr><th scope="row">Next-day volatility</th><td>How much will the price move tomorrow? HAR regression on realised variance from 5-minute bars, against last value, past average, 20-day average and EWMA.</td><td>Failed: beat the rules, missed the t mark</td></tr>
-        <tr><th scope="row">Take-profit or stop</th><td>Is a profit target or a stop hit first within the next hour? A triple-barrier label; LightGBM, CatBoost and a 1D convolutional network, walked forward with purging and an embargo.</td><td>Failed: no model passed</td></tr>
-        <tr><th scope="row">Five-day volatility, the main test</th><td>Pooled log-HAR, LightGBM and a blend of EWMA and HAR, against EWMA. The real test is 78 weeks of forecasts saved before each week.</td><td>Not started: design not yet frozen</td></tr>
-      </tbody>
-    </table></div>
-    <p class="note">The paper trading simulator is built and tested on invented prices only, with position and exposure limits, a 3% daily loss limit, a 10% drawdown limit and a kill switch. It isn't connected to any broker or bot, and it is waiting for review.</p>
-  </section>
-
-  <section class="rqm" id="method">
-    <h2>How the project is run</h2>
-    <p class="rqm-sub">I run this project with the frameworks I learned on my BSc in Applied Management, applied to software. A stage-gate process decides whether the project continues, and with what. Inside each stage the work moves in short PDCA cycles: plan, do, check, act. Disciplined Agile joins the two, keeping the process light where the risk is low, and strict wherever data rights, models or money are involved.</p>
-
-    <h3 class="rqm-h">Every iteration is one PDCA cycle</h3>
-    <div class="rqm-pdca">
-      <svg class="rqm-wheel" viewBox="0 0 240 240" role="img" aria-label="The PDCA cycle: plan, do, check and act, repeated in every iteration.">
-        <path class="rqm-base" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
-        <path class="rqm-base" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
-        <path class="rqm-base" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
-        <path class="rqm-base" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
-        <path class="rqm-fill" pathLength="1" d="M126.42 28.22A92 92 0 0 1 211.78 113.58"/>
-        <path class="rqm-fill k1" pathLength="1" d="M211.78 126.42A92 92 0 0 1 126.42 211.78"/>
-        <path class="rqm-fill k2" pathLength="1" d="M113.58 211.78A92 92 0 0 1 28.22 126.42"/>
-        <path class="rqm-fill k3" pathLength="1" d="M28.22 113.58A92 92 0 0 1 113.58 28.22"/>
-        <text class="rqm-letter" x="162.4" y="77.6">P</text>
-        <text class="rqm-letter k1" x="162.4" y="162.4">D</text>
-        <text class="rqm-letter k2" x="77.6" y="162.4">C</text>
-        <text class="rqm-letter k3" x="77.6" y="77.6">A</text>
-        <text class="rqm-hub" x="120" y="114">one iteration,</text>
-        <text class="rqm-hub" x="120" y="130">one to two weeks</text>
-        <g class="rqm-orbit"><circle cx="120" cy="28" r="6"/></g>
-      </svg>
-      <ol class="rqm-steps">
-        <li><span>P</span><div><b>Plan.</b> Write the goal and the tests before any code.</div></li>
-        <li class="k1"><span>D</span><div><b>Do.</b> Build in small steps, on a separate branch.</div></li>
-        <li class="k2"><span>C</span><div><b>Check.</b> Run every test, compare the result with the plan, and label the evidence.</div></li>
-        <li class="k3"><span>A</span><div><b>Act.</b> Keep what worked, or fix it and go round again.</div></li>
-      </ol>
-    </div>
-
-    <h3 class="rqm-h">Nine stages, each closed by a gate</h3>
-    <p class="rqm-sub">After the foundation, two tracks run side by side. Both must pass before paper trading starts. Gates, not dates, decide progress.</p>
-    <div class="rqm-map">
-      <div class="rqm-phase">
-        <p class="rqm-phase-name">Inception</p>
-        <div class="rqm-row">
-          <div class="rqm-node"><span>S1</span>Discovery and charter</div>
-          <i class="rqm-gate" style="--i:0"><b></b><em>G1</em></i>
-          <div class="rqm-node"><span>S2</span>Foundation</div>
-          <i class="rqm-gate" style="--i:1"><b></b><em>G2</em></i>
-        </div>
-      </div>
-      <div class="rqm-phase rqm-construction">
-        <p class="rqm-phase-name">Construction, two tracks in parallel</p>
-        <div class="rqm-track">
-          <span class="rqm-track-name">Research</span>
-          <div class="rqm-row">
-            <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
-            <div class="rqm-node"><span>S3</span>Data and rights</div>
-            <i class="rqm-gate" style="--i:2"><b></b><em>G3</em></i>
-            <div class="rqm-node"><span>S4</span>Research harness</div>
-            <i class="rqm-gate" style="--i:3"><b></b><em>G4</em></i>
-            <div class="rqm-node"><span>S5</span>Models and validation</div>
-            <i class="rqm-gate" style="--i:4"><b></b><em>G5</em></i>
-          </div>
-        </div>
-        <div class="rqm-track">
-          <span class="rqm-track-name">Platform</span>
-          <div class="rqm-row">
-            <i class="rqm-gate rqm-plain" style="--i:1.5"></i>
-            <div class="rqm-node"><span>S6</span>Agents and interface</div>
-            <i class="rqm-gate" style="--i:2.5"><b></b><em>G6</em></i>
-            <div class="rqm-node"><span>S7</span>Deployment and operations</div>
-            <i class="rqm-gate" style="--i:4"><b></b><em>G7</em></i>
-          </div>
-        </div>
-      </div>
-      <div class="rqm-phase">
-        <p class="rqm-phase-name">Transition, once both tracks pass</p>
-        <div class="rqm-row">
-          <i class="rqm-gate rqm-plain" style="--i:4.5"></i>
-          <div class="rqm-node"><span>S8</span>Paper trading</div>
-          <i class="rqm-gate" style="--i:5"><b></b><em>G8</em></i>
-          <div class="rqm-node"><span>S9</span>Controlled launch</div>
-          <i class="rqm-gate" style="--i:6"><b></b><em>G9</em></i>
-        </div>
-      </div>
-    </div>
-    <p class="rqm-note">After the last gate, the project keeps operating and improving in the same PDCA cycles.</p>
-
-    <h3 class="rqm-h">What can happen at a gate</h3>
-    <ul class="rqm-outcomes">
-      <li style="--i:0"><b>Go</b>On to the next stage.</li>
-      <li class="cond" style="--i:1"><b>Conditional go</b>On, with named conditions to close.</li>
-      <li class="hold" style="--i:2"><b>Hold</b>Wait for an outside blocker.</li>
-      <li class="recycle" style="--i:3"><b>Recycle</b>Back to the stage that caused the fault.</li>
-      <li class="kill" style="--i:4"><b>Kill</b>Stop, and record why.</li>
-    </ul>
-    <ul class="rqm-rules">
-      <li>Pass marks are fixed before the work starts, and never changed after the results are seen.</li>
-      <li>A fault goes back to the stage that caused it, and every later stage that used it is checked again.</li>
-      <li>Procurement is gated too. Nothing is bought, licensed or signed before the gate that needs it, and I approve each item myself.</li>
-    </ul>
-    <p class="note">This is the outline of the plan, not all of it. Its last stage, a controlled live launch, would need its own approval, risk limits and a tested kill switch. Nothing in the plan authorises trading, and the roadmap above covers the nearer stages only.</p>
-  </section>
-
-  <section class="rqm" id="built">
-    <h2>How it is built</h2>
-    <p class="rqm-sub">Python sits at the centre. It's the only code that talks to the data providers, so everything on screen has passed its checks.</p>
-    <div class="rqm-pipe">
-      <div class="rqm-box"><small>Sources</small><b>Coinbase Exchange and Yahoo Finance</b><span>Market data, for personal research use</span></div>
-      <i class="rqm-flow" style="--i:0"></i>
-      <div class="rqm-box rqm-core"><small>Backend</small><b>Python</b><span>Fetches and validates every value, and drops and counts bad ones</span></div>
-      <i class="rqm-flow" style="--i:1"></i>
-      <div class="rqm-box"><small>Delivery</small><b>HTTP and a live stream</b><span>Served only to this computer</span></div>
-      <i class="rqm-flow" style="--i:2"></i>
-      <div class="rqm-box"><small>Screen</small><b>Browser terminal</b><span>JavaScript modules and Lightweight Charts</span></div>
-      <i class="rqm-flow rqm-down" style="--i:1"></i>
-      <div class="rqm-box rqm-wip"><small>In progress</small><b>Native desktop app</b><span>C++20 and Qt 6, with the same Python embedded and SQLite for research storage</span></div>
-    </div>
-    <div class="rqm-tools">
-      <div class="rqm-toolrow"><span>Languages</span><ul><li>Python</li><li>JavaScript</li><li>C++20</li><li>SQL</li></ul></div>
-      <div class="rqm-toolrow"><span>Libraries</span><ul><li>Lightweight Charts</li><li>Qt 6</li><li>SQLite</li></ul></div>
-      <div class="rqm-toolrow"><span>Testing</span><ul><li>Python unit tests</li><li>End-to-end checks in Edge</li><li>Qt tests</li></ul></div>
-      <div class="rqm-toolrow"><span>Workflow</span><ul><li>Git and GitHub</li><li>GitHub Pages</li><li>Claude Code</li></ul></div>
-    </div>
-    <p>I build it with AI assistance and stay responsible for the result: I set the goals, review the changes and decide what ships. The reports in the repository record what passed, what failed and what was not tested.</p>
   </section>
 </main>
 
