@@ -20,14 +20,14 @@
    "name": "crypto quote and chart render",
    "pass": true,
    "detail": {
-    "big": "$76,194.34",
-    "legend": "O 76,163.73H 76,200.00L 76,163.73C 76,194.34VOL 0.72EMA 20"
+    "big": "[removed 17 Nov 2026: provider data]",
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
    "name": "order book renders ten levels a side",
    "pass": true,
-   "detail": "LIVE, DEPTH 38,996"
+   "detail": "LIVE, DEPTH [removed]"
   },
   {
    "name": "trade tape fills",
@@ -40,22 +40,22 @@
    "detail": {
     "status": "LIVE",
     "y": "YAHOO STREAM",
-    "big": "$76,194.34",
+    "big": "[removed 17 Nov 2026: provider data]",
     "rate": "27",
-    "book": "LIVE, DEPTH 38,996",
+    "book": "LIVE, DEPTH [removed]",
     "asks": 10,
     "bids": 10,
     "tape": 40,
-    "vwap": "76,187.85",
+    "vwap": "[removed 17 Nov 2026: provider data]",
     "flow": "63% / 37%",
     "imb": "+5.8%",
     "fng": "28 / 100",
     "fngd": "Fear, daily",
-    "range": "75,035.10 to 80,843.85",
-    "vol": "$1.14B",
+    "range": "[removed 17 Nov 2026: provider data]",
+    "vol": "[removed 17 Nov 2026: provider data]",
     "rows": 20,
     "grans": "1m5m15m1H6H1D",
-    "legend": "O 76,163.73H 76,200.00L 76,163.73C 76,194.34VOL 0.72EMA 20",
+    "legend": "[removed 17 Nov 2026: provider data]",
     "canvases": 7,
     "msg": true
    }
@@ -113,10 +113,10 @@
    "pass": true,
    "detail": {
     "time": 1793923500,
-    "open": 76156.24,
-    "high": 76156.24,
-    "low": 76143.37,
-    "close": 76156.24,
+    "open": "[removed 17 Nov 2026: provider data]",
+    "high": "[removed 17 Nov 2026: provider data]",
+    "low": "[removed 17 Nov 2026: provider data]",
+    "close": "[removed 17 Nov 2026: provider data]",
     "volume": 0.19137838000000001,
     "age": 3
    }
@@ -124,16 +124,16 @@
   {
    "name": "alert set, clear, fire, dismiss (firing uses an injected crossing)",
    "pass": true,
-   "detail": "BTC-USD crossed 500.00 at 00:05:04. Last 501.00."
+   "detail": "BTC-USD crossed [removed] at 00:05:04. Last [removed]."
   },
   {
    "name": "stock view: quote, chart, profile, news, stats",
    "pass": true,
    "detail": {
     "pair": "AAPL",
-    "big": "$344.59",
+    "big": "[removed 17 Nov 2026: provider data]",
     "asof": "AFTER HOURS, Yahoo delay 15m, as of 00:05:10",
-    "legend": "O 346.02H 346.09L 344.10C 344.31VOL 4.20MEMA 20",
+    "legend": "[removed 17 Nov 2026: provider data]",
     "bookHidden": true,
     "co": "Apple Inc.AAPL · NasdaqGSSectorTechnologyIndustryConsumer El",
     "news": 10,
@@ -153,7 +153,7 @@
    "pass": true,
    "detail": {
     "on": "1MO",
-    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.61MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -161,7 +161,7 @@
    "pass": true,
    "detail": {
     "on": "4H",
-    "legend": "O 343.60H 346.60L 342.53C 344.31VOL 26.78MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -169,7 +169,7 @@
    "pass": true,
    "detail": {
     "on": "1W",
-    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.73MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -177,7 +177,7 @@
    "pass": true,
    "detail": {
     "on": "1m",
-    "legend": "O 344.56H 344.95L 344.25C 344.31VOL 1.57MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -185,7 +185,7 @@
    "pass": true,
    "detail": {
     "on": "1D",
-    "legend": "O 353.89H 355.38L 344.53C 344.17VOL 74.17MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -203,7 +203,7 @@
    "pass": true,
    "detail": {
     "pair": "ETH-USD",
-    "book": "LIVE, DEPTH 18,855",
+    "book": "LIVE, DEPTH [removed]",
     "asks": 10
    }
   },
@@ -285,7 +285,7 @@
     "crypto": "CRYPTO OFF",
     "note": "Data program offline. Start Start Terminal.bat.",
     "rows": 20,
-    "last": "$76,038.96"
+    "last": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -301,7 +301,7 @@
     "crypto": "LIVE",
     "noteHidden": true,
     "rate": "50",
-    "book": "LIVE, DEPTH 39,037"
+    "book": "LIVE, DEPTH [removed]"
    }
   },
   {

@@ -20,7 +20,7 @@
    "name": "name is Resolute Quant, with no old name on the page",
    "pass": true,
    "detail": {
-    "title": "BTC 76,143.36 ▼ Resolute Quant"
+    "title": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -72,14 +72,14 @@
    "name": "crypto quote and chart render",
    "pass": true,
    "detail": {
-    "big": "$76,127.82",
-    "legend": "O 76,161.26H 76,161.26L 76,117.19C 76,127.82VOL 0.76EMA 20"
+    "big": "[removed 17 Nov 2026: provider data]",
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
    "name": "order book renders ten levels a side",
    "pass": true,
-   "detail": "LIVE, DEPTH 39,311"
+   "detail": "LIVE, DEPTH [removed]"
   },
   {
    "name": "trade tape fills",
@@ -92,22 +92,22 @@
    "detail": {
     "status": "LIVE",
     "y": "YAHOO STREAM",
-    "big": "$76,127.82",
+    "big": "[removed 17 Nov 2026: provider data]",
     "rate": "33",
-    "book": "LIVE, DEPTH 39,311",
+    "book": "LIVE, DEPTH [removed]",
     "asks": 10,
     "bids": 10,
     "tape": 40,
-    "vwap": "76,130.82",
+    "vwap": "[removed 17 Nov 2026: provider data]",
     "flow": "65% / 35%",
     "imb": "+28.4%",
     "fng": "28 / 100",
     "fngd": "Fear, daily",
-    "range": "75,035.10 to 80,784.93",
-    "vol": "$1.15B",
+    "range": "[removed 17 Nov 2026: provider data]",
+    "vol": "[removed 17 Nov 2026: provider data]",
     "rows": 20,
     "grans": "1m5m15m1H6H1D",
-    "legend": "O 76,161.26H 76,161.26L 76,117.19C 76,127.82VOL 0.76EMA 20",
+    "legend": "[removed 17 Nov 2026: provider data]",
     "canvases": 7,
     "msg": true
    }
@@ -165,10 +165,10 @@
    "pass": true,
    "detail": {
     "time": 1793927520,
-    "open": 76075.88,
-    "high": 76107.55,
-    "low": 76042.87,
-    "close": 76104.28,
+    "open": "[removed 17 Nov 2026: provider data]",
+    "high": "[removed 17 Nov 2026: provider data]",
+    "low": "[removed 17 Nov 2026: provider data]",
+    "close": "[removed 17 Nov 2026: provider data]",
     "volume": 5.8090752799999965,
     "age": 37
    }
@@ -176,16 +176,16 @@
   {
    "name": "alert set, clear, fire, dismiss (firing uses an injected crossing)",
    "pass": true,
-   "detail": "BTC-USD crossed 500.00 at 01:12:38. Last 501.00."
+   "detail": "BTC-USD crossed [removed] at 01:12:38. Last [removed]."
   },
   {
    "name": "stock view: quote, chart, profile, news, stats",
    "pass": true,
    "detail": {
     "pair": "AAPL",
-    "big": "$343.55",
+    "big": "[removed 17 Nov 2026: provider data]",
     "asof": "CLOSED, Yahoo delay 15m, as of 01:12:49",
-    "legend": "O 346.02H 346.09L 344.10C 344.31VOL 4.20MEMA 20",
+    "legend": "[removed 17 Nov 2026: provider data]",
     "bookHidden": true,
     "co": "Apple Inc.AAPL · NasdaqGSSectorTechnologyIndustryConsumer El",
     "news": 10,
@@ -205,7 +205,7 @@
    "pass": true,
    "detail": {
     "on": "1MO",
-    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.61MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -213,7 +213,7 @@
    "pass": true,
    "detail": {
     "on": "4H",
-    "legend": "O 343.60H 346.60L 342.53C 344.31VOL 26.78MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -221,7 +221,7 @@
    "pass": true,
    "detail": {
     "on": "1W",
-    "legend": "O 342.67H 355.38L 325.33C 344.17VOL 291.73MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -229,7 +229,7 @@
    "pass": true,
    "detail": {
     "on": "1m",
-    "legend": "O 344.56H 344.95L 344.25C 344.31VOL 1.57MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -237,7 +237,7 @@
    "pass": true,
    "detail": {
     "on": "1D",
-    "legend": "O 341.57H 354.50L 340.99C 349.51VOL 89.64MEMA 20"
+    "legend": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -255,7 +255,7 @@
    "pass": true,
    "detail": {
     "pair": "ETH-USD",
-    "book": "LIVE, DEPTH 19,048",
+    "book": "LIVE, DEPTH [removed]",
     "asks": 10
    }
   },
@@ -337,7 +337,7 @@
     "crypto": "CRYPTO OFF",
     "note": "Data program offline. Start Start Terminal.bat.",
     "rows": 20,
-    "last": "$76,138.70"
+    "last": "[removed 17 Nov 2026: provider data]"
    }
   },
   {
@@ -353,7 +353,7 @@
     "crypto": "LIVE",
     "noteHidden": true,
     "rate": "19",
-    "book": "LIVE, DEPTH 39,278"
+    "book": "LIVE, DEPTH [removed]"
    }
   },
   {
